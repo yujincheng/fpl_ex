@@ -1,0 +1,1 @@
+inst_bias_shift     ,inst_bias_addr      ,inst_is_bb_         ,inst_w2c_valid_mac  ,inst_w2c_shift_len  ,inst_wb_st_rd_addr  ,inst_pooled_type    ,inst_w2c_pooled     ,inst_w2c_linelen    ,inst_w2c_st_addr    ,inst_is_w2c_back    ,inst_ilc_tofifo     ,inst_ilc_fromfifo   ,inst_bsr_buffermux  ,inst_bsr_iszero     ,inst_ilc_linelen    ,inst_ilc_ispad      ,inst_ilc_st_addr    ,
