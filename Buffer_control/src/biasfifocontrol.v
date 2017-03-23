@@ -13,7 +13,7 @@ module Bias_FIFO_CONTROL#(
 	input wire rst_n,
 	input wire conf,
 	
-	input wire [SINGLE_LEN - 1:0] bias_num, // 需要一次读这么多个bias，bias=9代表所有bb中地址增加1个。在DDR中是连续 X_PE byte数
+	input wire [SINGLE_LEN - 1:0] bias_num, // 需要一次读这么多个bias，bias=1代表所有bb中地址增加1个。在DDR中是连续 X_PE byte数
 	input wire [SINGLE_LEN - 1:0] bias_ddr_byte, // X_PE*bias
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
@@ -26,11 +26,11 @@ module Bias_FIFO_CONTROL#(
 	
 	input wire ddr_fifo_empty,
 	output reg ddr_fifo_req,
-	input wire [DATA_LEN - 1:0] ddr_fifo_data,
+	input wire [DATA_LEN*BUFFER_NUM - 1:0] ddr_fifo_data,
 	
 	
 	output reg [ADDR_LEN - 1:0] bb_addr,
-	output reg [DATA_LEN - 1:0] bb_data,
+	output reg [DATA_LEN*BUFFER_NUM - 1:0] bb_data,
 	output reg [BUFFER_NUM - 1:0] bb_wea,
 	
 	output wire idle
@@ -66,17 +66,10 @@ reg [SINGLE_LEN - 1:0] count_addr;
 reg cto1;
 reg [SINGLE_LEN - 1:0] bias_num_reg;
 
-always@ (posedge clk) begin
-	if(!rst_n) begin
-		bb_addr <= 0;
-	end
-	else bb_addr <= bb_addr_reg;
-end
-
 
 always @ (posedge clk) begin
 	if(!rst_n) begin
-		bb_addr_reg <= 0;
+		bb_addr <= 0;
 		count_addr <= 0;
 		count_buffer <= 0;
 		bb_data <= 0;
@@ -92,30 +85,21 @@ always @ (posedge clk) begin
 		count_buffer <= 0;
 		ddr_fifo_req <= 0;
 		bb_data <= 0;
-		cto1 <= 0;
 	end
 	else if (working) begin
 		if(!ddr_fifo_empty) begin
 			ddr_fifo_req <= 1;
-			bb_data <= ddr_fifo_data;
-			if(cto1 == 0) begin
-				bb_addr_reg <= bb_st_addr_reg;
-				cto1 <= cto1 + 1;
-			end
-			else if(count_buffer == (BUFFER_NUM-1) && count_addr == (bias_num_reg-1) ) begin
-				working <= 0;
-				count_addr <= 0;
-				count_buffer <= 0;
-				bb_addr_reg <= 0;
-			end
-			else if(count_addr == (bias_num_reg-1)) begin
-				count_addr <= 0;
-				count_buffer <= count_buffer + 1;
-				bb_addr_reg <= bb_st_addr_reg;
-			end
-			else begin
-				count_addr <= count_addr + 1;
-				bb_addr_reg <= bb_addr_reg + 1;
+			if(ddr_fifo_req) begin
+				bb_data <= ddr_fifo_data;
+				bb_wea <= ff;
+				bb_addr <= bb_addr + 1;
+				if(count_buffer < bias_num_reg) begin
+					count_buffer <= count_buffer + 1;
+				end
+				else begin
+					count_buffer <= 0;
+					working <= 0;
+				end
 			end
 		end
 		else begin
@@ -128,33 +112,6 @@ always @ (posedge clk) begin
 end
 
 
-integer i,j,k;
-always @ (posedge clk) begin
-	if(!rst_n) begin
-		bb_wea <= 0;
-	end
-	else if(working) begin
-		if(cto1 == 0) begin
-			bb_wea <= 0;
-		end
-		else if(!ddr_fifo_empty) begin
-			for (i = 0;i < BUFFER_NUM;i = i + 1) begin
-				if( i == count_buffer) begin
-					bb_wea[i] <= 1;
-				end
-				else begin
-					bb_wea[i] <= 0;
-				end
-			end
-		end
-		else begin
-			bb_wea <= 0;
-		end
-	end
-	else begin
-		bb_wea <= 0;
-	end
-end
   //  The following function calculates the address width based on specified RAM depth
   function integer clogb2;
     input integer depth;

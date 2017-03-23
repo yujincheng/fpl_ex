@@ -32,37 +32,15 @@ module hwcnn_top #(
 	parameter ADDR_LEN_BP = 13,
 	parameter COM_DATALEN = 24,
 	parameter DDR_ADDR_LEN = 32,
-	parameter DDR_DATA_LEN = 64,
+	parameter DDR_DATA_LEN = 512,
 	parameter SINGLE_LEN = 24,
-	     parameter C_AXI_ID_WIDTH           = 4, // The AXI id width used for read and write
-                                             // This is an integer between 1-16
-     parameter C_AXI_ADDR_WIDTH         = 32, // This is AXI address width for all 
-                                              // SI and MI slots
-     parameter C_AXI_DATA_WIDTH         = 32, // Width of the AXI write and read data
+	  parameter APP_DATA_WIDTH   = 512,        // DDR data bus width.
+  parameter APP_ADDR_WIDTH   = 29, 
+	parameter DM_WIDTH = 8,       // Address bus width of the 
+  //parameter RLD_BANK_WIDTH   = 4,         // RLD3 - 4, RLD2 - 3
+  parameter APP_CMD_WIDTH    = 3
   
-     parameter C_AXI_NBURST_SUPPORT     = 0, // Support for narrow burst transfers
-                                             // 1-supported, 0-not supported 
-     parameter C_EN_WRAP_TRANS          = 0, // Set 1 to enable wrap transactions
-
-     parameter C_BEGIN_ADDRESS          = 0, // Start address of the address map
   
-     parameter C_END_ADDRESS            = 32'hFFFF_FFFF, // End address of the address map
-     
-     parameter PRBS_EADDR_MASK_POS      = 32'hFFFFD000,
-
-     parameter PRBS_SADDR_MASK_POS      = 32'h00002000,
-
-     parameter DBG_WR_STS_WIDTH         = 40,
-
-     parameter DBG_RD_STS_WIDTH         = 40,
-  
-     parameter ENFORCE_RD_WR            = 0,
-
-     parameter ENFORCE_RD_WR_CMD        = 8'h11,
-
-     parameter EN_UPSIZER               = 0,
-
-     parameter ENFORCE_RD_WR_PATTERN    = 3'b000
   )(
   
 input wire                                                 clk,
@@ -71,52 +49,32 @@ input wire                                                 rst_n,
 input wire [INST_LEN-1:0] instruct,
 output wire inst_req,
 input wire inst_empty,
-input wire init_calib_complete,
 
-// AXI write address channel signals
-// AXI write address channel signals
-  input                                  axi_awready, // Indicates slave is ready to accept a 
-  output [C_AXI_ID_WIDTH-1:0]            axi_awid,    // Write ID
-  output [C_AXI_ADDR_WIDTH-1:0]          axi_awaddr,  // Write address
-  output [7:0]                           axi_awlen,   // Write Burst Length
-  output [2:0]                           axi_awsize,  // Write Burst size
-  output [1:0]                           axi_awburst, // Write Burst type
-  output                                 axi_awlock,  // Write lock type
-  output [3:0]                           axi_awcache, // Write Cache type
-  output [2:0]                           axi_awprot,  // Write Protection type
-  output                                 axi_awvalid, // Write address valid
-// AXI write data channel signals
-  input                                  axi_wready,  // Write data ready
-  output [C_AXI_DATA_WIDTH-1:0]          axi_wdata,    // Write data
-  output [C_AXI_DATA_WIDTH/8-1:0]        axi_wstrb,    // Write strobes
-  output                                 axi_wlast,    // Last write transaction   
-  output                                 axi_wvalid,   // Write valid  
-// AXI write response channel signals
-  input  [C_AXI_ID_WIDTH-1:0]            axi_bid,     // Response ID
-  input  [1:0]                           axi_bresp,   // Write response
-  input                                  axi_bvalid,  // Write reponse valid
-  output                                 axi_bready,  // Response ready
-// AXI read address channel signals
-  input                                  axi_arready,     // Read address ready
-  output [C_AXI_ID_WIDTH-1:0]            axi_arid,        // Read ID
-  output [C_AXI_ADDR_WIDTH-1:0]          axi_araddr,      // Read address
-  output [7:0]                           axi_arlen,       // Read Burst Length
-  output [2:0]                           axi_arsize,      // Read Burst size
-  output [1:0]                           axi_arburst,     // Read Burst type
-  output                                 axi_arlock,      // Read lock type
-  output [3:0]                           axi_arcache,     // Read Cache type
-  output [2:0]                           axi_arprot,      // Read Protection type
-  output                                 axi_arvalid,     // Read address valid 
-// AXI read data channel signals   
-  input  [C_AXI_ID_WIDTH-1:0]            axi_rid,     // Response ID
-  input  [1:0]                           axi_rresp,   // Read response
-  input                                  axi_rvalid,  // Read reponse valid
-  input  [C_AXI_DATA_WIDTH-1:0]          axi_rdata,   // Read data
-  input                                  axi_rlast,   // Read last
-  output                                 axi_rready  // Read Response ready
+// ********* ALL SIGNALS AT THIS INTERFACE ARE ACTIVE HIGH SIGNALS ********/
+   input 				       init_calib_complete, // MC calibration done signal coming from MC UI.
+   // DDR3/4, RLD3, QDRIIP Shared Interface
+   input 				       app_rdy, // cmd fifo ready signal coming from MC UI.
+   input 				       app_wdf_rdy, // write data fifo ready signal coming from MC UI.
+   input [0:0] 		       app_rd_data_valid, // read data valid signal coming from MC UI
+   input [APP_DATA_WIDTH-1 : 0] 	       app_rd_data, // read data bus coming from MC UI
+   
+   
+   output [APP_CMD_WIDTH-1 : 0] 	       app_cmd, // command bus to the MC UI
+   output [APP_ADDR_WIDTH-1 : 0] 	       app_addr, // address bus to the MC UI
+   output 				       app_en, // command enable signal to MC UI.
+   output [(APP_DATA_WIDTH/DM_WIDTH)-1 : 0]    app_wdf_mask, // write data mask signal which
+                                              // is tied to 0 in this example.
+   output [APP_DATA_WIDTH-1: 0] 	       app_wdf_data, // write data bus to MC UI.
+   output 				       app_wdf_end, // write burst end signal to MC UI
+   output 				       app_wdf_wren, // write enable signal to MC UI
+
+  // QDRIIP Interface
+   output 				       app_wdf_en, // QDRIIP, write enable
+   output [APP_ADDR_WIDTH-1:0] 		       app_wdf_addr, // QDRIIP, write address
+   output [APP_CMD_WIDTH-1:0] 		       app_wdf_cmd // QDRIIP write command
 );
 
-wire [64 - 1:0]                               wfc_wr_data    ;
+wire [64*8 - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
 wire [ADDR_LEN_WB - 1:0]                               wfc_wr_addr ;
 wire [X_PE*2 - 1:0]                                               wfc_wea      ;
 wire                                                wb_wr_ready   ;
@@ -178,7 +136,7 @@ wire [ADDR_LEN_WB - 1:0 ]     wfc_wb_st_addr;
 
 wire [ADDR_LEN_BB - 1:0]           bfc_wr_addr ;
 wire [X_PE/8 - 1:0]        bfc_wea      ;
-wire [64 - 1:0] bfc_data_wr;
+wire [64*8 - 1:0] bfc_data_wr;  //8 here is 512/DATA_LEN
 
 wire [1:0] switch;
 wire [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_bias;
@@ -419,56 +377,33 @@ muxddr mddr(
 
 mig_axi u_axi4_tg_inst
    (
-     .aclk                             (clk),
-     .aresetn                          (rst_n),
+     .clk                             (clk),
+     .rst_n                          (rst_n),
 
 // Input control signals
-     .init_cmptd                       (init_calib_complete),
-     .init_test                        (1'b0),
-     .wdog_mask                        (~init_calib_complete),
-     .wrap_en                          (1'b0),
+     .init_calib_complete                       (init_calib_complete),
+	 
 
-	.axi_awready(axi_awready), 
-	.axi_awid(axi_awid),    
-	.axi_awaddr(axi_awaddr),  
-	.axi_awlen(axi_awlen),   
-	.axi_awsize(axi_awsize),  
-	.axi_awburst(axi_awburst), 
-	.axi_awlock(axi_awlock),  
-	.axi_awcache(axi_awcache), 
-	.axi_awprot(axi_awprot),  
-	.axi_awvalid(axi_awvalid), 
-	
-	.axi_wready(axi_wready),  
-	.axi_wdata(axi_wdata),   
-	.axi_wstrb(axi_wstrb),   
-	.axi_wlast(axi_wlast),   
-	.axi_wvalid(axi_wvalid),  
-	
-	.axi_bid(axi_bid),     
-	.axi_bresp(axi_bresp),   
-	.axi_bvalid(axi_bvalid),  
-	.axi_bready(axi_bready),  
-	
-	.axi_arready(axi_arready), 
-	.axi_arid(axi_arid),    
-	.axi_araddr(axi_araddr),  
-	.axi_arlen(axi_arlen),   
-	.axi_arsize(axi_arsize),  
-	.axi_arburst(axi_arburst), 
-	.axi_arlock(axi_arlock),  
-	.axi_arcache(axi_arcache), 
-	.axi_arprot(axi_arprot),  
-	.axi_arvalid(axi_arvalid), 
-	
-	.axi_rid(axi_rid),     
-	.axi_rresp(axi_rresp),   
-	.axi_rvalid(axi_rvalid),  
-	.axi_rdata(axi_rdata),   
-	.axi_rlast(axi_rlast),   
-	.axi_rready(axi_rready),
-	 
-	 
+
+.app_rdy(app_rdy), // cmd fifo ready signal coming from MC UI.
+.app_wdf_rdy(app_wdf_rdy), // write data fifo ready signal coming from MC UI.
+.app_rd_data_valid(app_rd_data_valid), // read data valid signal coming from MC UI
+.app_rd_data(app_rd_data), // read data bus coming from MC UI
+
+
+.app_cmd(app_cmd), // command bus to the MC UI
+.app_addr(app_addr), // address bus to the MC UI
+.app_en(app_en), // command enable signal to MC UI.
+.app_wdf_mask(app_wdf_mask), // write data mask signal which
+
+.app_wdf_data(app_wdf_data), // write data bus to MC UI.
+.app_wdf_end(app_wdf_end), // write burst end signal to MC UI
+.app_wdf_wren(app_wdf_wren), // write enable signal to MC UI
+
+
+.app_wdf_en(app_wdf_en), // QDRIIP, write enable
+.app_wdf_addr(app_wdf_addr), // QDRIIP, write address
+.app_wdf_cmd(app_wdf_cmd), // QDRIIP write command
 	 
 	 
 	 

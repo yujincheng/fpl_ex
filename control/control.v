@@ -65,6 +65,10 @@ module topcontrol #(
 	input 	wire idle_data_soon,
 	input   wire idle_write_back,
 	
+	input   wire idle_weights_in,
+	input   wire idle_bias_in,
+	input   wire idle_data_in,
+	
 	output	reg [ADDR_LEN_WB - 1:0]      	wb_st_rd_addr ,
 	output	reg                         	wb_rd_conf    ,
 	output	reg [3:0]                   	bsr_iszero    ,
@@ -126,7 +130,8 @@ wire  [4:0                    ]  inst_w2c_shift_len  ;
 wire  [1:0                    ]  inst_w2c_valid_mac  ;
 wire  [0:0                    ]  inst_is_bb_         ;
 wire  [INST_ADDR_LEN - 1:0    ]  inst_bias_addr      ;
-wire  [4:0                    ]  inst_bias_shift     ;
+wire  [5:0                    ]  inst_bias_shift     ;
+wire  [3:0]                      inst_dep;
 
 // load_bias
 wire  [SINGLE_LEN - 1:0]         inst_bfc_bias_num;
@@ -143,7 +148,7 @@ wire  [ADDR_LEN_BB - 1:0] inst_wfc_wb_st_addr;
 
 
 
-assign {inst_bias_shift     ,inst_bias_addr      ,inst_is_bb_         ,inst_w2c_valid_mac  ,inst_w2c_shift_len  ,inst_wb_st_rd_addr  ,inst_pooled_type    ,inst_w2c_pooled     ,inst_w2c_linelen    ,inst_w2c_st_addr    ,inst_is_w2c_back    ,inst_ilc_tofifo     ,inst_ilc_fromfifo   ,inst_bsr_buffermux  ,inst_bsr_iszero     ,inst_ilc_linelen    ,inst_ilc_ispad      ,inst_ilc_st_addr,inst_type} = instruct;
+assign {inst_dep,inst_bias_shift     ,inst_bias_addr      ,inst_is_bb_         ,inst_w2c_valid_mac  ,inst_w2c_shift_len  ,inst_wb_st_rd_addr  ,inst_pooled_type    ,inst_w2c_pooled     ,inst_w2c_linelen    ,inst_w2c_st_addr    ,inst_is_w2c_back    ,inst_ilc_tofifo     ,inst_ilc_fromfifo   ,inst_bsr_buffermux  ,inst_bsr_iszero     ,inst_ilc_linelen    ,inst_ilc_ispad      ,inst_ilc_st_addr,inst_type} = instruct;
 
 
 assign {inst_bfc_bb_st_addr,inst_bfc_ddr_st_addr,inst_bfc_bias_ddr_byte,inst_bfc_bias_num,inst_type_t1} = instruct;
@@ -223,7 +228,7 @@ always @( posedge clk) begin
 					wb_rd_conf <= 0;
 					inst_req <= 0;
 				end
-				else begin
+				else if( ~((inst_dep[0] && ~wfc_idle) || (inst_dep[1] && ~bfc_idle) ) ) begin
 					inst_req <= 1;
 					wb_rd_conf <= 1;
 					wb_st_rd_addr  <= inst_wb_st_rd_addr;
@@ -267,7 +272,7 @@ always @( posedge clk) begin
 		end
 		end
 		else if (inst_type == 4'd1) begin
-			if(wfc_idle) begin
+			if(wfc_idle && bfc_idle) begin
 				if(wfc_conf) begin
 					wfc_conf <= 0;
 					inst_req <= 0;
@@ -291,7 +296,7 @@ always @( posedge clk) begin
 			end
 		end
 		else if (inst_type == 4'd2) begin
-			if(bfc_idle) begin
+			if(bfc_idle && wfc_idle) begin
 				if(bfc_conf) begin
 					bfc_conf <= 0;
 					inst_req <= 0;

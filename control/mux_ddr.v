@@ -23,7 +23,7 @@
 
 module muxddr #(
 	parameter SINGLE_LEN  = 20,
-	parameter DDR_DATA_LEN = 64,
+	parameter DDR_DATA_LEN = 64*8,
 	parameter DDR_ADDR_LEN = 32
   )(
 	input   wire                      clk,

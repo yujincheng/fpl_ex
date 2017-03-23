@@ -14,7 +14,7 @@ module Weight_FIFO_CONTROL#(
 	input wire rst_n,
 	input wire conf,
 	
-	input wire [SINGLE_LEN - 1:0] weight_num, // 需要一次读这么多个weights，weights=9代表所有wb中地址增加九个。在DDR中是连续 9*X_PE*X_MESH byte数
+	input wire [SINGLE_LEN - 1:0] weight_num, // 需要一次读这么多个weights，weights=4代表所有wb中地址增加九个。在DDR中是连续 9*X_PE*X_MESH byte数
 	input wire [SINGLE_LEN - 1:0] weight_ddr_byte, // X_PE*X_MESH*weights
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
@@ -27,11 +27,11 @@ module Weight_FIFO_CONTROL#(
 	
 	input wire ddr_fifo_empty,
 	output reg ddr_fifo_req,
-	input wire [DATA_LEN - 1:0] ddr_fifo_data,
+	input wire [DATA_LEN* 8 - 1:0] ddr_fifo_data, //8 here is 512/DATA_LEN
 	
 	
 	output reg [ADDR_LEN - 1:0] wb_addr,
-	output reg [DATA_LEN - 1:0] wb_data,
+	output reg [DATA_LEN* 8 - 1:0] wb_data, //8 here is 512/DATA_LEN
 	output reg [BUFFER_NUM - 1:0] wb_wea,
 	
 	output wire idle
@@ -63,15 +63,13 @@ end
 reg [ADDR_LEN - 1:0] wb_st_addr_reg;
 reg [ADDR_LEN - 1:0] wb_addr_reg;
 reg [clogb2(BUFFER_NUM) - 1:0] count_buffer;
+reg [clogb2(BUFFER_NUM) - 1:0] count_buffer_next;
 reg [SINGLE_LEN - 1:0] count_addr;
 reg [4 - 1:0] cto9;
 reg [SINGLE_LEN - 1:0] weight_num_reg;
 
-always@ (posedge clk) begin
-	if(!rst_n) begin
-		wb_addr <= 0;
-	end
-	else wb_addr <= wb_addr_reg;
+always@ * begin
+	wb_addr <= wb_addr_reg;
 end
 
 
@@ -80,6 +78,7 @@ always @ (posedge clk) begin
 		wb_addr_reg <= 0;
 		count_addr <= 0;
 		count_buffer <= 0;
+		count_buffer_next <= 0;
 		wb_data <= 0;
 		ddr_fifo_req <= 0;
 		cto9 <= 0;
@@ -91,6 +90,7 @@ always @ (posedge clk) begin
 		count_addr <= 0;
 		weight_num_reg <= weight_num;
 		count_buffer <= 0;
+		count_buffer_next <= 0;
 		ddr_fifo_req <= 0;
 		wb_data <= 0;
 		cto9 <= 0;
@@ -98,32 +98,39 @@ always @ (posedge clk) begin
 	else if (working) begin
 		if(!ddr_fifo_empty) begin
 			ddr_fifo_req <= 1;
-			wb_data <= ddr_fifo_data;
-			if(cto9 == 0) begin
-				wb_addr_reg <= wb_st_addr_reg;
-				cto9 <= cto9 + 1;
-			end
-			else if(count_buffer == (BUFFER_NUM-1) && count_addr == (weight_num_reg-1) && cto9 == 9) begin
-				working <= 0;
-				cto9 <= 0;
-				count_addr <= 0;
-				count_buffer <= 0;
-				wb_addr_reg <= 0;
-			end
-			else if(count_addr == (weight_num_reg-1) && cto9 == 9) begin
-				count_addr <= 0;
-				count_buffer <= count_buffer + 1;
-				cto9 <= 1;
-				wb_addr_reg <= wb_st_addr_reg;
-			end
-			else if(cto9 == 9) begin
-				count_addr <= count_addr + 1;
-				wb_addr_reg <= wb_addr_reg + 1;
-				cto9 <= 1;
-			end
-			else if(cto9 > 0) begin
-				wb_addr_reg <= wb_addr_reg + 1;
-				cto9 <= cto9 + 1;
+			if(ddr_fifo_req) begin
+				wb_data <= ddr_fifo_data;
+				if(cto9 == 0) begin
+					wb_addr_reg <= wb_st_addr_reg;
+					cto9 <= cto9 + 1;
+				end
+				else if(count_buffer == (BUFFER_NUM/8-1) && count_addr == (weight_num_reg-1) && cto9 == 8) begin //8 here is 512/DATA_LEN
+					working <= 0;
+					cto9 <= 0;
+					count_addr <= 0;
+					count_buffer <= 0;
+					wb_addr_reg <= 0;
+				end
+				else if(count_addr == (weight_num_reg-1) && cto9 == 9) begin
+					count_addr <= 0;
+					count_buffer <= count_buffer + 1;
+					cto9 <= 1;
+					wb_addr_reg <= wb_st_addr_reg;
+				end
+				else if(count_addr == (weight_num_reg-1) && cto9 == 8) begin
+					wb_addr_reg <= wb_addr_reg + 1;
+					cto9 <= cto9 + 1;
+					count_buffer_next <= count_buffer_next + 1;
+				end
+				else if(cto9 == 9) begin
+					count_addr <= count_addr + 1;
+					wb_addr_reg <= wb_addr_reg + 1;
+					cto9 <= 1;
+				end
+				else if(cto9 > 0) begin
+					wb_addr_reg <= wb_addr_reg + 1;
+					cto9 <= cto9 + 1;
+				end
 			end
 		end
 		else begin
@@ -142,12 +149,9 @@ always @ (posedge clk) begin
 		wb_wea <= 0;
 	end
 	else if(working) begin
-		if(cto9 == 0) begin
-			wb_wea <= 0;
-		end
-		else if(!ddr_fifo_empty) begin
+		if(!ddr_fifo_empty && ddr_fifo_req) begin
 			for (i = 0;i < BUFFER_NUM;i = i + 1) begin
-				if( i == count_buffer) begin
+				if( i >= 8*count_buffer_next && i <  8*(count_buffer_next+1)) begin //8 here is 512/DATA_LEN
 					wb_wea[i] <= 1;
 				end
 				else begin

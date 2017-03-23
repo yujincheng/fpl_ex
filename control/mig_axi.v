@@ -73,10 +73,10 @@ module mig_axi #(
   parameter APP_ADDR_WIDTH   = 29,        // Address bus width of the 
   //parameter RLD_BANK_WIDTH   = 4,         // RLD3 - 4, RLD2 - 3
   parameter APP_CMD_WIDTH    = 3,
+	parameter DM_WIDTH = 8,
 	 
 	parameter SINGLE_LEN  = 20,
-	parameter DDR_DATA_LEN = 64,
-	parameter DM_WIDTH = 8,
+	parameter DDR_DATA_LEN = 512,
 	parameter DDR_ADDR_LEN = 32
   
 )
@@ -118,24 +118,24 @@ module mig_axi #(
    input wire                          ddr_fifo_req,
    output   wire [DDR_DATA_LEN - 1:0] ddr_fifo_data,
 
-   output reg idle
+   output idle
    
    );
 
    
    
-       output [APP_CMD_WIDTH-1 : 0] 	       reg_app_cmd;      // command bus to the MC UI
-   output [APP_ADDR_WIDTH-1 : 0] 	           reg_app_addr;     // address bus to the MC UI
-   output 				                       reg_app_en;       // command enable signal to MC UI.
-   output [(APP_DATA_WIDTH/DM_WIDTH)-1 : 0]    reg_app_wdf_mask; // write data mask signal which
-   output [APP_DATA_WIDTH-1: 0] 	           reg_app_wdf_data; // write data bus to MC UI.
-   output 				                       reg_app_wdf_end;  // write burst end signal to MC UI
-   output 				                       reg_app_wdf_wren; // write enable signal to MC UI
+       reg [APP_CMD_WIDTH-1 : 0] 	       reg_app_cmd;      // command bus to the MC UI
+   reg [APP_ADDR_WIDTH-1 : 0] 	           reg_app_addr;     // address bus to the MC UI
+   reg 				                       reg_app_en;       // command enable signal to MC UI.
+   reg [(APP_DATA_WIDTH/DM_WIDTH)-1 : 0]    reg_app_wdf_mask; // write data mask signal which
+   reg [APP_DATA_WIDTH-1: 0] 	           reg_app_wdf_data; // write data bus to MC UI.
+   reg 				                       reg_app_wdf_end;  // write burst end signal to MC UI
+   reg 				                       reg_app_wdf_wren; // write enable signal to MC UI
 
                                                                  // QDRIIP Interface
-   output 				                       reg_app_wdf_en;   // QDRIIP; write enable
-   output [APP_ADDR_WIDTH-1:0] 		           reg_app_wdf_addr; // QDRIIP; write address
-   output [APP_CMD_WIDTH-1:0] 		           reg_app_wdf_cmd;  // QDRIIP write command
+   reg 				                       reg_app_wdf_en;   // QDRIIP; write enable
+   reg [APP_ADDR_WIDTH-1:0] 		           reg_app_wdf_addr; // QDRIIP; write address
+   reg [APP_CMD_WIDTH-1:0] 		           reg_app_wdf_cmd;  // QDRIIP write command
    
    assign app_cmd = reg_app_cmd;      
    assign app_addr = reg_app_addr;     
@@ -183,7 +183,8 @@ module mig_axi #(
 				rd_cmd_idle <= 1;
 			end
 			else if(rd_cmd_left >= 1) begin
-				reg_app_addr <= reg_app_addr + 64;
+				rd_cmd_left <= rd_cmd_left - 1;
+				reg_app_addr <= reg_app_addr + 8;
 			end
 		end
     end   
@@ -219,5 +220,16 @@ module mig_axi #(
     end 	
    
    
-
+   xip_fifo_64_64 x6464(
+	  .clk(clk),
+	  .srst(~rst_n),
+	  .din(app_rd_data),
+	  .wr_en(app_rd_data_valid),
+	  .rd_en(ddr_fifo_req),
+	  .dout(ddr_fifo_data),
+	  .full(),
+	  .empty(ddr_fifo_empty)
+	 );
+   
+	assign  idle = rd_cmd_idle & rd_data_idle;
 endmodule
