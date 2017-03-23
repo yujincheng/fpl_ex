@@ -1,3 +1,4 @@
+`timescale 1ps/1ps
 module buffer_shift_register #(
 parameter X_MAC = 4,
 parameter X_MESH = 16,

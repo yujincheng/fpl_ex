@@ -69,305 +69,155 @@
 
 module mig_axi #(
     
-     parameter C_AXI_ID_WIDTH           = 4, // The AXI id width used for read and write
-                                             // This is an integer between 1-16
-     parameter C_AXI_ADDR_WIDTH         = 32, // This is AXI address width for all 
-                                              // SI and MI slots
-     parameter C_AXI_DATA_WIDTH         = 32, // Width of the AXI write and read data
-  
-     parameter C_AXI_NBURST_SUPPORT     = 0, // Support for narrow burst transfers
-                                             // 1-supported, 0-not supported 
-     parameter C_EN_WRAP_TRANS          = 0, // Set 1 to enable wrap transactions
-
-     parameter C_BEGIN_ADDRESS          = 0, // Start address of the address map
-  
-     parameter C_END_ADDRESS            = 32'hFFFF_FFFF, // End address of the address map
-     
-     parameter PRBS_EADDR_MASK_POS      = 32'hFFFFD000,
-
-     parameter PRBS_SADDR_MASK_POS      = 32'h00002000,
-
-     parameter DBG_WR_STS_WIDTH         = 40,
-
-     parameter DBG_RD_STS_WIDTH         = 40,
-  
-     parameter ENFORCE_RD_WR            = 0,
-
-     parameter ENFORCE_RD_WR_CMD        = 8'h11,
-
-     parameter EN_UPSIZER               = 0,
-
-     parameter ENFORCE_RD_WR_PATTERN    = 3'b000,
+  parameter APP_DATA_WIDTH   = 512,        // DDR data bus width.
+  parameter APP_ADDR_WIDTH   = 29,        // Address bus width of the 
+  //parameter RLD_BANK_WIDTH   = 4,         // RLD3 - 4, RLD2 - 3
+  parameter APP_CMD_WIDTH    = 3,
 	 
-	 	parameter SINGLE_LEN  = 20,
+	parameter SINGLE_LEN  = 20,
 	parameter DDR_DATA_LEN = 64,
+	parameter DM_WIDTH = 8,
 	parameter DDR_ADDR_LEN = 32
   
 )
 (
-   input                               aclk,    // AXI input clock
-   input                               aresetn, // Active low AXI reset signal
+// ********* ALL SIGNALS AT THIS INTERFACE ARE ACTIVE HIGH SIGNALS ********/
+   input 				       clk, // memory controller (MC) user interface (UI) clock
+   input 				       rst_n, // MC UI reset signal.
+   input 				       init_calib_complete, // MC calibration done signal coming from MC UI.
+   // DDR3/4, RLD3, QDRIIP Shared Interface
+   input 				       app_rdy, // cmd fifo ready signal coming from MC UI.
+   input 				       app_wdf_rdy, // write data fifo ready signal coming from MC UI.
+   input [0:0] 		       app_rd_data_valid, // read data valid signal coming from MC UI
+   input [APP_DATA_WIDTH-1 : 0] 	       app_rd_data, // read data bus coming from MC UI
+   
+   
+   output [APP_CMD_WIDTH-1 : 0] 	       app_cmd, // command bus to the MC UI
+   output [APP_ADDR_WIDTH-1 : 0] 	       app_addr, // address bus to the MC UI
+   output 				       app_en, // command enable signal to MC UI.
+   output [(APP_DATA_WIDTH/DM_WIDTH)-1 : 0]    app_wdf_mask, // write data mask signal which
+                                              // is tied to 0 in this example.
+   output [APP_DATA_WIDTH-1: 0] 	       app_wdf_data, // write data bus to MC UI.
+   output 				       app_wdf_end, // write burst end signal to MC UI
+   output 				       app_wdf_wren, // write enable signal to MC UI
 
-// Input control signals
-   input                               init_cmptd, // Initialization completed
+  // QDRIIP Interface
+   output 				       app_wdf_en, // QDRIIP, write enable
+   output [APP_ADDR_WIDTH-1:0] 		       app_wdf_addr, // QDRIIP, write address
+   output [APP_CMD_WIDTH-1:0] 		       app_wdf_cmd, // QDRIIP write command
+  
+  
+  
+  // output interface to ddr face
+   input  [DDR_ADDR_LEN - 1:0]   ddr_st_addr_out,
+   input  [SINGLE_LEN - 1:0]     ddr_len,
+   input                         ddr_conf,
 
-// AXI write address channel signals
-  input                                  axi_awready, // Indicates slave is ready to accept a 
-  output [C_AXI_ID_WIDTH-1:0]            axi_awid,    // Write ID
-  output [C_AXI_ADDR_WIDTH-1:0]          axi_awaddr,  // Write address
-  output [7:0]                           axi_awlen,   // Write Burst Length
-  output [2:0]                           axi_awsize,  // Write Burst size
-  output [1:0]                           axi_awburst, // Write Burst type
-  output                                 axi_awlock,  // Write lock type
-  output [3:0]                           axi_awcache, // Write Cache type
-  output [2:0]                           axi_awprot,  // Write Protection type
-  output                                 axi_awvalid, // Write address valid
-// AXI write data channel signals
-  input                                  axi_wready,  // Write data ready
-  output [C_AXI_DATA_WIDTH-1:0]          axi_wdata,    // Write data
-  output [C_AXI_DATA_WIDTH/8-1:0]        axi_wstrb,    // Write strobes
-  output                                 axi_wlast,    // Last write transaction   
-  output                                 axi_wvalid,   // Write valid  
-// AXI write response channel signals
-  input  [C_AXI_ID_WIDTH-1:0]            axi_bid,     // Response ID
-  input  [1:0]                           axi_bresp,   // Write response
-  input                                  axi_bvalid,  // Write reponse valid
-  output                                 axi_bready,  // Response ready
-// AXI read address channel signals
-  input                                  axi_arready,     // Read address ready
-  output [C_AXI_ID_WIDTH-1:0]            axi_arid,        // Read ID
-  output [C_AXI_ADDR_WIDTH-1:0]          axi_araddr,      // Read address
-  output [7:0]                           axi_arlen,       // Read Burst Length
-  output [2:0]                           axi_arsize,      // Read Burst size
-  output [1:0]                           axi_arburst,     // Read Burst type
-  output                                 axi_arlock,      // Read lock type
-  output [3:0]                           axi_arcache,     // Read Cache type
-  output [2:0]                           axi_arprot,      // Read Protection type
-  output                                 axi_arvalid,     // Read address valid 
-// AXI read data channel signals   
-  input  [C_AXI_ID_WIDTH-1:0]            axi_rid,     // Response ID
-  input  [1:0]                           axi_rresp,   // Read response
-  input                                  axi_rvalid,  // Read reponse valid
-  input  [C_AXI_DATA_WIDTH-1:0]          axi_rdata,   // Read data
-  input                                  axi_rlast,   // Read last
-  output                                 axi_rready,  // Read Response ready
 
-// cmd input
-		// output interface to ddr face
-	input  [DDR_ADDR_LEN - 1:0]   ddr_st_addr_out,
-	input  [SINGLE_LEN - 1:0]     ddr_len,
-	input                         ddr_conf,
+   output   wire                      ddr_fifo_empty,
+   input wire                          ddr_fifo_req,
+   output   wire [DDR_DATA_LEN - 1:0] ddr_fifo_data,
+
+   output reg idle
+   
+   );
+
+   
+   
+       output [APP_CMD_WIDTH-1 : 0] 	       reg_app_cmd;      // command bus to the MC UI
+   output [APP_ADDR_WIDTH-1 : 0] 	           reg_app_addr;     // address bus to the MC UI
+   output 				                       reg_app_en;       // command enable signal to MC UI.
+   output [(APP_DATA_WIDTH/DM_WIDTH)-1 : 0]    reg_app_wdf_mask; // write data mask signal which
+   output [APP_DATA_WIDTH-1: 0] 	           reg_app_wdf_data; // write data bus to MC UI.
+   output 				                       reg_app_wdf_end;  // write burst end signal to MC UI
+   output 				                       reg_app_wdf_wren; // write enable signal to MC UI
+
+                                                                 // QDRIIP Interface
+   output 				                       reg_app_wdf_en;   // QDRIIP; write enable
+   output [APP_ADDR_WIDTH-1:0] 		           reg_app_wdf_addr; // QDRIIP; write address
+   output [APP_CMD_WIDTH-1:0] 		           reg_app_wdf_cmd;  // QDRIIP write command
+   
+   assign app_cmd = reg_app_cmd;      
+   assign app_addr = reg_app_addr;     
+   assign app_en = reg_app_en;       
+   assign app_wdf_mask = reg_app_wdf_mask; 
+   assign app_wdf_data = reg_app_wdf_data; 
+   assign app_wdf_end = reg_app_wdf_end;  
+   assign app_wdf_wren = reg_app_wdf_wren; 
+   
+   assign app_wdf_en = reg_app_wdf_en;   
+   assign app_wdf_addr = reg_app_wdf_addr; 
+   assign app_wdf_cmd = reg_app_wdf_cmd;  
+
+
+
+   
+	
+    
+	reg rd_data_idle;
+	reg rd_cmd_idle;
+	reg [20:0] rd_cmd_left;
+	reg [20:0] rd_data_left;
+	
+    always @ (posedge clk) begin
+		if (!rst_n || !init_calib_complete) begin
+			reg_app_cmd <= 0;
+			reg_app_addr <= 0;
+			reg_app_en <= 0;    
+			reg_app_wdf_en <= 0; 
+			reg_app_wdf_addr <= 0;
+			reg_app_wdf_cmd <= 0;	
+			rd_cmd_idle <= 1;
+			rd_cmd_left <= 0;
+		end
+		else if (ddr_conf) begin
+			rd_cmd_idle <= 0;
+			reg_app_cmd <= 1;
+			reg_app_addr <= ddr_st_addr_out;
+			reg_app_en <= 1;
+			rd_cmd_left <= ((ddr_len-1) >> 6);
+		end
+		else if (!rd_cmd_idle && app_rdy) begin
+			if (rd_cmd_left == 0) begin
+				reg_app_en <= 0;
+				rd_cmd_idle <= 1;
+			end
+			else if(rd_cmd_left >= 1) begin
+				reg_app_addr <= reg_app_addr + 64;
+			end
+		end
+    end   
+	
+	always @ (posedge clk) begin
+		if (!rst_n || !init_calib_complete) begin
+			rd_data_idle <= 1;
+			rd_data_left <= 0;
+		end
+		else if (ddr_conf) begin
+			rd_data_idle <= 0;
+			rd_data_left <= ((ddr_len-1) >> 6);
+		end
+		else if (!rd_data_idle && app_rd_data_valid) begin
+			if (rd_data_left >= 1) begin
+				rd_data_left <= rd_data_left - 1;			
+			end
+			else if (rd_data_left < 1) begin
+				rd_data_idle <= 1;			
+			end
+		end
+	end
 	
 	
-	output   wire                      ddr_fifo_empty,
-	input wire                          ddr_fifo_req,
-	output   wire [DDR_DATA_LEN - 1:0] ddr_fifo_data,
-   
-	output reg idle
-   
-);
-
-
-reg [C_AXI_ID_WIDTH-1:0]         reg_axi_arid;        // Read ID
-reg [C_AXI_ADDR_WIDTH-1:0]       reg_axi_araddr;      // Read address
-reg [7:0]                        reg_axi_arlen;       // Read Burst Lengthalways @ (posedge clock) begin
-reg [2:0]                        reg_axi_arsize;      // Read Burst size	if (!aresetn) begin
-reg [1:0]                        reg_axi_arburst;     // Read Burst type		
-reg [1:0]                        reg_axi_arlock;      // Read lock type	end
-reg [3:0]                        reg_axi_arcache;     // Read Cache type
-reg [2:0]                        reg_axi_arprot;      // Read Protection typeend
-reg                              reg_axi_arvalid;     // Read address valid
-
-
-
-  reg [C_AXI_ID_WIDTH-1:0]            reg_axi_awid;    // Write ID
-  reg [C_AXI_ADDR_WIDTH-1:0]          reg_axi_awaddr;  // Write address
-  reg [7:0]                           reg_axi_awlen;   // Write Burst Length
-  reg [2:0]                           reg_axi_awsize;  // Write Burst size
-  reg [1:0]                           reg_axi_awburst; // Write Burst type
-  reg                                 reg_axi_awlock;  // Write lock type
-  reg [3:0]                           reg_axi_awcache; // Write Cache type
-  reg [2:0]                           reg_axi_awprot;  // Write Protection type
-  reg                                 reg_axi_awvalid; // Write address valid
-
-reg                              reg_axi_rready;  // Read Response ready
-
-
-assign  axi_arid = reg_axi_arid;        
-assign  axi_araddr = reg_axi_araddr;      
-assign  axi_arlen = reg_axi_arlen;       
-assign  axi_arsize = reg_axi_arsize;      
-assign  axi_arburst = reg_axi_arburst;     
-assign  axi_arlock = reg_axi_arlock;      
-assign  axi_arcache = reg_axi_arcache;     
-assign  axi_arprot = reg_axi_arprot;      
-assign  axi_arvalid = reg_axi_arvalid;     
-   
-
-assign axi_awid    = reg_axi_awid;      
-assign axi_awaddr  = reg_axi_awaddr;    
-assign axi_awlen   = reg_axi_awlen;     
-assign axi_awsize  = reg_axi_awsize;    
-assign axi_awburst = reg_axi_awburst;   
-assign axi_awlock  = reg_axi_awlock;    
-assign axi_awcache = reg_axi_awcache;   
-assign axi_awprot  = reg_axi_awprot;    
-assign axi_awvalid = reg_axi_awvalid;   
-   
-   
-   
-   
-   
-   
-assign  axi_rready = reg_axi_rready;  
-
-wire [7:0]	burst_arlen = 8;
-wire [31:0] addr_step = (({{28'd0},burst_arlen}+1) << 3);
-
-assign axi_wvalid = 0;
-reg [20-1:0] transleft;
-reg [20-1:0] count_last;
-reg aidle;
-
-always @ (posedge aclk) begin
-	if(!aresetn) begin
-		reg_axi_arid <= 0;       
-		reg_axi_araddr <= 0;     
-		reg_axi_arlen <= 0;      
-		reg_axi_arsize <= 0;     
-		reg_axi_arburst <= 0;    
-		reg_axi_arlock <= 0;     
-		reg_axi_arcache <= 0;    
-		reg_axi_arprot <= 0;     
-		reg_axi_arvalid <= 0;    
-		transleft <= 0;
-		count_last <= 0;
-		aidle <= 1;
-	end
-	else if(ddr_conf) begin
-		aidle <= 0;
-		reg_axi_araddr <= ddr_st_addr_out;
-		reg_axi_arburst <= 2'b01;
-		reg_axi_arsize <= 3'b011;
-		reg_axi_arvalid <= 1;
-		if(ddr_len <= 8) begin
-			reg_axi_arlen <= ddr_len;
-			transleft <= 0;
-			count_last <= 1;
+    always @ (posedge clk) begin
+		if (!rst_n || !init_calib_complete) begin
+			reg_app_wdf_mask <= 0;
+			reg_app_wdf_data <= 0;
+			reg_app_wdf_end <= 0; 
+			reg_app_wdf_wren <= 0;
+				                 
 		end
-		else begin
-			reg_axi_arlen <= 8;
-			transleft <= ddr_len  - 8;
-			count_last <= (ddr_len >> 3);
-		end
-	end
-	else if(!aidle) begin
-		if(transleft > 8) begin
-			if(axi_arvalid & axi_arready) begin
-				transleft <= transleft - 8;
-				reg_axi_araddr <= reg_axi_araddr + 64;
-				reg_axi_arvalid <= 1;
-				reg_axi_arlen <= 8;
-			end
-		end
-		else if(transleft > 0) begin
-			if(reg_axi_arvalid & axi_arready) begin
-				reg_axi_arlen <= transleft;
-				reg_axi_arvalid <= 1;
-				transleft <= 0;
-			end
-		end
-		else if(transleft == 0) begin
-			if(reg_axi_arvalid & axi_arready) begin
-				aidle <= 1;
-				reg_axi_arvalid <= 0;
-			end
-		end
-	end
-end
-
-
-always @ (posedge aclk) begin
-	if(!aresetn) begin
-		reg_axi_awid <= 0;   
-		reg_axi_awaddr <= 0; 
-		reg_axi_awlen <= 0;  
-		reg_axi_awsize <= 0; 
-		reg_axi_awburst <= 0;
-		reg_axi_awlock <= 0; 
-		reg_axi_awcache <= 0;
-		reg_axi_awprot <= 0; 
-		reg_axi_awvalid <= 0;
-	end
-end
-
-reg [3-1:0] now_last;
-reg fifo_wr_en;
-wire fifo_full;
-
-xip_fifo_64_64 f64(
-  .clk(aclk),      // input wire clk
-  .srst(!aresetn),    // input wire srst
-  .din(axi_rdata),      // input wire [63 : 0] din
-  .wr_en(fifo_wr_en),  // input wire wr_en
-  .rd_en(ddr_fifo_req),  // input wire rd_en
-  .dout(ddr_fifo_data),    // output wire [63 : 0] dout
-  .full(fifo_full),    // output wire full
-  .empty(ddr_fifo_empty)  // output wire empty
-);
-
-
-always @ (posedge aclk) begin
-	if(!aresetn ) begin
-		now_last <= 0;
-		idle <= 1;
-	end
-	else if(ddr_conf) begin		
-		idle <= 0;
-	end
-	else if(idle) begin
-		now_last <= 0;
-	end
-	else begin
-		if(axi_rlast) begin
-			if(now_last == count_last - 1) begin
-				idle <= 1;
-			end
-			now_last <= now_last + 1;
-		end
-	end
-end
-
-always @ (posedge aclk) begin
-	if(!aresetn) begin
-		fifo_wr_en <= 0;
-	end
-	else begin
-		if(!idle & axi_rready & axi_rvalid) begin
-			fifo_wr_en <= 1;		
-		end
-		else begin
-			fifo_wr_en <= 0;
-		end
-	end
-end
-
-always @ (posedge aclk) begin
-	if(!aresetn) begin
-		reg_axi_rready <= 0;
-	end
-	else if(axi_rvalid) begin
-		reg_axi_rready <= 1;
-	end
-	else begin
-		reg_axi_rready <= 0;
-	end
-
-end
-
-
-
-
-
+    end 	
+   
+   
 
 endmodule

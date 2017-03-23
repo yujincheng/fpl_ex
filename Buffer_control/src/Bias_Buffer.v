@@ -1,3 +1,4 @@
+`timescale 1ps/1ps
 module BiasBuffer#(
 parameter X_PE = 16,
 parameter ADDR_LEN = 9,

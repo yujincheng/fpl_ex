@@ -1,3 +1,4 @@
+`timescale 1ps/1ps
 module Bias_FIFO_CONTROL#(
 	parameter X_PE = 16,
 	parameter DDR_ADDR_LEN = 32,
