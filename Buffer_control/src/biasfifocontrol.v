@@ -39,13 +39,19 @@ module Bias_FIFO_CONTROL#(
 
 assign idle = !working;
 
+always @ (posedge clk) begin
+	bb_addr <= bb_addr_reg;
+	
+end
+
+
+
 reg working;
 always @ (posedge clk) begin
 	if(!rst_n) begin
 		ddr_conf <= 0;
 		ddr_len <= 0;
 		ddr_st_addr_out <= 0;
-		working <= 0;
 	end
 	else if (conf) begin
 		ddr_st_addr_out <= ddr_st_addr;
@@ -69,12 +75,14 @@ reg [SINGLE_LEN - 1:0] bias_num_reg;
 
 always @ (posedge clk) begin
 	if(!rst_n) begin
-		bb_addr <= 0;
+		bb_addr_reg <= 0;
 		count_addr <= 0;
 		count_buffer <= 0;
 		bb_data <= 0;
 		ddr_fifo_req <= 0;
 		cto1 <= 0;
+		working <= 0;
+		bb_wea <= 0;
 	end
 	else if (conf) begin
 		working <= 1;
@@ -85,15 +93,16 @@ always @ (posedge clk) begin
 		count_buffer <= 0;
 		ddr_fifo_req <= 0;
 		bb_data <= 0;
+		bb_wea <= 0;
 	end
 	else if (working) begin
 		if(!ddr_fifo_empty) begin
 			ddr_fifo_req <= 1;
 			if(ddr_fifo_req) begin
 				bb_data <= ddr_fifo_data;
-				bb_wea <= ff;
-				bb_addr <= bb_addr + 1;
-				if(count_buffer < bias_num_reg) begin
+				bb_addr_reg <= bb_addr_reg + 1;
+				bb_wea <= 8'hff;
+				if(count_buffer < bias_num_reg-1) begin
 					count_buffer <= count_buffer + 1;
 				end
 				else begin
@@ -104,10 +113,12 @@ always @ (posedge clk) begin
 		end
 		else begin
 			ddr_fifo_req <= 0;
+			bb_wea <= 0;
 		end
 	end
 	else begin
 		ddr_fifo_req <= 0;
+		bb_wea <= 0;
 	end
 end
 

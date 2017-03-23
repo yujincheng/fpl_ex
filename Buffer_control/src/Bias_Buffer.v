@@ -11,7 +11,7 @@ parameter DATAWIDTH = BUFFER_NUM*DATA_LEN,
 parameter ADDRWIDTH = BUFFER_NUM*ADDR_LEN
 )(
 
-input wire [DATA_LEN - 1:0]           data_wr                 ,
+input wire [DATA_LEN*BUFFER_NUM - 1:0]           data_wr                 ,
 input wire [ADDR_LEN - 1:0]           wr_addr                 ,
 input wire [BUFFER_NUM - 1:0]         wr_en                   ,
 
@@ -56,11 +56,12 @@ generate
  for (i=0;i<BUFFER_NUM;i = i+1) begin:ass21
 		assign addrb[i*ADDR_LEN +: ADDR_LEN] = addrb_show[i];
 		assign addra[i*ADDR_LEN +: ADDR_LEN] = wr_addr;
-		assign dina[i*DATA_LEN +: DATA_LEN] = data_wr;
 		assign wea[i] = wr_en[i];
 		assign addrb_show[i] = valid_addr;
  end
 endgenerate
+assign dina = data_wr;
+
 
 reg working;
 reg cto1;

@@ -46,7 +46,6 @@ always @ (posedge clk) begin
 		ddr_conf <= 0;
 		ddr_len <= 0;
 		ddr_st_addr_out <= 0;
-		working <= 0;
 	end
 	else if (conf) begin
 		ddr_st_addr_out <= ddr_st_addr;
@@ -81,6 +80,7 @@ always @ (posedge clk) begin
 		count_buffer_next <= 0;
 		wb_data <= 0;
 		ddr_fifo_req <= 0;
+		working <= 0;
 		cto9 <= 0;
 	end
 	else if (conf) begin
