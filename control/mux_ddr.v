@@ -22,7 +22,7 @@
 
 
 module muxddr #(
-	parameter SINGLE_LEN  = 20,
+	parameter SINGLE_LEN  = 24,
 	parameter DDR_DATA_LEN = 64*8,
 	parameter DDR_ADDR_LEN = 32
   )(

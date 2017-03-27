@@ -89,7 +89,7 @@ module example_top #
     parameter nCK_PER_CLK           = 4,   // This parameter is controllerwise
     parameter         APP_DATA_WIDTH          = 512, // This parameter is controllerwise
     parameter         APP_MASK_WIDTH          = 64,   // This parameter is controllerwise
-	parameter INST_LEN = 160,
+	parameter INST_LEN = 220,
   `ifdef SIMULATION_MODE
     parameter SIMULATION            = "TRUE" 
   `else
@@ -214,7 +214,8 @@ wire inst_empty;
 
 
 instfifo_file #(
-.INST_DEEPTH(31),
+.INST_DEEPTH(12000),
+.INST_LEN(INST_LEN),
 .FILE_NAME("..//sim_data//inst.txt")
 )
 instfifo

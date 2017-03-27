@@ -8,7 +8,7 @@ module instfifo_file#(
 	parameter INST_LEN = 160,
 	parameter FILE_NAME = "D://tsinghua//boshi1//nics//huawei_cnn//validate_data//sim_data//inst.txt",
 	parameter INST_DEEPTH = 2,
-	parameter RAM_DEPTH = 10000,
+	parameter RAM_DEPTH = 50000,
 	parameter COM_DATALEN = 24
 )(
 	input   wire clk,
