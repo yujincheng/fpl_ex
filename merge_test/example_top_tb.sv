@@ -82,14 +82,15 @@
     `define SIMULATION_MODE
 `endif
 
-`timescale 1ps/1ps
+`timescale 1ns/1ps
 
-module example_top #
+module example_top_tb #
   (
     parameter nCK_PER_CLK           = 4,   // This parameter is controllerwise
     parameter         APP_DATA_WIDTH          = 512, // This parameter is controllerwise
     parameter         APP_MASK_WIDTH          = 64,   // This parameter is controllerwise
 	parameter INST_LEN = 220,
+	parameter FILE_NAME = "..//sim_data//vgg_19_net.txt",
   `ifdef SIMULATION_MODE
     parameter SIMULATION            = "TRUE" 
   `else
@@ -97,28 +98,6 @@ module example_top #
   `endif
   )
    (
-    input                 sys_rst,       // common port for all controllers
-
-    input                 c0_sys_clk_p,    // This port is controllerwise unless shared across controllers
-    input                 c0_sys_clk_n,    // This port is controllerwise unless shared across controllers
-    output                c0_init_calib_complete,
-    output                c0_data_compare_error,
-
-    // iob<>DDR3 signals
-    output [15:0]          c0_ddr3_addr,
-    output [2:0]          c0_ddr3_ba,
-    output                c0_ddr3_ras_n,
-    output                c0_ddr3_cas_n,
-    output                c0_ddr3_we_n,
-    output [0:0]          c0_ddr3_cke,
-    output [0:0]          c0_ddr3_odt,
-    output [0:0]              c0_ddr3_ck_p,
-    output [0:0]                c0_ddr3_ck_n,
-    output                c0_ddr3_reset_n,
-    output [7:0]          c0_ddr3_dm,      // This port varies based on Data Mask option selection
-    inout  [63:0]          c0_ddr3_dq,
-    inout  [7:0]          c0_ddr3_dqs_p,
-    inout  [7:0]          c0_ddr3_dqs_n
 );
 
   localparam  APP_ADDR_WIDTH = 29;
@@ -139,12 +118,24 @@ module example_top #
   wire                c0_ddr3_app_rd_data_valid;
   wire                c0_ddr3_app_rdy;
   wire                c0_ddr3_app_wdf_rdy;
-  wire                c0_ddr3_clk;
-  wire                c0_ddr3_rst;
+
+  
   wire                             dbg_clk;
   wire                  c0_wr_rd_complete;
+  
+  
+  reg                c0_ddr3_clk;
+  reg                c0_ddr3_rst;
 
-    
+  initial begin
+	c0_ddr3_clk = 0;
+	c0_ddr3_rst = 1;
+	#300 c0_ddr3_rst = 0;
+  end
+  
+  always begin
+  c0_ddr3_clk = #4 ~c0_ddr3_clk;
+  end
 
 
 
@@ -155,58 +146,6 @@ module example_top #
 // for connecting the memory controller to system.
 //***************************************************************************
 
-  // user design top is one instance for all controllers
-ddr3_0  u_ddr3_0
-    (
-     .sys_rst                     (sys_rst),
-     .c0_sys_clk_p                          (c0_sys_clk_p),
-     .c0_sys_clk_n                          (c0_sys_clk_n),
-     .c0_init_calib_complete        (c0_init_calib_complete),
-
-     .c0_ddr3_addr                  (c0_ddr3_addr),
-     .c0_ddr3_ba                    (c0_ddr3_ba),
-     .c0_ddr3_ras_n                 (c0_ddr3_ras_n),
-     .c0_ddr3_cas_n                 (c0_ddr3_cas_n),
-     .c0_ddr3_we_n                  (c0_ddr3_we_n),
-     .c0_ddr3_cke                   (c0_ddr3_cke),
-     .c0_ddr3_odt                   (c0_ddr3_odt),
-     .c0_ddr3_ck_p                  (c0_ddr3_ck_p),
-     .c0_ddr3_ck_n                  (c0_ddr3_ck_n),
-     .c0_ddr3_reset_n               (c0_ddr3_reset_n),
-     .c0_ddr3_dm                    (c0_ddr3_dm),
-     .c0_ddr3_dq                    (c0_ddr3_dq),
-     .c0_ddr3_dqs_p                 (c0_ddr3_dqs_p),
-     .c0_ddr3_dqs_n                 (c0_ddr3_dqs_n),
-
-     .c0_ddr3_ui_clk                (c0_ddr3_clk),
-     .c0_ddr3_ui_clk_sync_rst       (c0_ddr3_rst),
-     .dbg_clk                                    (dbg_clk),
-
-     .c0_ddr3_app_addr              (c0_ddr3_app_addr),
-     .c0_ddr3_app_cmd               (c0_ddr3_app_cmd),
-     .c0_ddr3_app_en                (c0_ddr3_app_en),
-     .c0_ddr3_app_hi_pri            (1'b0),
-     .c0_ddr3_app_wdf_data          (c0_ddr3_app_wdf_data),
-     .c0_ddr3_app_wdf_end           (c0_ddr3_app_wdf_end),
-     .c0_ddr3_app_wdf_mask          (c0_ddr3_app_wdf_mask),
-     .c0_ddr3_app_wdf_wren          (c0_ddr3_app_wdf_wren),
-     .c0_ddr3_app_rd_data           (c0_ddr3_app_rd_data),
-     .c0_ddr3_app_rd_data_end       (c0_ddr3_app_rd_data_end),
-     .c0_ddr3_app_rd_data_valid     (c0_ddr3_app_rd_data_valid),
-     .c0_ddr3_app_rdy               (c0_ddr3_app_rdy),
-     .c0_ddr3_app_wdf_rdy           (c0_ddr3_app_wdf_rdy)
-                                        
-
-  );
-
-//***************************************************************************
-// The example testbench module instantiated below drives traffic (patterns)
-// on the application interface of the memory controller
-//***************************************************************************
-// In DDR3, there are two test generators (TG) available for user to select:
-//  1) Simple Test Generator (STG)
-//  2) Advanced Test Generator (ATG)
-// 
 
    wire [INST_LEN-1:0] instruct;
  wire inst_req;   
@@ -214,9 +153,9 @@ wire inst_empty;
 
 
 instfifo_file #(
-.INST_DEEPTH(12000),
+.INST_DEEPTH(400000),
 .INST_LEN(INST_LEN),
-.FILE_NAME("..//sim_data//inst.txt")
+.FILE_NAME(FILE_NAME)
 )
 instfifo
 (
@@ -224,7 +163,7 @@ instfifo
 	.inst_req(inst_req),
 	.inst_empty(inst_empty),
 	.clk(c0_ddr3_clk),
-	.rst_n(~c0_ddr3_rst  & c0_init_calib_complete)
+	.rst_n(~c0_ddr3_rst  & 1)
 );
 
 
@@ -243,22 +182,8 @@ instfifo
 			.inst_req(inst_req),
 			.inst_empty(inst_empty),
          .clk                  (c0_ddr3_clk),
-         .rst_n                 (~c0_ddr3_rst & c0_init_calib_complete),
-         .init_calib_complete  (c0_init_calib_complete),
-         .app_rdy              (c0_ddr3_app_rdy),
-         .app_wdf_rdy          (c0_ddr3_app_wdf_rdy),
-         .app_rd_data_valid    (c0_ddr3_app_rd_data_valid),
-         .app_rd_data          (c0_ddr3_app_rd_data),
-         .app_cmd              (c0_ddr3_app_cmd),
-         .app_addr             (c0_ddr3_app_addr),
-         .app_en               (c0_ddr3_app_en),
-         .app_wdf_mask         (c0_ddr3_app_wdf_mask),
-         .app_wdf_data         (c0_ddr3_app_wdf_data),
-         .app_wdf_end          (c0_ddr3_app_wdf_end),
-         .app_wdf_wren         (c0_ddr3_app_wdf_wren),
-         .app_wdf_en           (), // valid for QDRII+ only
-         .app_wdf_addr         (), // valid for QDRII+ only
-         .app_wdf_cmd          () // valid for QDRII+ only
+         .rst_n                 (~c0_ddr3_rst & 1),
+         .init_calib_complete  (1)
         
          );
 

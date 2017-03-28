@@ -6,7 +6,6 @@ module Weight_FIFO_CONTROL#(
 	parameter ADDR_LEN = 16,
 	parameter DATA_LEN = 64,
 	parameter MUXCONTROL = 4,
-	parameter RAM_DEPTH = 2**ADDR_LEN,
 	parameter SINGLE_LEN = 24,
 	parameter BUFFER_NUM = 8*X_PE*X_MESH/(DATA_LEN)
 )(
@@ -14,7 +13,7 @@ module Weight_FIFO_CONTROL#(
 	input wire rst_n,
 	input wire conf,
 	
-	input wire [SINGLE_LEN - 1:0] weight_num, // 需要一次读这么多个weights，weights=4代表所有wb中地址增加九个。在DDR中是连续 9*X_PE*X_MESH byte数
+	input wire [SINGLE_LEN - 1:0] weight_num, // 需要一次读这么多个weights，weights=1代表所有wb中地址增加4个。在DDR中是连续 9*X_PE*X_MESH byte数
 	input wire [SINGLE_LEN - 1:0] weight_ddr_byte, // X_PE*X_MESH*weights
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,

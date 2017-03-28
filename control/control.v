@@ -25,7 +25,7 @@ module topcontrol #(
 	parameter X_PE = 16,
 	parameter X_MAC = 4,
 	parameter X_MESH = 16,
-	parameter ADDR_LEN_WB = 6,
+	parameter ADDR_LEN_WB = 10,
 	parameter ADDR_LEN_BP = 13,
 	parameter ADDR_LEN_BB = 7,
 	parameter INST_LEN = 220,
