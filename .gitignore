@@ -2,3 +2,4 @@ scheduler/data*
 scheduler/models*
 scheduler/insts*
 *.pyc
+*.html

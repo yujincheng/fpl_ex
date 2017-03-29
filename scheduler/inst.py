@@ -491,8 +491,8 @@ if __name__ == '__main__':
     #layer1.set_param(16, (7,7), 0, 0, 1, 16, 1)
     #net = [layer1]
 
-    net = vgg19_net_fused()
-    
+    net = vgg19_net()
+    set_trace()
     hardware_config = split.HardwareConfig(config.hardware_config)
     #split.split_net(net, hardware_config)
     scheduler = Scheduler(net, hardware_config)

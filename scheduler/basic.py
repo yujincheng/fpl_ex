@@ -82,6 +82,9 @@ class Layerparam(object):
         return ceil_to(self.input_channel, INPUT_PARALL) * \
             ceil_to(self.output_channel, OUTPUT_PARALL) * \
             KERNEL_SIZE * KERNEL_SIZE
+    def bram_parall_wsize(self):
+        return ceil_to(self.input_channel, INPUT_PARALL) * \
+            OUTPUT_PARALL * KERNEL_SIZE * KERNEL_SIZE
     def bram_bsize(self):
         return ceil_to(self.output_channel, OUTPUT_PARALL)
 
