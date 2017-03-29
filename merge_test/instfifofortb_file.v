@@ -5,10 +5,10 @@ module instfifo_file#(
 	parameter X_MESH = 16,
 	parameter ADDR_LEN_W = 9,
 	parameter ADDR_LEN_D = 9,
-	parameter INST_LEN = 160,
+	parameter INST_LEN = 220,
 	parameter FILE_NAME = "D://tsinghua//boshi1//nics//huawei_cnn//validate_data//sim_data//inst.txt",
 	parameter INST_DEEPTH = 2,
-	parameter RAM_DEPTH = 10000,
+	parameter RAM_DEPTH = 500000,
 	parameter COM_DATALEN = 24
 )(
 	input   wire clk,
@@ -43,12 +43,12 @@ reg [INST_LEN-1:0] inst_reg[RAM_DEPTH - 1:0];
 generate
 if (FILE_NAME != "") begin: use_init_file
   initial
-	$readmemh(FILE_NAME, inst_reg, 0, INST_DEEPTH-1);
+       $readmemh(FILE_NAME, inst_reg, 0, INST_DEEPTH-1);
 end else begin: init_bram_to_zero
   integer ram_index;
   initial
-	for (ram_index = 0; ram_index < RAM_DEPTH ; ram_index = ram_index + 1)
-	  inst_reg[ram_index] = {INST_LEN{1'b0}};
+       for (ram_index = 0; ram_index < RAM_DEPTH ; ram_index = ram_index + 1)
+        inst_reg[ram_index] = {INST_LEN{1'b0}};
 end
 endgenerate
 	

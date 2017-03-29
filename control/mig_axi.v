@@ -75,7 +75,7 @@ module mig_axi #(
   parameter APP_CMD_WIDTH    = 3,
 	parameter DM_WIDTH = 8,
 	 
-	parameter SINGLE_LEN  = 20,
+	parameter SINGLE_LEN  = 24,
 	parameter DDR_DATA_LEN = 512,
 	parameter DDR_ADDR_LEN = 32
   
@@ -156,8 +156,8 @@ module mig_axi #(
     
 	reg rd_data_idle;
 	reg rd_cmd_idle;
-	reg [20:0] rd_cmd_left;
-	reg [20:0] rd_data_left;
+	reg [SINGLE_LEN - 1:0] rd_cmd_left;
+	reg [SINGLE_LEN - 1:0] rd_data_left;
 	
     always @ (posedge clk) begin
 		if (!rst_n || !init_calib_complete) begin
