@@ -45,6 +45,11 @@ class Layerparam(object):
         self.output_channel = oc
         self.split = sp
 
+    def ops(self):
+        return self.shape[0] * self.shape[1] * KERNEL_SIZE * KERNEL_SIZE * \
+            self.output_channel * self.input_channel
+    	
+
     def outshape(self):
         size_change =  - KERNEL_SIZE + 1 + 2 * self.padding
         o_shape = (self.shape[0] + size_change, self.shape[1] + size_change)
@@ -155,6 +160,7 @@ class Inst(object):
     params_list = [
     	OrderedDict([ # compute
 	        ('inst_type',4),
+	        #('inst_depend',1), # whether need to wait the last inst
 	        ('ilc_st_addr', ADDR_LENGTH * 4),
 	        ('ilc_ispad',1),
 	        ('ilc_linelen',9), # include padding
@@ -193,11 +199,14 @@ class Inst(object):
             p = INST_LEN
             v = self.params.values()
             for i in range(len(args)):
-                #print 'setting ' + str(Inst.params.keys()[i]) + ' = ' + str(args[i])
-                self.inst[p - v[i] : p] = args[i]
-                p = p - v[i]
+                try:
+                    self.inst[p - v[i] : p] = args[i]
+                    p = p - v[i]
+                except:
+                    print 'in the '+str(i) + 'th argument'
         else:
             print 'wrong number of args'
+            set_trace()
             raise Exception()
             for param in kwargs:
                 self.set_param(param, kwargs[param])

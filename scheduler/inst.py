@@ -17,8 +17,8 @@ class Scheduler():
         self.config = config
 
         #initializing BRAMs ?
-        self.brams = [Bram(config['bram_length'], DATA_BRAM_WIDTH) for i in range(4)]
-        self.bram = Bram(config['bram_length'], DATA_BRAM_WIDTH)
+        self.brams = [Bram(config.bram_length, DATA_BRAM_WIDTH) for i in range(4)]
+        self.bram = Bram(config.bram_length, DATA_BRAM_WIDTH)
         self.last_inst = [None] * len(net) # The last executed inst of each layer
         self.blob_addr = [None] * (len(net) + 1) # The start addr of each layer's data
         self.blob_addr[0] = 0
@@ -76,6 +76,10 @@ class Scheduler():
         addr += output_channel_index // OUTPUT_PARALL * KERNEL_SIZE * KERNEL_SIZE * \
             ceil_div(self.net[layer_index].input_channel, INPUT_PARALL)
         addr += input_channel_index // INPUT_PARALL * KERNEL_SIZE * KERNEL_SIZE
+        
+        # for test
+        addr %= self.config.bram_length
+
         return addr
 
     def calc_net(self):
@@ -137,11 +141,8 @@ class Scheduler():
         insts = []
         # consider pooling layer
         row_tail = row_index + 4 - self.net[start_index].padding # not include padding
-        
         for i in range(start_index, end_index):
-            #set_trace()
-            #print i
-            if self.next_row[i] + 4 >  min(row_tail, self.net[i].shape[0] + self.net[i].padding * 2):
+            if self.next_row[i] + 4 >  min(row_tail + self.net[start_index].padding, self.net[i].shape[0] + self.net[i].padding * 2 + 1):
                 row_tail -= 2
                 if self.net[i].pooling:
                     row_tail /= 2
@@ -187,8 +188,7 @@ class Scheduler():
 
 
     def layer_next2row(self, layer_index, row_index):
-        if layer_index == 4:
-            print row_index
+        
         layer = self.net[layer_index]
         insts = []
         last = self.last_inst[layer_index]
@@ -462,46 +462,46 @@ def vgg19_net():
     net[15].set_param(512, (14, 14), 1, 1, 1, 512, 1)
     return net
 
+def fusenet(net):
+    for layer in net:
+        layer.split = 0
+    net[-1].split = 1
+    return net
+
+def vgg19_net_fused():
+    return fusenet(vgg19_net())
+
+
+def vgg19_first5layer():
+    net = vgg19_net()
+    return net[:5]
+
+def vgg19_first5layer_fused():
+    return fusenet(vgg19_first5layer())
 
 if __name__ == '__main__':
     '''
     inst = Inst()
     t = BitArray('uint:9=511,uint:9=511,uint:9=511,uint:9=511')
-
     inst.set_inst(0, 0, 64, 0, 0b11100100, 0, 1, 1, t.uint, 62, 0, 0, 0, 8, 0)
-    with open('inst.txt','w') as fout:
-        inst.write_file(fout)
     '''
-    # layer1 = Layerparam()
-    # net = [layer1]
-    
-    net = vgg19_net()
 
+    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
+    #layer1 = Layerparam()
+    #layer1.set_param(16, (7,7), 0, 0, 1, 16, 1)
+    #net = [layer1]
+
+    net = vgg19_net_fused()
+    
     hardware_config = split.HardwareConfig(config.hardware_config)
-    split.split_net(net, hardware_config)
-
-
-    data_byte = net[0].bram_datasize() + net[5].bram_datasize()
-    
-
-    net = net[0:5]
-    net[4].split = 1
-    net[3].split = 0
-    
-    w_byte = 0
-    b_byte = 0
-    
-    for i in range(5):
-        w_byte += net[i].bram_wsize()
-        b_byte += net[i].bram_bsize()
-    set_trace()
-
-    scheduler = Scheduler(net, config.hardware_config)
+    #split.split_net(net, hardware_config)
+    scheduler = Scheduler(net, hardware_config)
+    #set_trace()
     insts = scheduler.calc_net()
-    
-    set_trace()
 
-    with open('testinst.txt','w') as fout:
+    with open('insts/vgg_19_net_fused.txt','w') as fout:
         for inst in insts:
             inst.write_file(fout)
+
+    print 'insts successfully written'
 
