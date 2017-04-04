@@ -462,6 +462,71 @@ def vgg19_net():
     net[15].set_param(512, (14, 14), 1, 1, 1, 512, 1)
     return net
 
+def vggc_net():
+    net = [Layerparam() for i in range(16)]
+    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
+    net[0].set_param(3, (224, 224), 0, 0, 1, 64, 1)
+    net[1].set_param(64, (224, 224), 1, 1, 1, 64, 1)
+    net[2].set_param(64, (112, 112), 0, 0, 1, 128, 1)
+    net[3].set_param(128, (112, 112), 1, 1, 1, 128, 1)
+    net[4].set_param(128, (56, 56), 0, 0, 1, 256, 1)
+    net[5].set_param(256, (56, 56), 0, 0, 1, 256, 1)
+    net[7].set_param(256, (56, 56), 1, 1, 1, 256, 1)
+    net[8].set_param(256, (28, 28), 0, 0, 1, 512, 1)
+    net[9].set_param(512, (28, 28), 0, 0, 1, 512, 1)
+    net[11].set_param(512, (28, 28), 1, 1, 1, 512, 1)
+    net[12].set_param(512, (14, 14), 0, 0, 1, 512, 1)
+    net[13].set_param(512, (14, 14), 0, 0, 1, 512, 1)
+    net[15].set_param(512, (14, 14), 1, 1, 1, 512, 1)
+    return net
+
+def vggd_net(): # not supported 
+    net = [Layerparam() for i in range(13)]
+    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
+    net[0].set_param(3, (224, 224), 0, 0, 1, 64, 1)
+    net[1].set_param(64, (224, 224), 1, 1, 1, 64, 1)
+    net[2].set_param(64, (112, 112), 0, 0, 1, 128, 1)
+    net[3].set_param(128, (112, 112), 1, 1, 1, 128, 1)
+    net[4].set_param(128, (56, 56), 0, 0, 1, 256, 1)
+    net[5].set_param(256, (56, 56), 0, 0, 1, 256, 1)
+    net[6].set_param(256, (56, 56), 1, 1, 1, 256, 1)
+    net[7].set_param(256, (28, 28), 0, 0, 1, 512, 1)
+    net[8].set_param(512, (28, 28), 0, 0, 1, 512, 1)
+    net[9].set_param(512, (28, 28), 1, 1, 1, 512, 1)
+    net[10].set_param(512, (14, 14), 0, 0, 1, 512, 1)
+    net[11].set_param(512, (14, 14), 0, 0, 1, 512, 1)
+    net[12].set_param(512, (14, 14), 1, 1, 1, 512, 1)
+    return net
+
+
+def vggb_net():
+    net = [Layerparam() for i in range(10)]
+    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
+    net[0].set_param(3, (224, 224), 0, 0, 1, 64, 1)
+    net[1].set_param(64, (224, 224), 1, 1, 1, 64, 1)
+    net[2].set_param(64, (112, 112), 0, 0, 1, 128, 1)
+    net[3].set_param(128, (112, 112), 1, 1, 1, 128, 1)
+    net[4].set_param(128, (56, 56), 0, 0, 1, 256, 1)
+    net[5].set_param(256, (56, 56), 1, 1, 1, 256, 1)
+    net[6].set_param(256, (28, 28), 0, 0, 1, 512, 1)
+    net[7].set_param(512, (28, 28), 1, 1, 1, 512, 1)
+    net[8].set_param(512, (14, 14), 0, 0, 1, 512, 1)
+    net[9].set_param(512, (14, 14), 1, 1, 1, 512, 1)
+    return net
+
+def vgga_net():
+    net = [Layerparam() for i in range(8)]
+    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
+    net[0].set_param(3, (224, 224), 1, 1, 1, 64, 1)
+    net[1].set_param(128, (112, 112), 1, 1, 1, 128, 1)
+    net[2].set_param(128, (56, 56), 0, 0, 1, 256, 1)
+    net[3].set_param(256, (56, 56), 1, 1, 1, 256, 1)
+    net[4].set_param(256, (28, 28), 0, 0, 1, 512, 1)
+    net[5].set_param(512, (28, 28), 1, 1, 1, 512, 1)
+    net[6].set_param(512, (14, 14), 0, 0, 1, 512, 1)
+    net[7].set_param(512, (14, 14), 1, 1, 1, 512, 1)
+    return net
+
 def fusenet(net):
     for layer in net:
         layer.split = 0
@@ -479,6 +544,45 @@ def vgg19_first5layer():
 def vgg19_first5layer_fused():
     return fusenet(vgg19_first5layer())
 
+def print_net(net, flayer = []):
+    #full data io
+    data = 0
+    for i in range(1,len(net)):
+        data += 2 * net[i].bram_datasize()
+    data += net[0].datasize() + net[-1].bram_outsize()
+    print 'Full data: ', str(data)
+
+    #new full data io
+    data = 0
+    data += net[0].datasize() + net[-1].bram_outsize()
+    print 'New Fused data: ', str(data)
+    data += net[1].bram_datasize()
+    print 'New Full data: ', str(data)
+
+
+    weight = 0
+    for i in range(len(net)):
+        weight += net[i].wsize()
+    print 'Weights: ', str(weight)
+
+    #all fused data
+    data = [layer.bram_datasize() for layer in net]
+    data.append(net[-1].bram_outsize())
+    data[0] = net[0].datasize()
+    fused_data = 0
+    for i in range(len(flayer)):
+        if i == 0 or i == len(flayer)-1:
+            fused_data += data[flayer[i]]
+        else:
+            fused_data += data[flayer[i]] * 2
+    print 'Fused Data: ', str(fused_data)
+
+    # ops
+    ops = 0
+    for layer in net:
+        ops += layer.ops()
+    print 'ops: ', str(ops)
+
 if __name__ == '__main__':
     '''
     inst = Inst()
@@ -491,17 +595,43 @@ if __name__ == '__main__':
     #layer1.set_param(16, (7,7), 0, 0, 1, 16, 1)
     #net = [layer1]
 
-    net = vgg19_net()
+    net = {}
+    net['E'] = vgg19_net()
+    net['D'] = vggd_net()
+    net['B'] = vggb_net()
+    net['A'] = vgga_net()
+
+    fblob = {}
+    fblob['E'] = [0,4] + range(8,17)
+    fblob['D'] = [0] + range(7,14)
+    fblob['B'] = [0] + range(6,11)
+    fblob['A'] = [0] + range(4,9)
+
+
+    for i in net:
+        print 'Net VGG_' + i + ' : '
+        print_net(net[i],fblob[i])
+        print ''
+
     set_trace()
     hardware_config = split.HardwareConfig(config.hardware_config)
     #split.split_net(net, hardware_config)
-    scheduler = Scheduler(net, hardware_config)
+    #scheduler = Scheduler(net, hardware_config)
     #set_trace()
-    insts = scheduler.calc_net()
+    #insts = scheduler.calc_net()
+    
+    for i in net:
+        scheduler = Scheduler(net[i], hardware_config)
+        insts = scheduler.calc_net()
+        with open('insts/VGG-' + i + '.txt','w') as fout:
+            for inst in insts:
+                inst.write_file(fout)
+        print 'VGG-' + i + ' successfully written'
 
+    '''
     with open('insts/vgg_19_net_fused.txt','w') as fout:
         for inst in insts:
             inst.write_file(fout)
-
+    '''
     print 'insts successfully written'
 
