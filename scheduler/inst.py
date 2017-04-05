@@ -10,7 +10,6 @@ import split
 
 
 
-
 class Scheduler():
     def __init__(self, net, config):
         self.net = net
@@ -619,7 +618,23 @@ if __name__ == '__main__':
     #scheduler = Scheduler(net, hardware_config)
     #set_trace()
     #insts = scheduler.calc_net()
-    
+
+    #
+    #code py yujincheng
+    #     
+    print "data:"
+    for layer in net['E']:
+        print layer.outsize();
+    print "weights:"
+    for layer in net['E']:
+        print layer.wsize();
+        
+    #
+    #
+    #
+
+
+
     for i in net:
         scheduler = Scheduler(net[i], hardware_config)
         insts = scheduler.calc_net()
