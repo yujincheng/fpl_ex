@@ -461,14 +461,15 @@ BufferPool#(
 .X_MAC(X_MAC),
 .X_MESH(X_MESH),
 .ADDR_LEN(ADDR_LEN_BP)
-) bp (
+) bp /* synthesis syn_keep = 1 */
+ (
     .dina(dina),
     .addra(addra),
     .wea(wea),
     .doutb(doutb),
     .addrb(addrb),
     .clk(clk)
-);
+); /* synthesis syn_keep = 1 */
 
 buffer_shift_register#(
 .X_MAC(X_MAC),
