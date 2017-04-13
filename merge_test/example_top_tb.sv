@@ -90,7 +90,7 @@ module example_top_tb #
     parameter         APP_DATA_WIDTH          = 512, // This parameter is controllerwise
     parameter         APP_MASK_WIDTH          = 64,   // This parameter is controllerwise
 	parameter INST_LEN = 220,
-	parameter FILE_NAME = "..//sim_data//VGG-D.txt",
+	parameter FILE_NAME = "..//sim_data//inst.txt",
   `ifdef SIMULATION_MODE
     parameter SIMULATION            = "TRUE" 
   `else

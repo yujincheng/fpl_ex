@@ -20,5 +20,5 @@ B1C0R0, B1C16R0, ... B1C48R0, B2C0R0 ...
 - vgg-e 前五层fused
 - vgg-e 前五层不fused
 - vgg-e 全19层fused
-- face alignment 全
+- face alignent 全
 - YOLO 全

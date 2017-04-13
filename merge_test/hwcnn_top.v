@@ -89,11 +89,26 @@ wire[8 - 1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][8:0];
 wire [32*X_MAC*X_MESH-1:0]                                dwire;
 wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
 
-wire  [X_MAC*X_MESH-1:0]                              wea;
 wire [32*X_MAC*X_MESH-1:0]                                doutb;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addrb;
+
+
+
+wire  [X_MAC*X_MESH-1:0]                              w2c_wea;
+wire [32*X_MAC*X_MESH-1:0] 							w2c_dina;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
+
+wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
+wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
+
+wire  [X_MAC*X_MESH-1:0]                              wea;
 wire [32*X_MAC*X_MESH-1:0] 							dina;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
+
+
+
+
 wire [32-1:0] dina_show[X_MESH-1:0][X_MAC-1:0  ];
 wire [32-1:0] doutb_show[X_MESH-1:0][X_MAC-1:0];
 wire wea_show[X_MESH-1:0][X_MAC-1:0                  ];
@@ -133,6 +148,12 @@ wire [SINGLE_LEN - 1:0  ]     wfc_weight_ddr_byte;
 wire [DDR_ADDR_LEN - 1:0]     wfc_ddr_st_addr;
 wire [ADDR_LEN_WB - 1:0 ]     wfc_wb_st_addr;
 
+
+wire 							dfc_conf;
+wire [SINGLE_LEN - 1:0  ]     dfc_data_width; // 
+wire [SINGLE_LEN - 1:0  ]     dfc_data_ddr_byte;
+wire [DDR_ADDR_LEN - 1:0]     dfc_ddr_st_addr;
+wire [ADDR_LEN_BP - 1:0 ]     dfc_data_st_addr;
 
 wire [ADDR_LEN_BB - 1:0]           bfc_wr_addr ;
 wire [X_PE/8 - 1:0]        bfc_wea      ;
@@ -176,7 +197,7 @@ generate
        for (j =0;j<X_MAC;j=j+1) begin:assh
             assign doutb_show[i][j] = doutb[j*32+i*32*X_MAC +: 32] ;
             assign dina_show[i][j] = dina[j*32+i*32*X_MAC +: 32] ;
-            assign wea_show[i][j] = wea[j+i*X_MAC];
+            assign wea_show[i][j] = w2c_wea[j+i*X_MAC];
             assign addrb_show[i][j] = addrb[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
             assign addra_show[i][j] = addra[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
             assign dwire_show[i][j] = dwire[j*32+i*32*X_MAC +: 32] ;
@@ -253,6 +274,13 @@ topcontrol#(
 	.wfc_weight_ddr_byte(wfc_weight_ddr_byte),
 	.wfc_ddr_st_addr(wfc_ddr_st_addr),
 	.wfc_wb_st_addr(wfc_wb_st_addr),
+	
+	.dfc_idle(dfc_idle),
+	.dfc_conf(dfc_conf),
+	.dfc_data_width(dfc_data_width), // 
+	.dfc_data_ddr_byte(dfc_data_ddr_byte),
+	.dfc_ddr_st_addr(dfc_ddr_st_addr),
+	.dfc_data_st_addr(dfc_data_st_addr),
 	
 	.switch(switch)
 	
@@ -336,6 +364,46 @@ Weight_FIFO_CONTROL #(
 .idle(wfc_idle)
 );
 
+
+BP_FIFO_CONTROL #(
+.ADDR_LEN   (ADDR_LEN_BP  )
+)dfc(
+.clk       (clk       ),
+.rst_n     (rst_n),
+
+.Line_width(dfc_data_width), // line/4
+.data_ddr_byte(dfc_data_ddr_byte), // line*16*2
+.ddr_st_addr(dfc_ddr_st_addr),
+.BP_st_addr(dfc_data_st_addr),
+
+.BP_st_num(3),
+
+.ddr_st_addr_out(ddr_st_addr_out_data),
+.ddr_len(ddr_len_data),
+.ddr_conf(ddr_conf_data),
+
+.ddr_fifo_empty (ddr_fifo_empty_data),
+.ddr_fifo_req   (ddr_fifo_req_data),
+.ddr_fifo_data  (ddr_fifo_data_data),
+
+
+.conf  (dfc_conf),
+.BP_wea (dfc_BP_wea),
+.BP_addr_out (dfc_BP_addra),
+.BP_data_out (dfc_BP_dina),
+
+.idle(dfc_idle)
+
+);
+
+
+assign dina = (!dfc_idle) ? dfc_BP_dina : w2c_dina;
+assign addra = (!dfc_idle) ? dfc_BP_addra : w2c_addra;
+assign wea = (!dfc_idle) ? dfc_BP_wea : w2c_wea;
+
+
+
+
 muxddr mddr(
 .clk(clk),
 .rst_n(rst_n),
@@ -360,18 +428,18 @@ muxddr mddr(
 .ddr_fifo_data_bias(ddr_fifo_data_bias),
 
 .ddr_st_addr_out_weights(ddr_st_addr_out_weights),
-.ddr_len_weights(ddr_len_weights),
-.ddr_conf_weights(ddr_conf_weights),
-.ddr_fifo_empty_weights(ddr_fifo_empty_weights),
-.ddr_fifo_req_weights(ddr_fifo_req_weights),
-.ddr_fifo_data_weights(ddr_fifo_data_weights)
+.ddr_len_weights        (ddr_len_weights),
+.ddr_conf_weights       (ddr_conf_weights),
+.ddr_fifo_empty_weights (ddr_fifo_empty_weights),
+.ddr_fifo_req_weights   (ddr_fifo_req_weights),
+.ddr_fifo_data_weights  (ddr_fifo_data_weights),
 
-// .ddr_st_addr_out_data,
-// .ddr_len_data,
-// .ddr_conf_data,
-// .ddr_fifo_empty_data,
-// .ddr_fifo_req_data,
-// .ddr_fifo_data_data,
+.ddr_st_addr_out_data  (ddr_st_addr_out_data),
+.ddr_len_data          (ddr_len_data),
+.ddr_conf_data         (ddr_conf_data),
+.ddr_fifo_empty_data   (ddr_fifo_empty_data),
+.ddr_fifo_req_data     (ddr_fifo_req_data),
+.ddr_fifo_data_data    (ddr_fifo_data_data)
 );
 
 
@@ -514,9 +582,9 @@ write2control#(
 	.st_addr(w2c_st_addr),
 	.pooled(w2c_pooled),
 	.linelen(w2c_linelen),
-	.addra(addra),
-	.data_a(dina),
-	.wea(wea),
+	.addra(w2c_addra),
+	.data_a(w2c_dina),
+	.wea(w2c_wea),
 	.req(out_req),
 	.idle(id_w2c),
 	.shift_len(w2c_shift_len),

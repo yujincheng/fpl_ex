@@ -90,7 +90,7 @@ module example_top #
     parameter         APP_DATA_WIDTH          = 512, // This parameter is controllerwise
     parameter         APP_MASK_WIDTH          = 64,   // This parameter is controllerwise
 	parameter INST_LEN = 220,
-	parameter FILE_NAME = "..//sim_data//vgg_19_net.txt",
+	parameter FILE_NAME = "..//sim_data//inst.txt",
   `ifdef SIMULATION_MODE
     parameter SIMULATION            = "TRUE" 
   `else
