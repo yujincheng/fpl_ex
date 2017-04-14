@@ -32,10 +32,16 @@ module BP_FIFO_CONTROL #(
 	output reg ddr_fifo_req,
 	input wire [DATA_LEN*16 - 1:0] ddr_fifo_data, //16 here is 512/DATA_LEN
 	
-	
 	output wire [ADDR_LEN*BUFFER_NUM - 1:0] BP_addr_out,
 	output wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_out, //8 here is 512/DATA_LEN
 	output reg [BUFFER_NUM - 1:0] BP_wea,
+	
+	
+	output reg in_fifo_empty,
+	input wire in_fifo_req,
+	output wire [DATA_LEN*16 - 1:0] in_fifo_data, //16 here is 512/DATA_LEN
+	input wire st_mac,
+	output wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_in, //8 here is 512/DATA_LEN
 	
 	output wire idle
 );
@@ -51,10 +57,10 @@ end
 endgenerate
 
 
-assign idle = (!working && !working_r1);
+assign idle = (!working_read && !working_read_r1);
 
-reg working;
-reg working_r1;
+reg working_read;
+reg working_read_r1;
 reg[1:0] BP_num_reg;
 reg [SINGLE_LEN - 1:0] Line_width_reg;
 reg[1:0] count_line;
@@ -65,7 +71,7 @@ reg [DATA_LEN*16 - 1:0] BP_data; // 16 here is 512/DATA_LEN
  
 always @ (posedge clk) begin
 	BP_addr <= BP_addr_reg;
-	working_r1 <= working;
+	working_read_r1 <= working_read;
 end 
 
 always @ (posedge clk) begin
@@ -79,7 +85,7 @@ always @ (posedge clk) begin
 		ddr_len <= data_ddr_byte;
 		ddr_conf <= 1;
 	end
-	else if (working) begin
+	else if (working_read) begin
 		ddr_conf <= 0;
 	end
 end
@@ -90,27 +96,27 @@ always @ (posedge clk) begin
 		BP_data <= 0;
 		ddr_fifo_req <= 0;
 		BP_addr_reg <= 0;
-		working <= 0;
+		working_read <= 0;
 		count_line <= 0;
 		Line_width_reg <= 0;
 		count_in_line <= 0;
 		BP_num_reg <= 0;
 	end
 	else if (conf) begin
-		working <= 1;
+		working_read <= 1;
 		BP_addr_reg <= BP_st_addr;
 		count_line <= 0;
 		Line_width_reg <= Line_width;
 		count_in_line <= 0;
 		BP_num_reg <= BP_st_num;
 	end
-	else if (working) begin
+	else if (working_read) begin
 		if(!ddr_fifo_empty) begin
 			ddr_fifo_req <= 1;
 			if(ddr_fifo_req) begin
 				BP_data <= ddr_fifo_data;
 				if(count_in_line == Line_width_reg-1 && count_line==1) begin
-					working <= 0;
+					working_read <= 0;
 					count_in_line <= 0;
 					BP_addr_reg <= 0;
 					count_line <= 0;						
@@ -141,7 +147,7 @@ always @ (posedge clk) begin
 	if(!rst_n) begin
 		BP_wea <= 0;
 	end
-	else if(working) begin
+	else if(working_read) begin
 		if(!ddr_fifo_empty && ddr_fifo_req) begin
 			for (i = 0;i < 4;i = i + 1) begin
 				for (j = 0;j < 16;j = j + 1) begin					
