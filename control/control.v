@@ -38,6 +38,7 @@ module topcontrol #(
 	input   wire clk,
 	input   wire rst_n,
 	output  reg [1:0] switch,
+	output  reg mig_type,
 	
 	input	wire [INST_LEN - 1:0]	instruct,
 										//  ilc_st_addr   35:0 
@@ -111,7 +112,8 @@ module topcontrol #(
 	output reg [SINGLE_LEN - 1:0  ]     dfc_data_width, // 
 	output reg [SINGLE_LEN - 1:0  ]     dfc_data_ddr_byte, //
 	output reg [DDR_ADDR_LEN - 1:0]     dfc_ddr_st_addr,
-	output reg [ADDR_LEN_BP - 1:0 ]     dfc_data_st_addr
+	output reg [ADDR_LEN_BP - 1:0 ]     dfc_data_st_addr,
+	output ref [1:0] dfc_st_mac
 	
 );
 
@@ -159,6 +161,7 @@ wire  [SINGLE_LEN - 1:0]         inst_dfc_data_width;
 wire  [SINGLE_LEN - 1:0] inst_dfc_data_ddr_byte;
 wire  [DDR_ADDR_LEN - 1:0] inst_dfc_ddr_st_addr;
 wire  [SINGLE_LEN - 1:0] inst_dfc_data_st_addr;
+wire  [1: 0] inst_st_mac;
 
 
 
@@ -170,7 +173,7 @@ assign {inst_bfc_bb_st_addr,inst_bfc_ddr_st_addr,inst_bfc_bias_ddr_byte,inst_bfc
 
 assign {inst_wfc_wb_st_addr,inst_wfc_ddr_st_addr,inst_wfc_weight_ddr_byte,inst_wfc_weight_num,inst_type_t2} = instruct;
 
-assign {inst_dfc_data_st_addr,inst_dfc_ddr_st_addr,inst_dfc_data_ddr_byte,inst_dfc_data_width,inst_type_t3} = instruct;
+assign {inst_st_mac,inst_dfc_data_st_addr,inst_dfc_ddr_st_addr,inst_dfc_data_ddr_byte,inst_dfc_data_width,inst_type_t3} = instruct;
 
 
 
@@ -234,11 +237,12 @@ always @( posedge clk) begin
 		wfc_wb_st_addr     <= 0;
 		dfc_conf <= 0;
 		switch <= 0;
+		mig_type <= 0;
 		
 	end
 	else if(!inst_empty) begin	
 		if( inst_type == 4'd0) begin
-			if( ( inst_is_w2c_back ? (idle_data_soon && idle_write_back): idle_data_soon)) begin
+			if( ( inst_is_w2c_back ? (idle_data_soon && idle_write_back && idle_data_in): idle_data_soon)) begin
 				if(wb_rd_conf) begin 
 					w2c_conf <= 0;
 					wb_rd_conf <= 0;
@@ -296,6 +300,7 @@ always @( posedge clk) begin
 				else begin
 					wfc_conf <= 1;
 					switch <= 1;
+					mig_type <= 0;
 					inst_req <= 1;
 					
 					
@@ -320,6 +325,7 @@ always @( posedge clk) begin
 				else begin
 					bfc_conf <= 1;
 					switch <= 2;
+					mig_type <= 0;
 					inst_req <= 1;
 					bfc_bias_num <= inst_bfc_bias_num;
 					bfc_bias_ddr_byte <= inst_bfc_bias_ddr_byte;
@@ -341,11 +347,13 @@ always @( posedge clk) begin
 				else begin
 					dfc_conf <= 1;
 					switch <= 3;
+					mig_type <= 0;
 					inst_req <= 1;
 					dfc_data_width <= inst_dfc_data_width;
 					dfc_data_ddr_byte <= inst_dfc_data_ddr_byte;
 					dfc_ddr_st_addr <= inst_dfc_ddr_st_addr;
-					dfc_data_st_addr <= inst_dfc_data_st_addr;					
+					dfc_data_st_addr <= inst_dfc_data_st_addr;
+					dfc_st_mac <= inst_st_mac;
 				end
 			end
 			else begin

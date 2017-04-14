@@ -154,6 +154,8 @@ wire [SINGLE_LEN - 1:0  ]     dfc_data_width; //
 wire [SINGLE_LEN - 1:0  ]     dfc_data_ddr_byte;
 wire [DDR_ADDR_LEN - 1:0]     dfc_ddr_st_addr;
 wire [ADDR_LEN_BP - 1:0 ]     dfc_data_st_addr;
+wire [1:0] dfc_st_mac;
+
 
 wire [ADDR_LEN_BB - 1:0]           bfc_wr_addr ;
 wire [X_PE/8 - 1:0]        bfc_wea      ;
@@ -281,8 +283,10 @@ topcontrol#(
 	.dfc_data_ddr_byte(dfc_data_ddr_byte),
 	.dfc_ddr_st_addr(dfc_ddr_st_addr),
 	.dfc_data_st_addr(dfc_data_st_addr),
+	.dfc_st_mac(dfc_st_mac),
 	
-	.switch(switch)
+	.switch(switch),
+	.mig_type(mig_type)
 	
 );
 
@@ -376,7 +380,7 @@ BP_FIFO_CONTROL #(
 .ddr_st_addr(dfc_ddr_st_addr),
 .BP_st_addr(dfc_data_st_addr),
 
-.BP_st_num(3),
+.BP_st_num(dfc_st_mac),
 
 .ddr_st_addr_out(ddr_st_addr_out_data),
 .ddr_len(ddr_len_data),
@@ -468,6 +472,7 @@ mig_axi u_axi4_tg_inst
 .app_wdf_end(app_wdf_end), // write burst end signal to MC UI
 .app_wdf_wren(app_wdf_wren), // write enable signal to MC UI
 
+.cmd_type(mig_type),
 
 .app_wdf_en(app_wdf_en), // QDRIIP, write enable
 .app_wdf_addr(app_wdf_addr), // QDRIIP, write address

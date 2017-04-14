@@ -117,6 +117,13 @@ module mig_axi #(
    output   wire                      ddr_fifo_empty,
    input wire                          ddr_fifo_req,
    output   wire [DDR_DATA_LEN - 1:0] ddr_fifo_data,
+   
+   input wire in_fifo_empty,
+   output reg in_fifo_req,
+   input wire [DDR_DATA_LEN - 1:0] in_fifo_data,
+   
+   
+   input cmd_type,
 
    output idle
    
@@ -132,22 +139,16 @@ module mig_axi #(
    reg 				                       reg_app_wdf_end;  // write burst end signal to MC UI
    reg 				                       reg_app_wdf_wren; // write enable signal to MC UI
 
-                                                                 // QDRIIP Interface
-   reg 				                       reg_app_wdf_en;   // QDRIIP; write enable
-   reg [APP_ADDR_WIDTH-1:0] 		           reg_app_wdf_addr; // QDRIIP; write address
-   reg [APP_CMD_WIDTH-1:0] 		           reg_app_wdf_cmd;  // QDRIIP write command
+
    
    assign app_cmd = reg_app_cmd;      
    assign app_addr = reg_app_addr;     
    assign app_en = reg_app_en;       
    assign app_wdf_mask = reg_app_wdf_mask; 
    assign app_wdf_data = reg_app_wdf_data; 
-   assign app_wdf_end = reg_app_wdf_end;  
+   assign app_wdf_end = app_wdf_wren;  
    assign app_wdf_wren = reg_app_wdf_wren; 
-   
-   assign app_wdf_en = reg_app_wdf_en;   
-   assign app_wdf_addr = reg_app_wdf_addr; 
-   assign app_wdf_cmd = reg_app_wdf_cmd;  
+
 
 
 
@@ -156,7 +157,9 @@ module mig_axi #(
     
 	reg rd_data_idle;
 	reg rd_cmd_idle;
+	reg wr_cmd_idle;
 	reg [SINGLE_LEN - 1:0] rd_cmd_left;
+	reg [SINGLE_LEN - 1:0] wr_cmd_left;
 	reg [SINGLE_LEN - 1:0] rd_data_left;
 	
     always @ (posedge clk) begin
@@ -164,18 +167,24 @@ module mig_axi #(
 			reg_app_cmd <= 0;
 			reg_app_addr <= 0;
 			reg_app_en <= 0;    
-			reg_app_wdf_en <= 0; 
-			reg_app_wdf_addr <= 0;
-			reg_app_wdf_cmd <= 0;	
 			rd_cmd_idle <= 1;
 			rd_cmd_left <= 0;
+			reg_app_wdf_mask <= 0;
+			in_fifo_req <= 0;
 		end
-		else if (ddr_conf) begin
+		else if (ddr_conf & cmd_type == 0) begin
 			rd_cmd_idle <= 0;
 			reg_app_cmd <= 1;
 			reg_app_addr <= ddr_st_addr_out;
 			reg_app_en <= 1;
 			rd_cmd_left <= ((ddr_len-1) >> 6);
+		end
+		else if (ddr_conf & cmd_type == 1) begin
+			wr_cmd_idle <= 0;
+			reg_app_cmd <= 0;
+			reg_app_addr <= ddr_st_addr_out;
+			reg_app_en <= 1;
+			wr_cmd_left <= ((ddr_len-1) >> 6);
 		end
 		else if (!rd_cmd_idle && app_rdy) begin
 			if (rd_cmd_left == 0) begin
@@ -185,6 +194,21 @@ module mig_axi #(
 			else if(rd_cmd_left >= 1) begin
 				rd_cmd_left <= rd_cmd_left - 1;
 				reg_app_addr <= reg_app_addr + 8;
+			end
+		end
+		else if (!wr_cmd_idle && app_rdy && app_wdf_rdy && !in_fifo_empty) begin
+			if (wr_cmd_left == 0) begin
+				reg_app_en <= 0;
+				reg_app_wdf_wren <= 0;
+				wr_cmd_idle <= 1;
+				in_fifo_req <= 0;
+			end
+			else if(wr_cmd_left >= 1) begin
+				wr_cmd_left <= wr_cmd_left - 1;
+				reg_app_addr <= reg_app_addr + 8;
+				reg_app_wdf_wren <= 1;
+				reg_app_wdf_data <= in_fifo_data;
+				in_fifo_req <= 1;
 			end
 		end
     end   
