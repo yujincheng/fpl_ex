@@ -91,6 +91,7 @@ wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
 
 wire [32*X_MAC*X_MESH-1:0]                                doutb;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addrb;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                ilc_addrb;
 
 
 
@@ -101,6 +102,8 @@ wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
 wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
 wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
+
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dwc_BP_addr;
 
 wire  [X_MAC*X_MESH-1:0]                              wea;
 wire [32*X_MAC*X_MESH-1:0] 							dina;
@@ -157,6 +160,15 @@ wire [ADDR_LEN_BP - 1:0 ]     dfc_data_st_addr;
 wire [1:0] dfc_st_mac;
 
 
+wire 							dwc_conf;
+wire [SINGLE_LEN - 1:0  ]     dwc_data_width; // 
+wire [SINGLE_LEN - 1:0  ]     dwc_data_ddr_byte;
+wire [DDR_ADDR_LEN - 1:0]     dwc_ddr_st_addr;
+wire [ADDR_LEN_BP - 1:0 ]     dwc_data_st_addr;
+wire [1:0] dwc_st_mac;
+
+
+
 wire [ADDR_LEN_BB - 1:0]           bfc_wr_addr ;
 wire [X_PE/8 - 1:0]        bfc_wea      ;
 wire [64*8 - 1:0] bfc_data_wr;  //8 here is 512/DATA_LEN
@@ -191,6 +203,8 @@ wire                         ddr_conf_mux;
 wire                        ddr_fifo_empty_mux;
 wire                         ddr_fifo_req_mux;
 wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_mux;
+
+wire   [DDR_DATA_LEN - 1:0]  ddr_write_data_dwrite;
 
 
 genvar i,j,k;
@@ -284,6 +298,14 @@ topcontrol#(
 	.dfc_ddr_st_addr(dfc_ddr_st_addr),
 	.dfc_data_st_addr(dfc_data_st_addr),
 	.dfc_st_mac(dfc_st_mac),
+	
+	.dwc_idle(dwc_idle),
+	.dwc_conf(dwc_conf),
+	.dwc_data_width(dwc_data_width), // 
+	.dwc_data_ddr_byte(dwc_data_ddr_byte),
+	.dwc_ddr_st_addr(dwc_ddr_st_addr),
+	.dwc_data_st_addr(dwc_data_st_addr),
+	.dwc_st_mac(dwc_st_mac),
 	
 	.switch(switch),
 	.mig_type(mig_type)
@@ -401,10 +423,40 @@ BP_FIFO_CONTROL #(
 );
 
 
+BP_WRITE_CONTROL #(
+.ADDR_LEN   (ADDR_LEN_BP  )
+)dwc(
+.clk       (clk       ),
+.rst_n     (rst_n),
+
+.Line_width(dwc_data_width), // line/4
+.data_ddr_byte(dwc_data_ddr_byte), // line*16*2
+.ddr_st_addr(dwc_ddr_st_addr),
+.BP_st_addr(dwc_data_st_addr),
+
+.BP_st_num(dwc_st_mac),
+
+.ddr_st_addr_out(ddr_st_addr_out_dwrite),
+.ddr_len(ddr_len_dwrite),
+.ddr_conf(ddr_conf_dwrite),
+
+.ddr_write_empty (ddr_write_empty_dwrite),
+.ddr_write_req   (ddr_write_req_dwrite),
+.ddr_write_data_out  (ddr_write_data_dwrite),
+
+
+.conf  (dwc_conf),
+.BP_addr_out (dwc_BP_addr),
+.BP_data_in (doutb),
+
+.idle(dwc_idle)
+
+);
 assign dina = (!dfc_idle) ? dfc_BP_dina : w2c_dina;
 assign addra = (!dfc_idle) ? dfc_BP_addra : w2c_addra;
 assign wea = (!dfc_idle) ? dfc_BP_wea : w2c_wea;
 
+assign addrb = (!dwc_idle) ? dwc_BP_addr : ilc_addrb;
 
 
 
@@ -482,15 +534,18 @@ mig_axi u_axi4_tg_inst
 	 
 	 
 	 
-	 .ddr_st_addr_out(ddr_st_addr_out_mux),
-	 .ddr_len(ddr_len_mux),
-	 .ddr_conf(ddr_conf_mux),
-	 
-	 
-	 .ddr_fifo_empty(ddr_fifo_empty_mux),
-	 .ddr_fifo_req(ddr_fifo_req_mux),
-	 .ddr_fifo_data(ddr_fifo_data_mux)
-	 
+ .ddr_st_addr_out(ddr_st_addr_out_mux),
+ .ddr_len(ddr_len_mux),
+ .ddr_conf(ddr_conf_mux || ddr_conf_dwrite),
+ 
+ 
+ .ddr_fifo_empty(ddr_fifo_empty_mux),
+ .ddr_fifo_req(ddr_fifo_req_mux),
+ .ddr_fifo_data(ddr_fifo_data_mux),
+ 
+ .in_fifo_empty(ddr_write_empty_dwrite),
+ .in_fifo_req(ddr_write_req_dwrite),
+ .in_fifo_data(ddr_write_data_dwrite)
 	 
  );
 
@@ -566,7 +621,7 @@ inlinecontrol#(
 	.linelen(ilc_linelen), //after_pad 至少�??????4
 	.ispad(ilc_ispad),
 	.idle_soon(id_soon_ilc),
-	.addrb(addrb),
+	.addrb(ilc_addrb),
 	.control_out(control),
 	.tofifo(ilc_tofifo),
 	.fromfifo(ilc_fromfifo),

@@ -113,7 +113,16 @@ module topcontrol #(
 	output reg [SINGLE_LEN - 1:0  ]     dfc_data_ddr_byte, //
 	output reg [DDR_ADDR_LEN - 1:0]     dfc_ddr_st_addr,
 	output reg [ADDR_LEN_BP - 1:0 ]     dfc_data_st_addr,
-	output ref [1:0] dfc_st_mac
+	output reg [1:0] 					dfc_st_mac,
+	
+	input  wire                         dwc_idle,
+	output reg 							dwc_conf,
+	output reg [SINGLE_LEN - 1:0  ]     dwc_data_width, // 
+	output reg [SINGLE_LEN - 1:0  ]     dwc_data_ddr_byte, //
+	output reg [DDR_ADDR_LEN - 1:0]     dwc_ddr_st_addr,
+	output reg [ADDR_LEN_BP - 1:0 ]     dwc_data_st_addr,
+	output reg [1:0] dwc_st_mac
+	
 	
 );
 
@@ -122,6 +131,7 @@ wire  [3:0]						 inst_type;
 wire  [3:0]						 inst_type_t1;
 wire  [3:0]						 inst_type_t2;
 wire  [3:0]						 inst_type_t3;
+wire  [3:0]						 inst_type_t4;
 
 // compute
 wire  [INST_ADDR_LEN * 4 - 1:0]  inst_ilc_st_addr    ;
@@ -161,8 +171,14 @@ wire  [SINGLE_LEN - 1:0]         inst_dfc_data_width;
 wire  [SINGLE_LEN - 1:0] inst_dfc_data_ddr_byte;
 wire  [DDR_ADDR_LEN - 1:0] inst_dfc_ddr_st_addr;
 wire  [SINGLE_LEN - 1:0] inst_dfc_data_st_addr;
-wire  [1: 0] inst_st_mac;
+wire  [1: 0] inst_dfc_st_mac;
 
+//write_data
+wire  [SINGLE_LEN - 1:0]         inst_dwc_data_width;
+wire  [SINGLE_LEN - 1:0] inst_dwc_data_ddr_byte;
+wire  [DDR_ADDR_LEN - 1:0] inst_dwc_ddr_st_addr;
+wire  [SINGLE_LEN - 1:0] inst_dwc_data_st_addr;
+wire  [1: 0] inst_dwc_st_mac;
 
 
 
@@ -173,8 +189,9 @@ assign {inst_bfc_bb_st_addr,inst_bfc_ddr_st_addr,inst_bfc_bias_ddr_byte,inst_bfc
 
 assign {inst_wfc_wb_st_addr,inst_wfc_ddr_st_addr,inst_wfc_weight_ddr_byte,inst_wfc_weight_num,inst_type_t2} = instruct;
 
-assign {inst_st_mac,inst_dfc_data_st_addr,inst_dfc_ddr_st_addr,inst_dfc_data_ddr_byte,inst_dfc_data_width,inst_type_t3} = instruct;
+assign {inst_dfc_st_mac,inst_dfc_data_st_addr,inst_dfc_ddr_st_addr,inst_dfc_data_ddr_byte,inst_dfc_data_width,inst_type_t3} = instruct;
 
+assign {inst_dwc_st_mac,inst_dwc_data_st_addr,inst_dwc_ddr_st_addr,inst_dwc_data_ddr_byte,inst_dwc_data_width,inst_type_t4} = instruct;
 
 
 
@@ -235,7 +252,21 @@ always @( posedge clk) begin
 		wfc_weight_ddr_byte <= 0;
 		wfc_ddr_st_addr    <= 0;
 		wfc_wb_st_addr     <= 0;
+		
 		dfc_conf <= 0;
+		dfc_data_width <= 0; // 
+		dfc_data_ddr_byte <= 0; //
+		dfc_ddr_st_addr <= 0;
+		dfc_data_st_addr <= 0;
+		dfc_st_mac <= 0;
+		
+		dwc_conf <= 0;
+		dwc_data_width <= 0; // 
+		dwc_data_ddr_byte <= 0; //
+		dwc_ddr_st_addr <= 0;
+		dwc_data_st_addr <= 0;
+		dwc_st_mac <= 0;
+		
 		switch <= 0;
 		mig_type <= 0;
 		
@@ -292,7 +323,7 @@ always @( posedge clk) begin
 		end
 		end
 		else if (inst_type == 4'd1) begin
-			if(wfc_idle && bfc_idle) begin
+			if(dwc_idle && dfc_idle && bfc_idle && wfc_idle) begin
 				if(wfc_conf) begin
 					wfc_conf <= 0;
 					inst_req <= 0;
@@ -317,7 +348,7 @@ always @( posedge clk) begin
 			end
 		end
 		else if (inst_type == 4'd2) begin
-			if(bfc_idle && wfc_idle) begin
+			if(dwc_idle && dfc_idle && bfc_idle && wfc_idle) begin
 				if(bfc_conf) begin
 					bfc_conf <= 0;
 					inst_req <= 0;
@@ -339,7 +370,7 @@ always @( posedge clk) begin
 			end
 		end
 		else if (inst_type == 4'd3) begin
-			if(dfc_idle) begin
+			if(dwc_idle && dfc_idle && bfc_idle && wfc_idle) begin
 				if(dfc_conf) begin
 					dfc_conf <= 0;
 					inst_req <= 0;
@@ -353,11 +384,34 @@ always @( posedge clk) begin
 					dfc_data_ddr_byte <= inst_dfc_data_ddr_byte;
 					dfc_ddr_st_addr <= inst_dfc_ddr_st_addr;
 					dfc_data_st_addr <= inst_dfc_data_st_addr;
-					dfc_st_mac <= inst_st_mac;
+					dfc_st_mac <= inst_dfc_st_mac;
 				end
 			end
 			else begin
 				dfc_conf <= 0;
+				inst_req <= 0;
+			end
+		end
+		else if (inst_type == 4'd4) begin
+			if(dwc_idle && dfc_idle && bfc_idle && wfc_idle) begin
+				if(dwc_conf) begin
+					dwc_conf <= 0;
+					inst_req <= 0;
+				end
+				else begin
+					dwc_conf <= 1;
+					//switch <= 3;
+					mig_type <= 1;
+					inst_req <= 1;
+					dwc_data_width <= inst_dwc_data_width;
+					dwc_data_ddr_byte <= inst_dwc_data_ddr_byte;
+					dwc_ddr_st_addr <= inst_dwc_ddr_st_addr;
+					dwc_data_st_addr <= inst_dwc_data_st_addr;
+					dwc_st_mac <= inst_dwc_st_mac;
+				end
+			end
+			else begin
+				dwc_conf <= 0;
 				inst_req <= 0;
 			end
 		end

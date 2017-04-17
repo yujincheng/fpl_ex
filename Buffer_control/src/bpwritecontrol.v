@@ -1,6 +1,6 @@
 `timescale 1ps/1ps
 
-module BP_FIFO_CONTROL #(	
+module BP_WRITE_CONTROL #(	
 	parameter X_MAC = 4,
 	parameter X_PE = 16,
 	parameter X_MESH = 16,
@@ -28,43 +28,64 @@ module BP_FIFO_CONTROL #(
 	output reg ddr_conf,
 	
 	
-	input wire ddr_fifo_empty,
-	output reg ddr_fifo_req,
-	input wire [DATA_LEN*16 - 1:0] ddr_fifo_data, //16 here is 512/DATA_LEN
+	output wire ddr_write_empty,
+	input wire ddr_write_req,
+	output wire [DATA_LEN*16 - 1:0] ddr_write_data_out, //16 here is 512/DATA_LEN
+	
 	
 	output wire [ADDR_LEN*BUFFER_NUM - 1:0] BP_addr_out,
-	output wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_out, //8 here is 512/DATA_LEN
-	output reg [BUFFER_NUM - 1:0] BP_wea,
+	input wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_in, //8 here is 512/DATA_LEN
 	
 	output wire idle
 );
 
-genvar m,n;
+
+wire [DATA_LEN*16 - 1:0] ddr_write_data_mac[X_MAC - 1:0];
+
+reg working;
+reg working_r1;
+reg[1:0] BP_num_reg;
+reg[1:0] BP_num_reg_r1;
+reg [SINGLE_LEN - 1:0] Line_width_reg;
+reg[1:0] count_line;
+reg [SINGLE_LEN - 1:0] count_in_line;
+reg [DATA_LEN*16 - 1:0] ddr_write_data; // 16 here is 512/DATA_LEN
+ reg [ADDR_LEN - 1:0] BP_addr_reg;
+ wire ddr_fifo_near_full;
+reg ddr_fifo_en;
+reg ddr_fifo_en_r1;
+reg ddr_fifo_en_r2;
+
+assign idle = (!working && !working_r1);
+
+
+
+genvar m,n,l;
 generate
 for (m=0;m<X_MESH;m = m+1) begin:singletomul1 
        for (n =0;n<X_MAC;n=n+1) begin:singletomul2
-            assign BP_addr_out[n*ADDR_LEN+m*ADDR_LEN*X_MAC +: ADDR_LEN] = BP_addr;
-			assign BP_data_out[n*DATA_LEN+m*DATA_LEN*X_MAC +: DATA_LEN] = BP_data[m*DATA_LEN +: DATA_LEN];
+            assign BP_addr_out[n*ADDR_LEN+m*ADDR_LEN*X_MAC +: ADDR_LEN] = BP_addr_reg;
+			assign ddr_write_data_mac[n][m*DATA_LEN +: DATA_LEN] = BP_data_in[n*DATA_LEN+m*DATA_LEN*X_MAC +: DATA_LEN];
        end
 end
 endgenerate
 
-
-assign idle = (!working_read && !working_read_r1);
-
-reg working_read;
-reg working_read_r1;
-reg[1:0] BP_num_reg;
-reg [SINGLE_LEN - 1:0] Line_width_reg;
-reg[1:0] count_line;
-reg [SINGLE_LEN - 1:0] count_in_line;
- reg [ADDR_LEN - 1:0] BP_addr_reg;
- reg [ADDR_LEN - 1:0] BP_addr; 
-reg [DATA_LEN*16 - 1:0] BP_data; // 16 here is 512/DATA_LEN
+always @ * begin
+	case (BP_num_reg_r1)
+		2'd0: ddr_write_data = ddr_write_data_mac[0];
+		2'd1: ddr_write_data = ddr_write_data_mac[1];
+		2'd2: ddr_write_data = ddr_write_data_mac[2];
+		2'd3: ddr_write_data = ddr_write_data_mac[3];
+		default: ddr_write_data = ddr_write_data_mac[0];
+	endcase
+end
+ 
  
 always @ (posedge clk) begin
-	BP_addr <= BP_addr_reg;
-	working_read_r1 <= working_read;
+	working_r1 <= working;
+	BP_num_reg_r1 <= BP_num_reg;
+	ddr_fifo_en_r1 <= ddr_fifo_en;
+	ddr_fifo_en_r2 <= ddr_fifo_en_r1;
 end 
 
 always @ (posedge clk) begin
@@ -78,7 +99,7 @@ always @ (posedge clk) begin
 		ddr_len <= data_ddr_byte;
 		ddr_conf <= 1;
 	end
-	else if (working_read) begin
+	else if (working) begin
 		ddr_conf <= 0;
 	end
 end
@@ -86,81 +107,66 @@ end
 
 always @ (posedge clk) begin
 	if(!rst_n) begin
-		BP_data <= 0;
-		ddr_fifo_req <= 0;
+		ddr_fifo_en <= 0;
 		BP_addr_reg <= 0;
-		working_read <= 0;
+		working <= 0;
 		count_line <= 0;
 		Line_width_reg <= 0;
 		count_in_line <= 0;
 		BP_num_reg <= 0;
 	end
 	else if (conf) begin
-		working_read <= 1;
+		working <= 1;
 		BP_addr_reg <= BP_st_addr;
 		count_line <= 0;
 		Line_width_reg <= Line_width;
 		count_in_line <= 0;
 		BP_num_reg <= BP_st_num;
+		ddr_fifo_en <= 1;
 	end
-	else if (working_read) begin
-		if(!ddr_fifo_empty) begin
-			ddr_fifo_req <= 1;
-			if(ddr_fifo_req) begin
-				BP_data <= ddr_fifo_data;
+	else if (working) begin
+		if(!ddr_fifo_near_full) begin
+			if(ddr_fifo_en) begin
 				if(count_in_line == Line_width_reg-1 && count_line==1) begin
-					working_read <= 0;
+					working <= 0;
 					count_in_line <= 0;
 					BP_addr_reg <= 0;
-					count_line <= 0;						
+					count_line <= 0;	
+					ddr_fifo_en <= 0;
 				end				
 				else if(count_in_line == Line_width_reg-1 && count_line==0) begin
 					count_in_line <= 0;
 					count_line <= 1;
 					BP_num_reg <= BP_num_reg + 1;
 					BP_addr_reg <= BP_st_addr;
+					ddr_fifo_en <= 1;
 				end
 				else if(count_in_line < Line_width_reg-1) begin
 					BP_addr_reg <=  BP_addr_reg + 1;
 					count_in_line <= count_in_line + 1;
+					ddr_fifo_en <= 1;
 				end
 			end
 		end
 		else begin
-			ddr_fifo_req <= 0;
+			ddr_fifo_en <= 0;
 		end
 	end
 	else begin
-		ddr_fifo_req <= 0;
+		ddr_fifo_en <= 0;
 	end
 end
 
-integer i,j;
-always @ (posedge clk) begin
-	if(!rst_n) begin
-		BP_wea <= 0;
-	end
-	else if(working_read) begin
-		if(!ddr_fifo_empty && ddr_fifo_req) begin
-			for (i = 0;i < 4;i = i + 1) begin
-				for (j = 0;j < 16;j = j + 1) begin					
-					if( i == BP_num_reg) begin
-						BP_wea[i+4*j] <= 1;
-					end
-					else begin
-						BP_wea[i+4*j] <= 0;
-					end
-				end
-			end
-		end
-		else begin
-			BP_wea <= 0;
-		end
-	end
-	else begin
-		BP_wea <= 0;
-	end
-end
+   xip_fifo_64_64 x6464(
+	  .clk(clk),
+	  .srst(~rst_n),
+	  .din(ddr_write_data),
+	  .wr_en(ddr_fifo_en_r1),
+	  .rd_en(ddr_write_req),
+	  .dout(ddr_write_data_out),
+	  .full(ddr_fifo_near_full),
+	  .empty(ddr_write_empty)
+	 );
 
 
 endmodule

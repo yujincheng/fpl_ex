@@ -119,7 +119,7 @@ module mig_axi #(
    output   wire [DDR_DATA_LEN - 1:0] ddr_fifo_data,
    
    input wire in_fifo_empty,
-   output reg in_fifo_req,
+   output wire in_fifo_req,
    input wire [DDR_DATA_LEN - 1:0] in_fifo_data,
    
    
@@ -130,7 +130,7 @@ module mig_axi #(
    );
 
    
-   
+   reg in_fifo_req_reg;
        reg [APP_CMD_WIDTH-1 : 0] 	       reg_app_cmd;      // command bus to the MC UI
    reg [APP_ADDR_WIDTH-1 : 0] 	           reg_app_addr;     // address bus to the MC UI
    reg 				                       reg_app_en;       // command enable signal to MC UI.
@@ -140,7 +140,7 @@ module mig_axi #(
    reg 				                       reg_app_wdf_wren; // write enable signal to MC UI
 
 
-   
+   assign in_fifo_req = in_fifo_req_reg;
    assign app_cmd = reg_app_cmd;      
    assign app_addr = reg_app_addr;     
    assign app_en = reg_app_en;       
@@ -157,10 +157,12 @@ module mig_axi #(
     
 	reg rd_data_idle;
 	reg rd_cmd_idle;
+	reg wr_data_idle;
 	reg wr_cmd_idle;
 	reg [SINGLE_LEN - 1:0] rd_cmd_left;
 	reg [SINGLE_LEN - 1:0] wr_cmd_left;
 	reg [SINGLE_LEN - 1:0] rd_data_left;
+	reg [SINGLE_LEN - 1:0] wr_data_left;
 	
     always @ (posedge clk) begin
 		if (!rst_n || !init_calib_complete) begin
@@ -168,23 +170,21 @@ module mig_axi #(
 			reg_app_addr <= 0;
 			reg_app_en <= 0;    
 			rd_cmd_idle <= 1;
+			wr_cmd_idle <= 1;
 			rd_cmd_left <= 0;
-			reg_app_wdf_mask <= 0;
-			in_fifo_req <= 0;
+			wr_cmd_left <= 0;
 		end
-		else if (ddr_conf & cmd_type == 0) begin
+		else if (ddr_conf && (cmd_type == 0) ) begin
 			rd_cmd_idle <= 0;
 			reg_app_cmd <= 1;
-			reg_app_addr <= ddr_st_addr_out;
-			reg_app_en <= 1;
-			rd_cmd_left <= ((ddr_len-1) >> 6);
+			reg_app_addr <= ddr_st_addr_out - 8;
+			rd_cmd_left <= (ddr_len >> 6);
 		end
-		else if (ddr_conf & cmd_type == 1) begin
+		else if (ddr_conf && (cmd_type == 1) ) begin
 			wr_cmd_idle <= 0;
 			reg_app_cmd <= 0;
-			reg_app_addr <= ddr_st_addr_out;
-			reg_app_en <= 1;
-			wr_cmd_left <= ((ddr_len-1) >> 6);
+			reg_app_addr <= ddr_st_addr_out - 8;
+			wr_cmd_left <= (ddr_len >> 6);
 		end
 		else if (!rd_cmd_idle && app_rdy) begin
 			if (rd_cmd_left == 0) begin
@@ -193,22 +193,19 @@ module mig_axi #(
 			end
 			else if(rd_cmd_left >= 1) begin
 				rd_cmd_left <= rd_cmd_left - 1;
+				reg_app_en <= 1;
 				reg_app_addr <= reg_app_addr + 8;
 			end
 		end
-		else if (!wr_cmd_idle && app_rdy && app_wdf_rdy && !in_fifo_empty) begin
+		else if (!wr_cmd_idle && app_rdy) begin
 			if (wr_cmd_left == 0) begin
 				reg_app_en <= 0;
-				reg_app_wdf_wren <= 0;
 				wr_cmd_idle <= 1;
-				in_fifo_req <= 0;
 			end
 			else if(wr_cmd_left >= 1) begin
 				wr_cmd_left <= wr_cmd_left - 1;
+				reg_app_en <= 1;
 				reg_app_addr <= reg_app_addr + 8;
-				reg_app_wdf_wren <= 1;
-				reg_app_wdf_data <= in_fifo_data;
-				in_fifo_req <= 1;
 			end
 		end
     end   
@@ -218,31 +215,54 @@ module mig_axi #(
 			rd_data_idle <= 1;
 			rd_data_left <= 0;
 		end
-		else if (ddr_conf) begin
+		else if (ddr_conf && (cmd_type == 1)) begin
 			rd_data_idle <= 0;
-			rd_data_left <= ((ddr_len-1) >> 6);
+			rd_data_left <= (ddr_len >> 6);
 		end
 		else if (!rd_data_idle && app_rd_data_valid) begin
-			if (rd_data_left >= 1) begin
+			if (rd_data_left > 1) begin
 				rd_data_left <= rd_data_left - 1;			
 			end
-			else if (rd_data_left < 1) begin
+			else if (rd_data_left <= 1) begin
 				rd_data_idle <= 1;			
 			end
 		end
 	end
 	
-	
-    always @ (posedge clk) begin
+	always @ (posedge clk) begin
 		if (!rst_n || !init_calib_complete) begin
-			reg_app_wdf_mask <= 0;
-			reg_app_wdf_data <= 0;
-			reg_app_wdf_end <= 0; 
+			wr_data_idle <= 1;
+			wr_data_left <= 0;
 			reg_app_wdf_wren <= 0;
-				                 
+			reg_app_wdf_mask <= 0;
+			in_fifo_req_reg <= 0;
+			reg_app_wdf_data <= 0;
 		end
-    end 	
-   
+		else if (ddr_conf && (cmd_type == 1)) begin
+			wr_data_idle <= 0;
+			wr_data_left <= (ddr_len >> 6);
+			reg_app_wdf_wren <= 0;
+			in_fifo_req_reg <= 0;
+			reg_app_wdf_data <= 0;
+		end
+		else if (!wr_data_idle && app_wdf_rdy && !in_fifo_empty) begin
+			reg_app_wdf_wren <= 1;
+			in_fifo_req_reg <= 1;
+			reg_app_wdf_data <= in_fifo_data;
+			if (wr_data_left > 1) begin
+				wr_data_left <= wr_data_left - 1;			
+			end
+			else if (wr_data_left <= 1) begin
+				wr_data_idle <= 1;			
+			end
+		end
+		else begin
+			reg_app_wdf_wren <= 0;
+			in_fifo_req_reg <= 0;
+			reg_app_wdf_data <= 0;
+		end
+	end
+	   
    
    xip_fifo_64_64 x6464(
 	  .clk(clk),
@@ -255,5 +275,5 @@ module mig_axi #(
 	  .empty(ddr_fifo_empty)
 	 );
    
-	assign  idle = rd_cmd_idle & rd_data_idle;
+	assign  idle = rd_cmd_idle && rd_data_idle && wr_cmd_idle && wr_data_idle; 
 endmodule
