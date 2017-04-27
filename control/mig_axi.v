@@ -1,279 +1,312 @@
-//*****************************************************************************
-// (c) Copyright 2009 - 2010 Xilinx, Inc. All rights reserved.
-//
-// This file contains confidential and proprietary information
-// of Xilinx, Inc. and is protected under U.S. and
-// international copyright and other intellectual property
-// laws.
-//
-// DISCLAIMER
-// This disclaimer is not a license and does not grant any
-// rights to the materials distributed herewith. Except as
-// otherwise provided in a valid license issued to you by
-// Xilinx, and to the maximum extent permitted by applicable
-// law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
-// WITH ALL FAULTS, AND XILINX HEREBY DISCLAIMS ALL WARRANTIES
-// AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
-// BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
-// INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
-// (2) Xilinx shall not be liable (whether in contract or tort,
-// including negligence, or under any other theory of
-// liability) for any loss or damage of any kind or nature
-// related to, arising under or in connection with these
-// materials, including for any direct, or any indirect,
-// special, incidental, or consequential loss or damage
-// (including loss of data, profits, goodwill, or any type of
-// loss or damage suffered as a result of any action brought
-// by a third party) even if such damage or loss was
-// reasonably foreseeable or Xilinx had been advised of the
-// possibility of the same.
-//
-// CRITICAL APPLICATIONS
-// Xilinx products are not designed or intended to be fail-
-// safe, or for use in any application requiring fail-safe
-// performance, such as life-support or safety devices or
-// systems, Class III medical devices, nuclear facilities,
-// applications related to the deployment of airbags, or any
-// other applications that could lead to death, personal
-// injury, or severe property or environmental damage
-// (individually and collectively, "Critical
-// Applications"). Customer assumes the sole risk and
-// liability of any use of Xilinx products in Critical
-// Applications, subject only to applicable laws and
-// regulations governing limitations on product liability.
-//
-// THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
-// PART OF THIS FILE AT ALL TIMES.
-//
-//*****************************************************************************
-//   ____  ____
-//  /   /\/   /
-// /___/  \  /    Vendor: Xilinx
-// \   \   \/     Version: 3.6
-//  \   \         Application: MIG
-//  /   /         Filename: axi4_wrapper.v
-// /___/   /\     Date Last Modified: $Date: 2011/06/02 08:37:18 $
-// \   \  /  \    Date Created: Sept 16, 2009
-//  \___\/\___\
-//
-//Device: Virtex-6, Spartan-6 and 7series
-//Design Name: DDR3 SDRAM
-//Purpose:
-//   This module is wrapper for converting the reads and writes to transactions
-//   that follow the AXI protocol.
-//
-//Reference:
-//Revision History:
-//*****************************************************************************
-`timescale 1ps/1ps
-
 module mig_axi #(
-    
-  parameter APP_DATA_WIDTH   = 512,        // DDR data bus width.
-  parameter APP_ADDR_WIDTH   = 29,        // Address bus width of the 
-  //parameter RLD_BANK_WIDTH   = 4,         // RLD3 - 4, RLD2 - 3
-  parameter APP_CMD_WIDTH    = 3,
-	parameter DM_WIDTH = 8,
-	 
-	parameter SINGLE_LEN  = 24,
-	parameter DDR_DATA_LEN = 512,
-	parameter DDR_ADDR_LEN = 32
-  
-)
-(
-// ********* ALL SIGNALS AT THIS INTERFACE ARE ACTIVE HIGH SIGNALS ********/
-   input 				       clk, // memory controller (MC) user interface (UI) clock
-   input 				       rst_n, // MC UI reset signal.
-   input 				       init_calib_complete, // MC calibration done signal coming from MC UI.
-   // DDR3/4, RLD3, QDRIIP Shared Interface
-   input 				       app_rdy, // cmd fifo ready signal coming from MC UI.
-   input 				       app_wdf_rdy, // write data fifo ready signal coming from MC UI.
-   input [0:0] 		       app_rd_data_valid, // read data valid signal coming from MC UI
-   input [APP_DATA_WIDTH-1 : 0] 	       app_rd_data, // read data bus coming from MC UI
+   parameter C_AXI_ID_WIDTH           = 10,
+   parameter C_AXI_ADDR_WIDTH         = 32, 
+   parameter C_AXI_DATA_WIDTH         = 32,
    
-   
-   output [APP_CMD_WIDTH-1 : 0] 	       app_cmd, // command bus to the MC UI
-   output [APP_ADDR_WIDTH-1 : 0] 	       app_addr, // address bus to the MC UI
-   output 				       app_en, // command enable signal to MC UI.
-   output [(APP_DATA_WIDTH/DM_WIDTH)-1 : 0]    app_wdf_mask, // write data mask signal which
-                                              // is tied to 0 in this example.
-   output [APP_DATA_WIDTH-1: 0] 	       app_wdf_data, // write data bus to MC UI.
-   output 				       app_wdf_end, // write burst end signal to MC UI
-   output 				       app_wdf_wren, // write enable signal to MC UI
-
-  // QDRIIP Interface
-   output 				       app_wdf_en, // QDRIIP, write enable
-   output [APP_ADDR_WIDTH-1:0] 		       app_wdf_addr, // QDRIIP, write address
-   output [APP_CMD_WIDTH-1:0] 		       app_wdf_cmd, // QDRIIP write command
+	parameter SINGLE_LEN  = 24
+)(
+  input clk                        ,
+  input rst_n                     ,
+  // Input control signals
+  input init_cmptd                ,
+  // Slave Interface Write Address Ports
+// AXI write address channel signals
+  input                                  axi_awready, // Indicates slave is ready to accept a 
+  output reg [C_AXI_ID_WIDTH-1:0]        axi_awid,    // Write ID
+  output reg [C_AXI_ADDR_WIDTH-1:0]      axi_awaddr,  // Write address
+  output reg [7:0]                       axi_awlen,   // Write Burst Length
+  output reg [2:0]                       axi_awsize,  // Write Burst size
+  output reg [1:0]                       axi_awburst, // Write Burst type
+  output reg                             axi_awlock,  // Write lock type
+  output reg [3:0]                       axi_awcache, // Write Cache type
+  output reg [2:0]                       axi_awprot,  // Write Protection type
+  output reg                             axi_awvalid, // Write address valid
+// AXI write data channel signals
+  input                                  axi_wready,  // Write data ready
+  output [C_AXI_DATA_WIDTH-1:0]          axi_wdata,    // Write data
+  output [C_AXI_DATA_WIDTH/8-1:0]        axi_wstrb,    // Write strobes
+  output                                 axi_wlast,    // Last write transaction   
+  output reg                             axi_wvalid,   // Write valid  
+// AXI write response channel signals
+  input  [C_AXI_ID_WIDTH-1:0]            axi_bid,     // Response ID
+  input  [1:0]                           axi_bresp,   // Write response
+  input                                  axi_bvalid,  // Write reponse valid
+  output reg                             axi_bready,  // Response ready
+// AXI read address channel signals
+  input                                  axi_arready,     // Read address ready
+  output reg [C_AXI_ID_WIDTH-1:0]        axi_arid,        // Read ID
+  output reg [C_AXI_ADDR_WIDTH-1:0]      axi_araddr,      // Read address
+  output reg [7:0]                       axi_arlen,       // Read Burst Length
+  output reg [2:0]                       axi_arsize,      // Read Burst size
+  output reg [1:0]                       axi_arburst,     // Read Burst type
+  output reg                             axi_arlock,      // Read lock type
+  output reg [3:0]                       axi_arcache,     // Read Cache type
+  output reg [2:0]                       axi_arprot,      // Read Protection type
+  output reg                             axi_arvalid,     // Read address valid 
+// AXI read data channel signals   
+  input  [C_AXI_ID_WIDTH-1:0]            axi_rid,     // Response ID
+  input  [1:0]                           axi_rresp,   // Read response
+  input                                  axi_rvalid,  // Read reponse valid
+  input  [C_AXI_DATA_WIDTH-1:0]          axi_rdata,    // Read data
+  input                                  axi_rlast,    // Read last
+  output reg                             axi_rready,  // Read Response ready
   
-  
-  
-  // output interface to ddr face
-   input  [DDR_ADDR_LEN - 1:0]   ddr_st_addr_out,
+  input[2:0] axi_size,
+    // output interface to ddr face
+   input  [C_AXI_ADDR_WIDTH - 1:0]   ddr_st_addr_out,
    input  [SINGLE_LEN - 1:0]     ddr_len,
    input                         ddr_conf,
 
 
    output   wire                      ddr_fifo_empty,
+   output ddr_fifo_near_empty,
    input wire                          ddr_fifo_req,
-   output   wire [DDR_DATA_LEN - 1:0] ddr_fifo_data,
+   output   wire [C_AXI_DATA_WIDTH - 1:0] ddr_fifo_data,
    
    input wire in_fifo_empty,
-   output wire in_fifo_req,
-   input wire [DDR_DATA_LEN - 1:0] in_fifo_data,
+   output in_fifo_req,
+   input wire [C_AXI_DATA_WIDTH - 1:0] in_fifo_data,
    
    
    input cmd_type,
 
    output idle
-   
-   );
 
-   
-   reg in_fifo_req_reg;
-       reg [APP_CMD_WIDTH-1 : 0] 	       reg_app_cmd;      // command bus to the MC UI
-   reg [APP_ADDR_WIDTH-1 : 0] 	           reg_app_addr;     // address bus to the MC UI
-   reg 				                       reg_app_en;       // command enable signal to MC UI.
-   reg [(APP_DATA_WIDTH/DM_WIDTH)-1 : 0]    reg_app_wdf_mask; // write data mask signal which
-   reg [APP_DATA_WIDTH-1: 0] 	           reg_app_wdf_data; // write data bus to MC UI.
-   reg 				                       reg_app_wdf_end;  // write burst end signal to MC UI
-   reg 				                       reg_app_wdf_wren; // write enable signal to MC UI
+  );
+ localparam shift_dlen  = clogb2(C_AXI_DATA_WIDTH/8);
+ localparam addr_step  = (C_AXI_DATA_WIDTH /16);
+reg rd_data_idle;
+reg rd_cmd_idle;
+reg wr_data_idle;
+reg wr_cmd_idle;
+reg [SINGLE_LEN - 1:0] rd_cmd_left;
+reg [SINGLE_LEN - 1:0] wr_cmd_left;
+reg [SINGLE_LEN - 1:0] rd_data_left;
+reg [SINGLE_LEN - 1:0] wr_data_left;
 
+assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle & !axi_bready;
 
-   assign in_fifo_req = in_fifo_req_reg;
-   assign app_cmd = reg_app_cmd;      
-   assign app_addr = reg_app_addr;     
-   assign app_en = reg_app_en;       
-   assign app_wdf_mask = reg_app_wdf_mask; 
-   assign app_wdf_data = reg_app_wdf_data; 
-   assign app_wdf_end = app_wdf_wren;  
-   assign app_wdf_wren = reg_app_wdf_wren; 
-
-
-
-
-   
-	
-    
-	reg rd_data_idle;
-	reg rd_cmd_idle;
-	reg wr_data_idle;
-	reg wr_cmd_idle;
-	reg [SINGLE_LEN - 1:0] rd_cmd_left;
-	reg [SINGLE_LEN - 1:0] wr_cmd_left;
-	reg [SINGLE_LEN - 1:0] rd_data_left;
-	reg [SINGLE_LEN - 1:0] wr_data_left;
-	
-    always @ (posedge clk) begin
-		if (!rst_n || !init_calib_complete) begin
-			reg_app_cmd <= 0;
-			reg_app_addr <= 0;
-			reg_app_en <= 0;    
-			rd_cmd_idle <= 1;
-			wr_cmd_idle <= 1;
-			rd_cmd_left <= 0;
-			wr_cmd_left <= 0;
-		end
-		else if (ddr_conf && (cmd_type == 0) ) begin
-			rd_cmd_idle <= 0;
-			reg_app_cmd <= 1;
-			reg_app_addr <= ddr_st_addr_out - 8;
-			rd_cmd_left <= (ddr_len >> 6);
-		end
-		else if (ddr_conf && (cmd_type == 1) ) begin
-			wr_cmd_idle <= 0;
-			reg_app_cmd <= 0;
-			reg_app_addr <= ddr_st_addr_out - 8;
-			wr_cmd_left <= (ddr_len >> 6);
-		end
-		else if (!rd_cmd_idle && app_rdy) begin
-			if (rd_cmd_left == 0) begin
-				reg_app_en <= 0;
-				rd_cmd_idle <= 1;
-			end
-			else if(rd_cmd_left >= 1) begin
-				rd_cmd_left <= rd_cmd_left - 1;
-				reg_app_en <= 1;
-				reg_app_addr <= reg_app_addr + 8;
-			end
-		end
-		else if (!wr_cmd_idle && app_rdy) begin
-			if (wr_cmd_left == 0) begin
-				reg_app_en <= 0;
-				wr_cmd_idle <= 1;
-			end
-			else if(wr_cmd_left >= 1) begin
-				wr_cmd_left <= wr_cmd_left - 1;
-				reg_app_en <= 1;
-				reg_app_addr <= reg_app_addr + 8;
-			end
-		end
-    end   
-	
-	always @ (posedge clk) begin
-		if (!rst_n || !init_calib_complete) begin
-			rd_data_idle <= 1;
-			rd_data_left <= 0;
-		end
-		else if (ddr_conf && (cmd_type == 1)) begin
-			rd_data_idle <= 0;
-			rd_data_left <= (ddr_len >> 6);
-		end
-		else if (!rd_data_idle && app_rd_data_valid) begin
-			if (rd_data_left > 1) begin
-				rd_data_left <= rd_data_left - 1;			
-			end
-			else if (rd_data_left <= 1) begin
-				rd_data_idle <= 1;			
-			end
-		end
+//////////////////////	 
+//Write Address Channel
+//////////////////////
+always @(posedge clk) begin
+	if (!rst_n || !init_cmptd) begin
+	   axi_awvalid <= 0;
+	   axi_awid <= 0;
+	   axi_awaddr <= 64'd0;
+	   axi_awlen <= 0;
+	   axi_awsize <= 0;
+	   axi_awburst <= 0;
+	   axi_awlock <= 0;
+	   axi_awcache <= 0;
+	   axi_awprot <= 0;
+		wr_cmd_idle <= 1;
+		wr_cmd_left <= (ddr_len >> shift_dlen  ) - 8;
+	end 
+	else if (ddr_conf && (cmd_type == 1) ) begin
+		wr_cmd_idle <= 0;
+		wr_cmd_left <= ((ddr_len >> shift_dlen  ) > 8 ) ? (ddr_len >> shift_dlen  ) - 8: 0;
+		axi_awvalid <= 0;
+		axi_awaddr <= ddr_st_addr_out;
+		axi_awlen <= ((ddr_len >> shift_dlen  ) > 8)? 7 : (ddr_len >> shift_dlen  )-1;
+		axi_awsize <= axi_size;
+		axi_awburst <= 01;
 	end
-	
-	always @ (posedge clk) begin
-		if (!rst_n || !init_calib_complete) begin
-			wr_data_idle <= 1;
-			wr_data_left <= 0;
-			reg_app_wdf_wren <= 0;
-			reg_app_wdf_mask <= 0;
-			in_fifo_req_reg <= 0;
-			reg_app_wdf_data <= 0;
-		end
-		else if (ddr_conf && (cmd_type == 1)) begin
-			wr_data_idle <= 0;
-			wr_data_left <= (ddr_len >> 6);
-			reg_app_wdf_wren <= 0;
-			in_fifo_req_reg <= 0;
-			reg_app_wdf_data <= 0;
-		end
-		else if (!wr_data_idle && app_wdf_rdy && !in_fifo_empty) begin
-			reg_app_wdf_wren <= 1;
-			in_fifo_req_reg <= 1;
-			reg_app_wdf_data <= in_fifo_data;
+	else if (!wr_cmd_idle) begin
+		if (axi_awvalid == 0)begin
+		   axi_awvalid <= 1;
+		end		
+		else if (axi_awready && axi_awvalid) begin
+			axi_awvalid <= 1'b0;
+		   axi_awid <= 0;
+		   axi_awaddr <= axi_awaddr + addr_step;
+		   axi_awlen <= (wr_cmd_left > 8) ? 7 : (wr_cmd_left-1);
+		   axi_awsize <= axi_size;
+		   axi_awburst <= 01;
+		   wr_cmd_left <= (wr_cmd_left > 8) ? (wr_cmd_left - 8) : 0;
+		   wr_cmd_idle <= (wr_cmd_left > 0) ? 0 : 1;
+		end	
+	end		
+	else begin
+		axi_awvalid <= 1'b0;
+	end	
+end
+
+   
+//////////////////////	 
+//Write Data Channel
+//////////////////////
+
+
+wire wnext;
+assign axi_wdata = in_fifo_data;
+assign in_fifo_req = wnext & !wr_data_idle;
+
+assign wnext = axi_wready & axi_wvalid;
+// WVALID logic, similar to the AWVALID always block above
+always @(posedge clk)
+  begin
+     if (!rst_n || !init_cmptd)begin
+       axi_wvalid <=  1'b0;  
+		wr_data_idle <= 1;
+		wr_data_left <= 0;
+     end  
+     else if ((ddr_conf && (cmd_type == 1))) begin
+		wr_data_idle <= 0;
+		wr_data_left <= (ddr_len >> shift_dlen  );
+		axi_wvalid <= 0;
+	 end
+     else if (!wr_data_idle)begin
+		axi_wvalid <= !in_fifo_empty;
+		if(wnext) begin
 			if (wr_data_left > 1) begin
 				wr_data_left <= wr_data_left - 1;			
 			end
 			else if (wr_data_left <= 1) begin
-				wr_data_idle <= 1;			
+				wr_data_idle <= 1;	
+				axi_wvalid <= 0;
 			end
-		end
-		else begin
-			reg_app_wdf_wren <= 0;
-			in_fifo_req_reg <= 0;
-			reg_app_wdf_data <= 0;
-		end
+		end	
+	end 
+  end
+
+  
+localparam C_WLEN_COUNT_WIDTH ='d9;
+reg [C_WLEN_COUNT_WIDTH -1:0] wlen_count;
+ 
+ assign axi_wlast = (wr_data_left >= 8) ? (wlen_count == 7) : (wr_data_left == 1);
+ 
+  always @(posedge clk)
+  begin
+     if (!rst_n || !init_cmptd)begin
+       wlen_count <=  0;  
+     end  
+     else if ((ddr_conf && (cmd_type == 1))) begin
+		wlen_count <= 0;
+	 end
+     else if (!wr_data_idle)begin
+		if(wnext) begin
+			if (axi_wlast) begin
+				wlen_count <= 0;			
+			end
+			else begin
+				wlen_count <= wlen_count + 1;
+			end
+		end	
+	end 
+  end
+
+  
+  
+//////////////////////	 
+//Read Address Channel
+//////////////////////
+always @(posedge clk) begin
+	if (!rst_n || !init_cmptd) begin
+	   axi_arvalid <= 0;
+	   axi_arid <= 0;
+	   axi_araddr <= 64'd00;
+	   axi_arlen <= 0;
+	   axi_arsize <= 0;
+	   axi_arburst <= 0;
+	   axi_arlock <= 0;
+	   axi_arcache <= 0;
+	   axi_arprot <= 0;
+		rd_cmd_idle <= 1;
+		rd_cmd_left <= 0;
+	end 
+	else if (ddr_conf && (cmd_type == 0) ) begin
+		rd_cmd_idle <= 0;
+		rd_cmd_left <= ((ddr_len >> shift_dlen  ) > 8 ) ? (ddr_len >> shift_dlen ) - 8: 0;
+		axi_arvalid <= 0;
+		axi_araddr <= ddr_st_addr_out;
+		axi_arlen <= ((ddr_len >> shift_dlen  ) > 8)? 7 : (ddr_len >> shift_dlen  )-1;
+		axi_arsize <= axi_size;
+		axi_arburst <= 01;
 	end
-	   
-   
-   xip_fifo_64_64 x6464(
-	  .clk(clk),
-	  .srst(~rst_n),
-	  .din(app_rd_data),
-	  .wr_en(app_rd_data_valid),
-	  .rd_en(ddr_fifo_req),
-	  .dout(ddr_fifo_data),
-	  .full(),
-	  .empty(ddr_fifo_empty)
-	 );
-   
-	assign  idle = rd_cmd_idle && rd_data_idle && wr_cmd_idle && wr_data_idle; 
-endmodule
+	else if (!rd_cmd_idle) begin
+		if (axi_arvalid == 0)begin
+		   axi_arvalid <= 1;
+		end		
+		else if (axi_arready && axi_arvalid) begin
+			axi_arvalid <= 1'b0;
+		   axi_arid <= 0;
+		   axi_araddr <= axi_araddr + addr_step;
+		   axi_arlen <= (rd_cmd_left > 8) ? 7 : (rd_cmd_left-1);
+		   axi_arsize <= axi_size;
+		   axi_arburst <= 01;
+		   rd_cmd_left <= (rd_cmd_left > 8) ? (rd_cmd_left - 8) : 0;
+		   rd_cmd_idle <= (rd_cmd_left > 0) ? 0 : 1;
+		end	
+	end		
+	else begin
+		axi_arvalid <= 1'b0;
+	end	
+end
+
+//////////////////////////////////   
+//Read Data (and Response) Channel
+//////////////////////////////////
+
+
+wire fifo_full;
+wire fifo_near_full;
+
+always @(posedge clk) begin
+	if (!rst_n || !init_cmptd) begin
+		axi_rready <= 0;
+		rd_data_idle <= 1;
+		rd_data_left <= 0;
+	end 
+	else if (ddr_conf && (cmd_type == 0)) begin
+		rd_data_idle <= 0;
+		rd_data_left <= (ddr_len >> shift_dlen   );
+		axi_rready <= 0;
+	end 
+	else if (!rd_data_idle)begin
+		axi_rready <= !fifo_near_full;
+		if(axi_rready && axi_rvalid) begin
+			if (rd_data_left > 1) begin
+			rd_data_left <= rd_data_left - 1;		
+			end
+			else if (rd_data_left <= 1) begin
+				rd_data_idle <= 1;	
+				axi_rready <= 0;
+			end
+		end	
+	end 
+end
+
+always @(posedge clk) begin
+	if (!rst_n || !init_cmptd) begin
+		axi_bready <= 0;
+    end
+    else if(!axi_bready && axi_wlast)begin
+        axi_bready <= 1;
+    end
+    else if(axi_bready && axi_bvalid) begin
+        axi_bready <= 0;
+    end
+end
+
+xip_fifo_256_32 x256x32(
+  .clk(clk),
+  .srst(~rst_n),
+  .din(axi_rdata),
+  .wr_en(axi_rready && axi_rvalid),
+  .rd_en(ddr_fifo_req),
+  .dout(ddr_fifo_data),
+  .almost_full(fifo_near_full),
+  .prog_empty(ddr_fifo_near_empty),
+  .full(fifo_full),
+  .empty(ddr_fifo_empty)
+ );
+
+   //  The following function calculates the address width based on specified RAM depth
+     function integer clogb2;
+         input integer depth;
+             for (clogb2=0; depth>0; clogb2=clogb2+1)
+                 depth = depth >> 1;
+       endfunction
+  
+  endmodule
