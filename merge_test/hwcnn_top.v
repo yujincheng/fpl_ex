@@ -34,11 +34,10 @@ module hwcnn_top #(
 	parameter DDR_ADDR_LEN = 32,
 	parameter DDR_DATA_LEN = 512,
 	parameter SINGLE_LEN = 24,
-	  parameter APP_DATA_WIDTH   = 512,        // DDR data bus width.
-  parameter APP_ADDR_WIDTH   = 29, 
-	parameter DM_WIDTH = 8,       // Address bus width of the 
-  //parameter RLD_BANK_WIDTH   = 4,         // RLD3 - 4, RLD2 - 3
-  parameter APP_CMD_WIDTH    = 3
+	
+	parameter C_AXI_ID_WIDTH           = 4,
+   parameter C_AXI_ADDR_WIDTH         = 32, 
+   parameter C_AXI_DATA_WIDTH         = 256
   
   
   )(
@@ -50,28 +49,48 @@ input wire [INST_LEN-1:0] instruct,
 output wire inst_req,
 input wire inst_empty,
 
-// ********* ALL SIGNALS AT THIS INTERFACE ARE ACTIVE HIGH SIGNALS ********/
-   input 				       init_calib_complete, // MC calibration done signal coming from MC UI.
-   // DDR3/4, RLD3, QDRIIP Shared Interface
-   input 				       app_rdy, // cmd fifo ready signal coming from MC UI.
-   input 				       app_wdf_rdy, // write data fifo ready signal coming from MC UI.
-   input [0:0] 		       app_rd_data_valid, // read data valid signal coming from MC UI
-   input [APP_DATA_WIDTH-1 : 0] 	       app_rd_data, // read data bus coming from MC UI
-   
-   
-   output [APP_CMD_WIDTH-1 : 0] 	       app_cmd, // command bus to the MC UI
-   output [APP_ADDR_WIDTH-1 : 0] 	       app_addr, // address bus to the MC UI
-   output 				       app_en, // command enable signal to MC UI.
-   output [(APP_DATA_WIDTH/DM_WIDTH)-1 : 0]    app_wdf_mask, // write data mask signal which
-                                              // is tied to 0 in this example.
-   output [APP_DATA_WIDTH-1: 0] 	       app_wdf_data, // write data bus to MC UI.
-   output 				       app_wdf_end, // write burst end signal to MC UI
-   output 				       app_wdf_wren, // write enable signal to MC UI
-
-  // QDRIIP Interface
-   output 				       app_wdf_en, // QDRIIP, write enable
-   output [APP_ADDR_WIDTH-1:0] 		       app_wdf_addr, // QDRIIP, write address
-   output [APP_CMD_WIDTH-1:0] 		       app_wdf_cmd // QDRIIP write command
+  input init_cmptd                ,
+  // Slave Interface Write Address Ports
+// AXI write address channel signals
+  input                                  axi_awready, // Indicates slave is ready to accept a 
+  output [C_AXI_ID_WIDTH-1:0]        axi_awid,    // Write ID
+  output [C_AXI_ADDR_WIDTH-1:0]      axi_awaddr,  // Write address
+  output [7:0]                       axi_awlen,   // Write Burst Length
+  output [2:0]                       axi_awsize,  // Write Burst size
+  output [1:0]                       axi_awburst, // Write Burst type
+  output                             axi_awlock,  // Write lock type
+  output [3:0]                       axi_awcache, // Write Cache type
+  output [2:0]                       axi_awprot,  // Write Protection type
+  output                             axi_awvalid, // Write address valid
+// AXI write data channel signals
+  input                                  axi_wready,  // Write data ready
+  output [C_AXI_DATA_WIDTH-1:0]          axi_wdata,    // Write data
+  output [C_AXI_DATA_WIDTH/8-1:0]        axi_wstrb,    // Write strobes
+  output                                 axi_wlast,    // Last write transaction   
+  output                              axi_wvalid,   // Write valid  
+// AXI write response channel signals
+  input  [C_AXI_ID_WIDTH-1:0]            axi_bid,     // Response ID
+  input  [1:0]                           axi_bresp,   // Write response
+  input                                  axi_bvalid,  // Write reponse valid
+  output                              axi_bready,  // Response ready
+// AXI read address channel signals
+  input                                  axi_arready,     // Read address ready
+  output [C_AXI_ID_WIDTH-1:0]        axi_arid,        // Read ID
+  output [C_AXI_ADDR_WIDTH-1:0]      axi_araddr,      // Read address
+  output [7:0]                       axi_arlen,       // Read Burst Length
+  output [2:0]                       axi_arsize,      // Read Burst size
+  output [1:0]                       axi_arburst,     // Read Burst type
+  output                             axi_arlock,      // Read lock type
+  output [3:0]                       axi_arcache,     // Read Cache type
+  output [2:0]                       axi_arprot,      // Read Protection type
+  output                             axi_arvalid,     // Read address valid 
+// AXI read data channel signals   
+  input  [C_AXI_ID_WIDTH-1:0]            axi_rid,     // Response ID
+  input  [1:0]                           axi_rresp,   // Read response
+  input                                  axi_rvalid,  // Read reponse valid
+  input  [C_AXI_DATA_WIDTH-1:0]          axi_rdata,    // Read data
+  input                                  axi_rlast,    // Read last
+  output                              axi_rready  // Read Response ready
 );
 
 wire [64*8 - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
@@ -204,8 +223,15 @@ wire                        ddr_fifo_empty_mux;
 wire                         ddr_fifo_req_mux;
 wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_mux;
 
-wire   [DDR_DATA_LEN - 1:0]  ddr_write_data_dwrite;
+wire   [C_AXI_DATA_WIDTH - 1:0]  ddr_write_data_dwrite;
+wire ddr_write_empty_dwrite;
+wire ddr_write_req_dwrite;
+wire  [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_dwrite;
+wire  [SINGLE_LEN - 1:0] ddr_len_dwrite;
+wire  ddr_conf_dwrite;
 
+wire  [SINGLE_LEN - 1:0]     mig_ddr_len;
+wire [DDR_ADDR_LEN - 1:0] mig_ddr_st_addr;
 
 genvar i,j,k;
 generate
@@ -457,8 +483,8 @@ assign addra = (!dfc_idle) ? dfc_BP_addra : w2c_addra;
 assign wea = (!dfc_idle) ? dfc_BP_wea : w2c_wea;
 
 assign addrb = (!dwc_idle) ? dwc_BP_addr : ilc_addrb;
-
-
+assign mig_ddr_len = (!dwc_idle) ? ddr_len_dwrite : ddr_len_mux;
+assign mig_ddr_st_addr = (!dwc_idle) ? dwc_ddr_st_addr : ddr_st_addr_out_mux;
 
 muxddr mddr(
 .clk(clk),
@@ -499,43 +525,68 @@ muxddr mddr(
 );
 
 
-mig_axi u_axi4_tg_inst
+mig_axi_data#(
+    .C_AXI_ID_WIDTH(C_AXI_ID_WIDTH),
+   .C_AXI_ADDR_WIDTH(C_AXI_ADDR_WIDTH), 
+   .C_AXI_DATA_WIDTH(C_AXI_DATA_WIDTH)
+) u_axi4_tg_inst
    (
      .clk                             (clk),
      .rst_n                          (rst_n),
 
 // Input control signals
-     .init_calib_complete                       (init_calib_complete),
+     .init_cmptd                       (init_cmptd),
 	 
 
-
-.app_rdy(app_rdy), // cmd fifo ready signal coming from MC UI.
-.app_wdf_rdy(app_wdf_rdy), // write data fifo ready signal coming from MC UI.
-.app_rd_data_valid(app_rd_data_valid), // read data valid signal coming from MC UI
-.app_rd_data(app_rd_data), // read data bus coming from MC UI
-
-
-.app_cmd(app_cmd), // command bus to the MC UI
-.app_addr(app_addr), // address bus to the MC UI
-.app_en(app_en), // command enable signal to MC UI.
-.app_wdf_mask(app_wdf_mask), // write data mask signal which
-
-.app_wdf_data(app_wdf_data), // write data bus to MC UI.
-.app_wdf_end(app_wdf_end), // write burst end signal to MC UI
-.app_wdf_wren(app_wdf_wren), // write enable signal to MC UI
-
-.cmd_type(mig_type),
-
-.app_wdf_en(app_wdf_en), // QDRIIP, write enable
-.app_wdf_addr(app_wdf_addr), // QDRIIP, write address
-.app_wdf_cmd(app_wdf_cmd), // QDRIIP write command
+// Slave Interface Write Address Ports
+   .axi_awready(axi_awready),      
+   .axi_awid(axi_awid),         
+   .axi_awaddr(axi_awaddr),       
+   .axi_awlen(axi_awlen),        
+   .axi_awsize(axi_awsize),       
+   .axi_awburst(axi_awburst),      
+   .axi_awlock(axi_awlock),       
+   .axi_awcache(axi_awcache),      
+   .axi_awprot(axi_awprot),       
+   .axi_awvalid(axi_awvalid),      
+   // .lave(lave), .nterface(nterface),
+   .axi_wready(axi_wready),       
+   .axi_wdata(axi_wdata),        
+   .axi_wstrb(axi_wstrb),        
+   .axi_wlast(axi_wlast),        
+   .axi_wvalid(axi_wvalid),       
+   // .lave(lave), .nterface(nterface),
+   .axi_bid(axi_bid),          
+   .axi_bresp(axi_bresp),        
+   .axi_bvalid(axi_bvalid),       
+   .axi_bready(axi_bready),       
+   // .lave(lave), .nterface(nterface),
+   .axi_arready(axi_arready),      
+   .axi_arid(axi_arid),         
+   .axi_araddr(axi_araddr),       
+   .axi_arlen(axi_arlen),        
+   .axi_arsize(axi_arsize),       
+   .axi_arburst(axi_arburst),      
+   .axi_arlock(axi_arlock),       
+   .axi_arcache(axi_arcache),      
+   .axi_arprot(axi_arprot),       
+   .axi_arvalid(axi_arvalid),      
+   // .lave(lave), .nterface(nterface),
+   .axi_rid(axi_rid),          
+   .axi_rresp(axi_rresp),        
+   .axi_rvalid(axi_rvalid),       
+   .axi_rdata(axi_rdata),        
+   .axi_rlast(axi_rlast),        
+   .axi_rready(axi_rready),       
+  
+  .axi_size(3'd5),
 	 
 	 
+	 .cmd_type(mig_type),
 	 
 	 
-	 
- .ddr_st_addr_out(ddr_st_addr_out_mux),
- .ddr_len(ddr_len_mux),
+ .ddr_st_addr_out(mig_ddr_st_addr),
+ .ddr_len(mig_ddr_len),
  .ddr_conf(ddr_conf_mux || ddr_conf_dwrite),
  
  
@@ -618,7 +669,7 @@ inlinecontrol#(
 .ADDR_LEN(ADDR_LEN_BP)
 ) ilc(
 	.st_addr(ilc_st_addr),
-	.linelen(ilc_linelen), //after_pad 至少�??????4
+	.linelen(ilc_linelen), //after_pad 至少�??????4
 	.ispad(ilc_ispad),
 	.idle_soon(id_soon_ilc),
 	.addrb(ilc_addrb),

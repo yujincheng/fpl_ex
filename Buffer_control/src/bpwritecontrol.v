@@ -8,6 +8,8 @@ module BP_WRITE_CONTROL #(
 	parameter ADDR_LEN = 16,
 	parameter DATA_LEN = 32,
 	parameter MUXCONTROL = 4,
+	parameter DDR_DATA_LEN = 512,
+	parameter C_AXI_DATA_WIDTH = 256,
 	parameter SINGLE_LEN = 24,
 	parameter BUFFER_NUM = 64
 )(
@@ -15,7 +17,7 @@ module BP_WRITE_CONTROL #(
 	input wire rst_n,
 	input wire conf,
 
-	//input wire [SINGLE_LEN - 1:0] data_num, // ÐèÒªÒ»´Î¶ÁÕâÃ´¶à¸öweights£¬weights=1´ú±íËùÓÐwbÖÐµØÖ·Ôö¼Ó4¸ö¡£ÔÚDDRÖÐÊÇÁ¬Ðø 9*X_PE*X_MESH byteÊý
+	//input wire [SINGLE_LEN - 1:0] data_num, // ï¿½ï¿½ÒªÒ»ï¿½Î¶ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½weightsï¿½ï¿½weights=1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wbï¿½Ðµï¿½Ö·ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½DDRï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 9*X_PE*X_MESH byteï¿½ï¿½
 	input wire [SINGLE_LEN - 1:0] data_ddr_byte, // X_PE*X_MESH*weights
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
@@ -30,12 +32,11 @@ module BP_WRITE_CONTROL #(
 	
 	output wire ddr_write_empty,
 	input wire ddr_write_req,
-	output wire [DATA_LEN*16 - 1:0] ddr_write_data_out, //16 here is 512/DATA_LEN
+	output wire [C_AXI_DATA_WIDTH - 1:0] ddr_write_data_out,
 	
 	
 	output wire [ADDR_LEN*BUFFER_NUM - 1:0] BP_addr_out,
-	input wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_in, //8 here is 512/DATA_LEN
-	
+	input wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_in, 	
 	output wire idle
 );
 
@@ -49,7 +50,8 @@ reg[1:0] BP_num_reg_r1;
 reg [SINGLE_LEN - 1:0] Line_width_reg;
 reg[1:0] count_line;
 reg [SINGLE_LEN - 1:0] count_in_line;
-reg [DATA_LEN*16 - 1:0] ddr_write_data; // 16 here is 512/DATA_LEN
+reg [DDR_DATA_LEN - 1:0] ddr_write_data;
+wire [DDR_DATA_LEN - 1:0] ddr_write_data_niu;
  reg [ADDR_LEN - 1:0] BP_addr_reg;
  wire ddr_fifo_near_full;
 reg ddr_fifo_en;
@@ -57,7 +59,7 @@ reg ddr_fifo_en_r1;
 reg ddr_fifo_en_r2;
 
 assign idle = (!working && !working_r1);
-
+assign ddr_write_data_niu = {ddr_write_data[DDR_DATA_LEN/2 - 1:0],ddr_write_data[DDR_DATA_LEN-1:DDR_DATA_LEN/2]};
 
 
 genvar m,n,l;
@@ -157,10 +159,10 @@ always @ (posedge clk) begin
 	end
 end
 
-   xip_fifo_64_64 x6464(
+   xip_w512_r256 x6464(
 	  .clk(clk),
 	  .srst(~rst_n),
-	  .din(ddr_write_data),
+	  .din(ddr_write_data_niu),
 	  .wr_en(ddr_fifo_en_r1),
 	  .rd_en(ddr_write_req),
 	  .dout(ddr_write_data_out),
