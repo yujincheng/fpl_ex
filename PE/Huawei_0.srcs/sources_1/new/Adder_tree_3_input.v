@@ -42,7 +42,7 @@ module Adder_tree_3_input
   wire signed [IN_BIT-1:0] in_data [0:15];
   generate
   genvar i;
-  for(i=0;i<16;i=i+1)
+  for(i=0;i<IN_NUM;i=i+1)
   begin:in_wires
     assign in_data[i]=input_data[IN_BIT*(i+1)-1:IN_BIT*i];
   end

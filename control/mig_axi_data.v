@@ -86,9 +86,9 @@ reg [SINGLE_LEN - 1:0] rd_data_left;
 reg [SINGLE_LEN - 1:0] wr_data_left;
 
 assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle;
-wire [DDR_DATA_LEN - 1:0] ddr_fifo_data_niu;
+//wire [DDR_DATA_LEN - 1:0] ddr_fifo_data_niu;
 
-assign ddr_fifo_data = {ddr_fifo_data_niu[DDR_DATA_LEN/2 - 1 : 0],ddr_fifo_data_niu[DDR_DATA_LEN - 1:DDR_DATA_LEN/2]};
+//assign ddr_fifo_data = {ddr_fifo_data_niu[DDR_DATA_LEN/2 - 1 : 0],ddr_fifo_data_niu[DDR_DATA_LEN - 1:DDR_DATA_LEN/2]};
 
 //////////////////////	 
 //Write Address Channel
@@ -178,7 +178,7 @@ always @(posedge clk)
 localparam C_WLEN_COUNT_WIDTH ='d9;
 reg [C_WLEN_COUNT_WIDTH -1:0] wlen_count;
  
- assign axi_wlast = ((wr_data_left >= 8) ? (wlen_count == 7) : (wr_data_left == 1)) && !idle;
+ assign axi_wlast = ((wr_data_left >= 2) ? (wlen_count == 7) : (wr_data_left == 1)) && !idle;
  
   always @(posedge clk)
   begin
@@ -293,7 +293,8 @@ xip_w256_r512 x256x32(
   .din(axi_rdata),
   .wr_en(axi_rready && axi_rvalid),
   .rd_en(ddr_fifo_req),
-  .dout(ddr_fifo_data_niu),
+  .dout(ddr_fifo_data),
+//    .dout(ddr_fifo_data_niu),
   .almost_full(fifo_near_full),
   .prog_empty(ddr_fifo_near_empty),
   .full(fifo_full),
