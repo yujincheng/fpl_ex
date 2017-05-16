@@ -51,7 +51,7 @@ reg [SINGLE_LEN - 1:0] Line_width_reg;
 reg[1:0] count_line;
 reg [SINGLE_LEN - 1:0] count_in_line;
 reg [DDR_DATA_LEN - 1:0] ddr_write_data;
-//wire [DDR_DATA_LEN - 1:0] ddr_write_data_niu;
+wire [DDR_DATA_LEN - 1:0] ddr_write_data_niu;
  reg [ADDR_LEN - 1:0] BP_addr_reg;
  wire ddr_fifo_near_full;
 reg ddr_fifo_en;
@@ -59,7 +59,7 @@ reg ddr_fifo_en_r1;
 reg ddr_fifo_en_r2;
 
 assign idle = (!working && !working_r1);
-//assign ddr_write_data_niu = {ddr_write_data[DDR_DATA_LEN/2 - 1:0],ddr_write_data[DDR_DATA_LEN-1:DDR_DATA_LEN/2]};
+assign ddr_write_data_niu = {ddr_write_data[DDR_DATA_LEN/2 - 1:0],ddr_write_data[DDR_DATA_LEN-1:DDR_DATA_LEN/2]};
 
 
 genvar m,n,l;
@@ -162,7 +162,7 @@ end
    xip_w512_r256 x6464(
 	  .clk(clk),
 	  .srst(~rst_n),
-	  .din(ddr_write_data),
+	  .din(ddr_write_data_niu),
 	  .wr_en(ddr_fifo_en_r1),
 	  .rd_en(ddr_write_req),
 	  .dout(ddr_write_data_out),
