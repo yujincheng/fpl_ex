@@ -44,9 +44,6 @@ module Winograd_outside_3input_lut
   wire signed [IN_BIT-1:0] data_wire_array [0:MESH_Y*MESH_Y-1];
   reg signed [IN_BIT-1:0] data_wire_array_reg [0:MESH_Y*MESH_Y-1];
 
-always @ (posedge clk_en[0]&clk) begin
-	data_wire_array_reg <= data_wire_array;
-end
   
   reg signed [MID_BIT-1:0] temp_sum[0:TEMP_NUM-1];
   reg signed [OUT_BIT-1:0] result_reg[0:MESH_X*MESH_X-1];
@@ -56,6 +53,9 @@ end
 	for(i=0;i<MESH_Y*MESH_Y;i=i+1)
 	begin:data_array
 		assign data_wire_array[i]=data[IN_BIT*(i+1)-1:IN_BIT*i];
+		always @ (posedge clk) begin
+            data_wire_array_reg[i] <= data_wire_array[i];
+        end
 	end
 	for(i=0;i<MESH_X*MESH_X;i=i+1)
 	begin:result_array
@@ -64,7 +64,7 @@ end
 		
 	endgenerate
 	  
-  always @(posedge clk_en[0]&clk)
+  always @(posedge clk)
   begin
   	if(~rst_n)
   	begin

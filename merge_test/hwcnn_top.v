@@ -22,12 +22,12 @@
 
 
 module hwcnn_top #(
-	parameter X_PE = 8,
+	parameter X_PE = 16,
 	parameter X_MAC = 4,
-	parameter X_MESH = 8,
+	parameter X_MESH = 16,
 	parameter ADDR_LEN_WB = 13,
 	parameter ADDR_LEN_BB = 7,
-	parameter ADDR_LEN_BP = 14,
+	parameter ADDR_LEN_BP = 13,
 	parameter MAX_LINE_LEN = 9,
 	parameter INST_LEN = 220,
 	parameter COM_DATALEN = 24,
