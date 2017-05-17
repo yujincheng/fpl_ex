@@ -4,7 +4,7 @@ from collections import OrderedDict
 from pdb import set_trace
 
 # Hardware configuration
-INST_LEN = 220
+INST_LEN = 256
 ADDR_LENGTH = 16
 BIAS_ADDR_LENGTH = 16
 WEIGHT_ADDR_LENGTH = 16
@@ -13,8 +13,12 @@ BIAS_BRAM_WIDTH = 8
 WEIGHT_BRAM_WIDTH = 8
 INTER_WIDTH = 3 # 24bit representing a single number
 
-# for bias
+# for bias/ weights
 SINGLE_LEN = 24
+DDR_ADDR_LEN = 32
+ADDR_LEN_BB = BIAS_ADDR_LENGTH
+ADDR_LEN_WB = WEIGHT_ADDR_LENGTH
+ADDR_LEN_BP = ADDR_LENGTH
 
 INPUT_PARALL = 16
 OUTPUT_PARALL = 16
@@ -185,8 +189,18 @@ class Inst(object):
 	        ]),
     	OrderedDict([ # load bias
     		('inst_type',4),
-            ('bfc_bias_num', SINGLE_LEN)
-    		])]
+            ('bfc_bias_num', SINGLE_LEN),
+            ('bfc_bias_ddr_byte', SINGLE_LEN),
+            ('bfc_ddr_st_addr', DDR_ADDR_LEN),
+            ('bfc_bb_st_addr', ADDR_LEN_BB)
+    		]),
+    	OrderedDict([ # load weight
+    		('inst_type',4),
+            ('wfc_weight_num', SINGLE_LEN),
+            ('wfc_weight_ddr_byte', SINGLE_LEN),
+            ('wfc_ddr_st_addr', DDR_ADDR_LEN),
+            ('wfc_wb_st_addr', ADDR_LEN_WB)
+            ])]
 
     #def __new__(self, *args, **kwargs):
     #    BitArray.__new__(self, length = INST_LEN)

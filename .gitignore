@@ -3,3 +3,4 @@ scheduler/models*
 scheduler/insts*
 *.pyc
 *.html
+.vscode*

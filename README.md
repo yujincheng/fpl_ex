@@ -3,12 +3,6 @@
 
 Overleaf链接：https://www.overleaf.com/8702087qghmbvdwbzjj
 
--[ ] 图不全
-
-
--[ ] 缺部分参考文献
--[ ] 实验结果
-
 ## 1Intro
 
 余
@@ -45,7 +39,7 @@ Overleaf链接：https://www.overleaf.com/8702087qghmbvdwbzjj
 
 ### 4.2Network split
 
-- [ ] 给我们的图取一个吊炸天的名字
+- [x] 给我们的图取一个吊炸天的名字
 
 ### 4.3compiler design
 
@@ -94,5 +88,7 @@ Overleaf链接：https://www.overleaf.com/8702087qghmbvdwbzjj
 妃
 ## 7 Conclusion
 
-汪
+**Future Work：**
+
+- ​
 
