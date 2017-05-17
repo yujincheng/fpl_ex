@@ -90,7 +90,7 @@ module example_top_tb #
     parameter         APP_DATA_WIDTH          = 512, // This parameter is controllerwise
     parameter         APP_MASK_WIDTH          = 64,   // This parameter is controllerwise
 	parameter INST_LEN = 220,
-	parameter FILE_NAME = "..//sim_data//vgg_19_net.txt",
+	parameter FILE_NAME = "..//sim_data//inst.txt",
   `ifdef SIMULATION_MODE
     parameter SIMULATION            = "TRUE" 
   `else
@@ -134,7 +134,7 @@ module example_top_tb #
   end
   
   always begin
-  c0_ddr3_clk = #4 ~c0_ddr3_clk;
+  c0_ddr3_clk = #2 ~c0_ddr3_clk;
   end
 
 

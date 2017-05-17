@@ -614,24 +614,11 @@ if __name__ == '__main__':
 
     set_trace()
     hardware_config = split.HardwareConfig(config.hardware_config)
-    #split.split_net(net, hardware_config)
-    #scheduler = Scheduler(net, hardware_config)
-    #set_trace()
+    split.split_net(net['E'], hardware_config)
+    scheduler = Scheduler(net, hardware_config)
+    set_trace()
     #insts = scheduler.calc_net()
 
-    #
-    #code py yujincheng
-    #     
-    print "data:"
-    for layer in net['E']:
-        print layer.outsize();
-    print "weights:"
-    for layer in net['E']:
-        print layer.wsize();
-        
-    #
-    #
-    #
 
 
 
