@@ -75,7 +75,7 @@ module mig_axi_data #(
 
   );
  localparam shift_dlen  = clogb2(C_AXI_DATA_WIDTH/8 - 1);
- localparam addr_step  = (C_AXI_DATA_WIDTH /16);
+ localparam addr_step  = (C_AXI_DATA_WIDTH);
 reg rd_data_idle;
 reg rd_cmd_idle;
 reg wr_data_idle;
