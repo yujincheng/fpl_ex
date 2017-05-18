@@ -93,145 +93,145 @@ input wire inst_empty,
   output                              axi_rready  // Read Response ready
 );
 
-(*keep = "true"*)  wire [64*8 - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
-(*keep = "true"*)  wire [ADDR_LEN_WB - 1:0]                               wfc_wr_addr ;
-(*keep = "true"*)  wire [X_PE*2 - 1:0]                                               wfc_wea      ;
-(*keep = "true"*)  wire                                                wb_wr_ready   ;
-(*keep = "true"*)  wire [X_PE*X_MESH*8*9 - 1 : 0]                      wb_ker_out    ;
-(*keep = "true"*)  wire [ADDR_LEN_WB - 1:0]                                wb_st_rd_addr ;
-(*keep = "true"*)  wire                                                wb_ker_en     ;
-(*keep = "true"*)  wire                                                 wb_rd_conf    ;
-(*keep = "true"*)  wire                                                wb_rd_ready   ;
+wire [64*8 - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
+wire [ADDR_LEN_WB - 1:0]                               wfc_wr_addr ;
+wire [X_PE*2 - 1:0]                                               wfc_wea      ;
+wire                                                wb_wr_ready   ;
+wire [X_PE*X_MESH*8*9 - 1 : 0]                      wb_ker_out    ;
+wire [ADDR_LEN_WB - 1:0]                                wb_st_rd_addr ;
+wire                                                wb_ker_en     ;
+wire                                                 wb_rd_conf    ;
+wire                                                wb_rd_ready   ;
 
-wire [8 - 1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][8:0];
+wire[8 - 1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][8:0];
 
-(*keep = "true"*)  wire [32*X_MAC*X_MESH-1:0]                                dwire;
-(*keep = "true"*)  wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
+wire [32*X_MAC*X_MESH-1:0]                                dwire;
+wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
 
-(*keep = "true"*)  wire [32*X_MAC*X_MESH-1:0]                                doutb;
-(*keep = "true"*)  wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addrb;
-(*keep = "true"*)  wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                ilc_addrb;
-
-
-
-(*keep = "true"*)  wire  [X_MAC*X_MESH-1:0]                              w2c_wea;
-(*keep = "true"*)  wire [32*X_MAC*X_MESH-1:0] 							w2c_dina;
-(*keep = "true"*)  wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
-
-(*keep = "true"*)  wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
-(*keep = "true"*)  wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
-(*keep = "true"*)  wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
-
-(*keep = "true"*)  wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dwc_BP_addr;
-
-(*keep = "true"*)  wire  [X_MAC*X_MESH-1:0]                              wea;
-(*keep = "true"*)  wire [32*X_MAC*X_MESH-1:0] 							dina;
-(*keep = "true"*)  wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
+wire [32*X_MAC*X_MESH-1:0]                                doutb;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addrb;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                ilc_addrb;
 
 
 
+wire  [X_MAC*X_MESH-1:0]                              w2c_wea;
+wire [32*X_MAC*X_MESH-1:0] 							w2c_dina;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
 
- wire [32-1:0] dina_show[X_MESH-1:0][X_MAC-1:0  ];
- wire [32-1:0] doutb_show[X_MESH-1:0][X_MAC-1:0];
- wire wea_show[X_MESH-1:0][X_MAC-1:0                  ];
- wire [ADDR_LEN_BP-1:0] addra_show[X_MESH-1:0][X_MAC-1:0 ];
- wire [ADDR_LEN_BP-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
+(*keep = "true"*)wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
+(*keep = "true"*)wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
 
-(*keep = "true"*)  wire [4 - 1:0]                             control;
-(*keep = "true"*)  wire [3:0]                                           bsr_iszero;
-(*keep = "true"*)  wire 											ilc_ispad;
-(*keep = "true"*)  wire [MAX_LINE_LEN - 1 : 0]										ilc_linelen;
-(*keep = "true"*)  wire [MAX_LINE_LEN - 1 : 0]										w2c_linelen;
-(*keep = "true"*)  wire [4*ADDR_LEN_BP-1 : 0]										ilc_st_addr;
-(*keep = "true"*)  wire [4*ADDR_LEN_BP-1 : 0]										w2c_st_addr;
-(*keep = "true"*)  wire [4:0]		w2c_shift_len;
-(*keep = "true"*)  wire [1:0] 		w2c_valid_mac;
-(*keep = "true"*)  wire [7:0]                                           bsr_buffermux;
-(*keep = "true"*)  wire                                                out_valid;
-(*keep = "true"*)  wire                                                indata_valid;
-(*keep = "true"*)  wire [COM_DATALEN*4*16 - 1:0] 							result_wire_unpool;
-(*keep = "true"*)  wire [COM_DATALEN-1:0] 							result_wire_unpool_show[X_MESH-1:0][2-1:0][2-1:0];
-(*keep = "true"*)  wire [COM_DATALEN*16 - 1:0] 							result_wire_pool;
-(*keep = "true"*)  wire [COM_DATALEN-1:0] 							result_wire_pool_show[X_MESH-1:0];
-(*keep = "true"*)  wire result_valid;
-(*keep = "true"*)  wire result_valid_pool;
-(*keep = "true"*)  wire [20*X_PE - 1:0]						bb_bias;
-(*keep = "true"*)  wire [ADDR_LEN_BB - 1:0]										bb_addr;
-(*keep = "true"*)  wire [5 - 1:0]										bb_shift;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dwc_BP_addr;
 
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0  ]     bfc_bias_num; // 
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0  ]     bfc_bias_ddr_byte; 
-(*keep = "true"*)  wire [DDR_ADDR_LEN - 1:0]     bfc_ddr_st_addr;
-(*keep = "true"*)  wire [ADDR_LEN_BB - 1:0 ]     bfc_bb_st_addr;
-(*keep = "true"*)  wire                          wfc_idle;
-(*keep = "true"*)  wire 							wfc_conf;
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0  ]     wfc_weight_num; // 
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0  ]     wfc_weight_ddr_byte;
-(*keep = "true"*)  wire [DDR_ADDR_LEN - 1:0]     wfc_ddr_st_addr;
-(*keep = "true"*)  wire [ADDR_LEN_WB - 1:0 ]     wfc_wb_st_addr;
-
-
-(*keep = "true"*)  wire 							dfc_conf;
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0  ]     dfc_data_width; // 
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0  ]     dfc_data_ddr_byte;
-(*keep = "true"*)  wire [DDR_ADDR_LEN - 1:0]     dfc_ddr_st_addr;
-(*keep = "true"*)  wire [ADDR_LEN_BP - 1:0 ]     dfc_data_st_addr;
-(*keep = "true"*)  wire [1:0] dfc_st_mac;
-
-
-(*keep = "true"*)  wire 							dwc_conf;
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0  ]     dwc_data_width; // 
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0  ]     dwc_data_ddr_byte;
-(*keep = "true"*)  wire [DDR_ADDR_LEN - 1:0]     dwc_ddr_st_addr;
-(*keep = "true"*)  wire [ADDR_LEN_BP - 1:0 ]     dwc_data_st_addr;
-(*keep = "true"*)  wire [1:0] dwc_st_mac;
+(*keep = "true"*)wire  [X_MAC*X_MESH-1:0]                              wea;
+wire [32*X_MAC*X_MESH-1:0] 							dina;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
 
 
 
-(*keep = "true"*)  wire [ADDR_LEN_BB - 1:0]           bfc_wr_addr ;
-(*keep = "true"*)  wire [X_PE/8 - 1:0]        bfc_wea      ;
-(*keep = "true"*)  wire [64*8 - 1:0] bfc_data_wr;  //8 here is 512/DATA_LEN
 
-(*keep = "true"*)  wire [1:0] switch;
-(*keep = "true"*)  wire [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_bias;
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0]   ddr_len_bias;
-(*keep = "true"*)  wire                      ddr_conf_bias;
-(*keep = "true"*)  wire                      ddr_fifo_empty_bias;
-(*keep = "true"*)  wire                      ddr_fifo_req_bias;
-(*keep = "true"*)  wire [DDR_DATA_LEN - 1:0]     ddr_fifo_data_bias;
+wire [32-1:0] dina_show[X_MESH-1:0][X_MAC-1:0  ];
+wire [32-1:0] doutb_show[X_MESH-1:0][X_MAC-1:0];
+wire wea_show[X_MESH-1:0][X_MAC-1:0                  ];
+wire [ADDR_LEN_BP-1:0] addra_show[X_MESH-1:0][X_MAC-1:0 ];
+wire [ADDR_LEN_BP-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
 
-(*keep = "true"*)  wire [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_weights;
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0]   ddr_len_weights;
-(*keep = "true"*)  wire                      ddr_conf_weights;
-(*keep = "true"*)  wire                      ddr_fifo_empty_weights;
-(*keep = "true"*)  wire                      ddr_fifo_req_weights;
-(*keep = "true"*)  wire [DDR_DATA_LEN - 1:0]     ddr_fifo_data_weights;
+wire [4 - 1:0]                             control;
+wire [3:0]                                           bsr_iszero;
+wire 											ilc_ispad;
+wire [MAX_LINE_LEN - 1 : 0]										ilc_linelen;
+wire [MAX_LINE_LEN - 1 : 0]										w2c_linelen;
+wire [4*ADDR_LEN_BP-1 : 0]										ilc_st_addr;
+wire [4*ADDR_LEN_BP-1 : 0]										w2c_st_addr;
+wire [4:0]		w2c_shift_len;
+wire [1:0] 		w2c_valid_mac;
+wire [7:0]                                           bsr_buffermux;
+wire                                                out_valid;
+wire                                                indata_valid;
+wire [COM_DATALEN*4*16 - 1:0] 							result_wire_unpool;
+wire [COM_DATALEN-1:0] 							result_wire_unpool_show[X_MESH-1:0][2-1:0][2-1:0];
+wire [COM_DATALEN*16 - 1:0] 							result_wire_pool;
+wire [COM_DATALEN-1:0] 							result_wire_pool_show[X_MESH-1:0];
+wire result_valid;
+wire result_valid_pool;
+wire [20*X_PE - 1:0]						bb_bias;
+wire [ADDR_LEN_BB - 1:0]										bb_addr;
+wire [5 - 1:0]										bb_shift;
 
-(*keep = "true"*)  wire [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_data;
-(*keep = "true"*)  wire [SINGLE_LEN - 1:0]   ddr_len_data;
-(*keep = "true"*)  wire                      ddr_conf_data;
-(*keep = "true"*)  wire                      ddr_fifo_empty_data;
-(*keep = "true"*)  wire                      ddr_fifo_req_data;
-(*keep = "true"*)  wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_data;
+wire [SINGLE_LEN - 1:0  ]     bfc_bias_num; // 
+wire [SINGLE_LEN - 1:0  ]     bfc_bias_ddr_byte; 
+wire [DDR_ADDR_LEN - 1:0]     bfc_ddr_st_addr;
+wire [ADDR_LEN_BB - 1:0 ]     bfc_bb_st_addr;
+wire                          wfc_idle;
+wire 							wfc_conf;
+wire [SINGLE_LEN - 1:0  ]     wfc_weight_num; // 
+wire [SINGLE_LEN - 1:0  ]     wfc_weight_ddr_byte;
+wire [DDR_ADDR_LEN - 1:0]     wfc_ddr_st_addr;
+wire [ADDR_LEN_WB - 1:0 ]     wfc_wb_st_addr;
 
 
-(*keep = "true"*)  wire   [DDR_ADDR_LEN - 1:0]   ddr_st_addr_out_mux;
-(*keep = "true"*)  wire  [SINGLE_LEN - 1:0]     ddr_len_mux;
-(*keep = "true"*)  wire                         ddr_conf_mux;
+wire 							dfc_conf;
+wire [SINGLE_LEN - 1:0  ]     dfc_data_width; // 
+wire [SINGLE_LEN - 1:0  ]     dfc_data_ddr_byte;
+wire [DDR_ADDR_LEN - 1:0]     dfc_ddr_st_addr;
+wire [ADDR_LEN_BP - 1:0 ]     dfc_data_st_addr;
+wire [1:0] dfc_st_mac;
 
-(*keep = "true"*)  wire                        ddr_fifo_empty_mux;
-(*keep = "true"*)  wire                         ddr_fifo_req_mux;
-(*keep = "true"*)  wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_mux;
 
-(*keep = "true"*)  wire   [C_AXI_DATA_WIDTH - 1:0]  ddr_write_data_dwrite;
-(*keep = "true"*)  wire ddr_write_empty_dwrite;
-(*keep = "true"*)  wire ddr_write_req_dwrite;
-(*keep = "true"*)  wire  [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_dwrite;
-(*keep = "true"*)  wire  [SINGLE_LEN - 1:0] ddr_len_dwrite;
-(*keep = "true"*)  wire  ddr_conf_dwrite;
+wire 							dwc_conf;
+wire [SINGLE_LEN - 1:0  ]     dwc_data_width; // 
+wire [SINGLE_LEN - 1:0  ]     dwc_data_ddr_byte;
+wire [DDR_ADDR_LEN - 1:0]     dwc_ddr_st_addr;
+wire [ADDR_LEN_BP - 1:0 ]     dwc_data_st_addr;
+wire [1:0] dwc_st_mac;
 
-(*keep = "true"*)  wire  [SINGLE_LEN - 1:0]     mig_ddr_len;
-(*keep = "true"*)  wire [DDR_ADDR_LEN - 1:0] mig_ddr_st_addr;
+
+
+wire [ADDR_LEN_BB - 1:0]           bfc_wr_addr ;
+wire [X_PE/8 - 1:0]        bfc_wea      ;
+wire [64*8 - 1:0] bfc_data_wr;  //8 here is 512/DATA_LEN
+
+wire [1:0] switch;
+wire [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_bias;
+wire [SINGLE_LEN - 1:0]   ddr_len_bias;
+wire                      ddr_conf_bias;
+wire                      ddr_fifo_empty_bias;
+wire                      ddr_fifo_req_bias;
+wire [DDR_DATA_LEN - 1:0]     ddr_fifo_data_bias;
+
+wire [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_weights;
+wire [SINGLE_LEN - 1:0]   ddr_len_weights;
+wire                      ddr_conf_weights;
+wire                      ddr_fifo_empty_weights;
+wire                      ddr_fifo_req_weights;
+wire [DDR_DATA_LEN - 1:0]     ddr_fifo_data_weights;
+
+wire [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_data;
+wire [SINGLE_LEN - 1:0]   ddr_len_data;
+wire                      ddr_conf_data;
+wire                      ddr_fifo_empty_data;
+wire                      ddr_fifo_req_data;
+(*keep = "true"*)wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_data;
+
+
+wire   [DDR_ADDR_LEN - 1:0]   ddr_st_addr_out_mux;
+wire  [SINGLE_LEN - 1:0]     ddr_len_mux;
+wire                         ddr_conf_mux;
+
+wire                        ddr_fifo_empty_mux;
+wire                         ddr_fifo_req_mux;
+wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_mux;
+
+wire   [C_AXI_DATA_WIDTH - 1:0]  ddr_write_data_dwrite;
+wire ddr_write_empty_dwrite;
+wire ddr_write_req_dwrite;
+wire  [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_dwrite;
+wire  [SINGLE_LEN - 1:0] ddr_len_dwrite;
+wire  ddr_conf_dwrite;
+
+wire  [SINGLE_LEN - 1:0]     mig_ddr_len;
+wire [DDR_ADDR_LEN - 1:0] mig_ddr_st_addr;
 
 genvar i,j,k;
 //generate
@@ -421,7 +421,7 @@ Weight_FIFO_CONTROL #(
 );
 
 
-BP_FIFO_CONTROL #(
+(*DONT_TOUCH = "yes"*)BP_FIFO_CONTROL #(
 .X_PE(X_PE),
 .X_MESH(X_MESH),
 .ADDR_LEN   (ADDR_LEN_BP  )
@@ -494,7 +494,7 @@ assign addrb = (!dwc_idle) ? dwc_BP_addr : ilc_addrb;
 assign mig_ddr_len = (!dwc_idle) ? ddr_len_dwrite : ddr_len_mux;
 assign mig_ddr_st_addr = (!dwc_idle) ? dwc_ddr_st_addr : ddr_st_addr_out_mux;
 
-muxddr mddr(
+(*DONT_TOUCH = "yes"*)muxddr mddr(
 .clk(clk),
 .rst_n(rst_n),
 .switch(switch),
