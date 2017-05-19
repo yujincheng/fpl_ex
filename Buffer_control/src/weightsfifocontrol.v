@@ -37,9 +37,9 @@ module Weight_FIFO_CONTROL#(
 
 );
 
+reg working;
 assign idle = !working;
 
-reg working;
 always @ (posedge clk) begin
 	if(!rst_n) begin
 		ddr_conf <= 0;

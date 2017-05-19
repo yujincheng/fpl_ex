@@ -37,6 +37,14 @@ module Bias_FIFO_CONTROL#(
 
 );
 
+reg [ADDR_LEN - 1:0] bb_st_addr_reg;
+reg [ADDR_LEN - 1:0] bb_addr_reg;
+reg [clogb2(BUFFER_NUM) - 1:0] count_buffer;
+reg [SINGLE_LEN - 1:0] count_addr;
+reg cto1;
+reg [SINGLE_LEN - 1:0] bias_num_reg;
+reg working;
+
 assign idle = !working;
 
 always @ (posedge clk) begin
@@ -45,8 +53,6 @@ always @ (posedge clk) begin
 end
 
 
-
-reg working;
 always @ (posedge clk) begin
 	if(!rst_n) begin
 		ddr_conf <= 0;
@@ -64,13 +70,6 @@ always @ (posedge clk) begin
 	end
 
 end
-
-reg [ADDR_LEN - 1:0] bb_st_addr_reg;
-reg [ADDR_LEN - 1:0] bb_addr_reg;
-reg [clogb2(BUFFER_NUM) - 1:0] count_buffer;
-reg [SINGLE_LEN - 1:0] count_addr;
-reg cto1;
-reg [SINGLE_LEN - 1:0] bias_num_reg;
 
 
 always @ (posedge clk) begin

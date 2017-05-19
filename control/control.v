@@ -203,13 +203,13 @@ wire [ADDR_LEN_BP*4 - 1:0] w2c_st_addr_tmp;
 genvar index_i;
 generate
 	if (OVER_ADDR > 0) begin:long
-		for (index_i = 0;index_i < 4;index_i = index_i + 1) begin
+		for (index_i = 0;index_i < 4;index_i = index_i + 1) begin:control_1
 			assign ilc_st_addr_tmp[ADDR_LEN_BP*(index_i+1)-1:index_i*ADDR_LEN_BP] = {{OVER_ADDR{1'b0}},inst_ilc_st_addr[(index_i+1)*INST_ADDR_LEN -1 :index_i*INST_ADDR_LEN]};
 			assign w2c_st_addr_tmp[ADDR_LEN_BP*(index_i+1)-1:index_i*ADDR_LEN_BP] = {{OVER_ADDR{1'b0}},inst_w2c_st_addr[(index_i+1)*INST_ADDR_LEN -1 :index_i*INST_ADDR_LEN]};
 		end
 	end
 	else  begin:short
-		for (index_i = 0;index_i < 4;index_i = index_i + 1) begin
+		for (index_i = 0;index_i < 4;index_i = index_i + 1) begin:control_2
 			assign ilc_st_addr_tmp[ADDR_LEN_BP*(index_i+1)-1:index_i*ADDR_LEN_BP] = {inst_ilc_st_addr[(index_i+1)*INST_ADDR_LEN -1 :index_i*INST_ADDR_LEN]};
 			assign w2c_st_addr_tmp[ADDR_LEN_BP*(index_i+1)-1:index_i*ADDR_LEN_BP] = {inst_w2c_st_addr[(index_i+1)*INST_ADDR_LEN -1 :index_i*INST_ADDR_LEN]};
 		end
