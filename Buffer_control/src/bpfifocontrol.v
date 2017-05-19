@@ -15,7 +15,7 @@ module BP_FIFO_CONTROL #(
 	input wire rst_n,
 	input wire conf,
 
-	//input wire [SINGLE_LEN - 1:0] data_num, // ÐèÒªÒ»´Î¶ÁÕâÃ´¶à¸öweights£¬weights=1´ú±íËùÓÐwbÖÐµØÖ·Ôö¼Ó4¸ö¡£ÔÚDDRÖÐÊÇÁ¬Ðø 9*X_PE*X_MESH byteÊý
+	//input wire [SINGLE_LEN - 1:0] data_num, // ï¿½ï¿½ÒªÒ»ï¿½Î¶ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½weightsï¿½ï¿½weights=1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wbï¿½Ðµï¿½Ö·ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½DDRï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 9*X_PE*X_MESH byteï¿½ï¿½
 	input wire [SINGLE_LEN - 1:0] data_ddr_byte, // X_PE*X_MESH*weights
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
@@ -39,7 +39,20 @@ module BP_FIFO_CONTROL #(
 	output wire idle
 );
 
-genvar m,n;
+
+
+reg working_read;
+reg working_read_r1;
+reg[1:0] BP_num_reg;
+reg [SINGLE_LEN - 1:0] Line_width_reg;
+reg[1:0] count_line;
+reg [SINGLE_LEN - 1:0] count_in_line;
+ reg [ADDR_LEN - 1:0] BP_addr_reg;
+ reg [ADDR_LEN - 1:0] BP_addr; 
+reg [DATA_LEN*16 - 1:0] BP_data; // 16 here is 512/DATA_LEN
+
+
+ genvar m,n;
 generate
 for (m=0;m<X_MESH;m = m+1) begin:singletomul1 
        for (n =0;n<X_MAC;n=n+1) begin:singletomul2
@@ -51,17 +64,6 @@ endgenerate
 
 
 assign idle = (!working_read && !working_read_r1);
-
-reg working_read;
-reg working_read_r1;
-reg[1:0] BP_num_reg;
-reg [SINGLE_LEN - 1:0] Line_width_reg;
-reg[1:0] count_line;
-reg [SINGLE_LEN - 1:0] count_in_line;
- reg [ADDR_LEN - 1:0] BP_addr_reg;
- reg [ADDR_LEN - 1:0] BP_addr; 
-reg [DATA_LEN*16 - 1:0] BP_data; // 16 here is 512/DATA_LEN
- 
 always @ (posedge clk) begin
 	BP_addr <= BP_addr_reg;
 	working_read_r1 <= working_read;
@@ -97,7 +99,7 @@ always @ (posedge clk) begin
 	end
 	else if (conf) begin
 		working_read <= 1;
-		BP_addr_reg <= BP_st_addr;
+		(*keep = "ture"*)BP_addr_reg <= BP_st_addr;
 		count_line <= 0;
 		Line_width_reg <= Line_width;
 		count_in_line <= 0;
@@ -107,7 +109,7 @@ always @ (posedge clk) begin
 		if(!ddr_fifo_empty) begin
 			ddr_fifo_req <= 1;
 			if(ddr_fifo_req) begin
-				BP_data <= ddr_fifo_data;
+				(*keep = "ture"*)BP_data <= ddr_fifo_data;
 				if(count_in_line == Line_width_reg-1 && count_line==1) begin
 					working_read <= 0;
 					count_in_line <= 0;
