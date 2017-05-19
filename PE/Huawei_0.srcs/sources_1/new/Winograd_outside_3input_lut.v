@@ -59,7 +59,7 @@ module Winograd_outside_3input_lut
 		
 	endgenerate
 	  
-  always @(posedge clk_en[0]&clk)
+  always @(posedge clk)
   begin
   	if(~rst_n)
   	begin
