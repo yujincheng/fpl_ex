@@ -42,9 +42,7 @@ module Winograd_outside_3input_lut
   //    0,-1]
 
   wire signed [IN_BIT-1:0] data_wire_array [0:MESH_Y*MESH_Y-1];
-  reg signed [IN_BIT-1:0] data_wire_array_reg [0:MESH_Y*MESH_Y-1];
-
-  
+ 
   reg signed [MID_BIT-1:0] temp_sum[0:TEMP_NUM-1];
   reg signed [OUT_BIT-1:0] result_reg[0:MESH_X*MESH_X-1];
   
@@ -53,9 +51,6 @@ module Winograd_outside_3input_lut
 	for(i=0;i<MESH_Y*MESH_Y;i=i+1)
 	begin:data_array
 		assign data_wire_array[i]=data[IN_BIT*(i+1)-1:IN_BIT*i];
-		always @ (posedge clk) begin
-            data_wire_array_reg[i] <= data_wire_array[i];
-        end
 	end
 	for(i=0;i<MESH_X*MESH_X;i=i+1)
 	begin:result_array
@@ -64,7 +59,7 @@ module Winograd_outside_3input_lut
 		
 	endgenerate
 	  
-  always @(posedge clk)
+  always @(posedge clk_en[0]&clk)
   begin
   	if(~rst_n)
   	begin
@@ -79,14 +74,14 @@ module Winograd_outside_3input_lut
   	end
   	else
   	begin
-  		temp_sum[0]<=data_wire_array_reg[0*MESH_Y+1]+data_wire_array_reg[2*MESH_Y+1]+data_wire_array_reg[1*MESH_Y+1];
-  		temp_sum[1]<=data_wire_array_reg[1*MESH_Y+1]-data_wire_array_reg[2*MESH_Y+1]-data_wire_array_reg[3*MESH_Y+1];
-  		temp_sum[2]<=data_wire_array_reg[1*MESH_Y+2]+data_wire_array_reg[0*MESH_Y+2]+data_wire_array_reg[2*MESH_Y+2];
-  		temp_sum[3]<=data_wire_array_reg[1*MESH_Y+2]-data_wire_array_reg[2*MESH_Y+2]-data_wire_array_reg[3*MESH_Y+2];
-  		temp_sum[4]<=data_wire_array_reg[0*MESH_Y+0]+data_wire_array_reg[1*MESH_Y+0]+data_wire_array_reg[2*MESH_Y+0];
-  		temp_sum[5]<=data_wire_array_reg[0*MESH_Y+3]+data_wire_array_reg[1*MESH_Y+3]+data_wire_array_reg[2*MESH_Y+3];
-  		temp_sum[6]<=data_wire_array_reg[1*MESH_Y+0]-data_wire_array_reg[2*MESH_Y+0]-data_wire_array_reg[3*MESH_Y+0];
-  		temp_sum[7]<=data_wire_array_reg[1*MESH_Y+3]-data_wire_array_reg[2*MESH_Y+3]-data_wire_array_reg[3*MESH_Y+3];
+  		temp_sum[0]<=data_wire_array[0*MESH_Y+1]+data_wire_array[2*MESH_Y+1]+data_wire_array[1*MESH_Y+1];
+  		temp_sum[1]<=data_wire_array[1*MESH_Y+1]-data_wire_array[2*MESH_Y+1]-data_wire_array[3*MESH_Y+1];
+  		temp_sum[2]<=data_wire_array[1*MESH_Y+2]+data_wire_array[0*MESH_Y+2]+data_wire_array[2*MESH_Y+2];
+  		temp_sum[3]<=data_wire_array[1*MESH_Y+2]-data_wire_array[2*MESH_Y+2]-data_wire_array[3*MESH_Y+2];
+  		temp_sum[4]<=data_wire_array[0*MESH_Y+0]+data_wire_array[1*MESH_Y+0]+data_wire_array[2*MESH_Y+0];
+  		temp_sum[5]<=data_wire_array[0*MESH_Y+3]+data_wire_array[1*MESH_Y+3]+data_wire_array[2*MESH_Y+3];
+  		temp_sum[6]<=data_wire_array[1*MESH_Y+0]-data_wire_array[2*MESH_Y+0]-data_wire_array[3*MESH_Y+0];
+  		temp_sum[7]<=data_wire_array[1*MESH_Y+3]-data_wire_array[2*MESH_Y+3]-data_wire_array[3*MESH_Y+3];
   	end
   end
   wire signed [MID_BIT+1:0] temp_sum_wire [0:3];
