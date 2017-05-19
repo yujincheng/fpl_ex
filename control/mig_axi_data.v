@@ -143,6 +143,7 @@ end
 
 
 wire wnext;
+assign       axi_wstrb = 32'hffffffff;
 assign axi_wdata = in_fifo_data;
 assign in_fifo_req = wnext & !wr_data_idle;
 
