@@ -269,6 +269,27 @@ genvar i,j,k;
 //endgenerate
 
 
+wire id_w2c;
+wire id_wb;
+wire id_soon_ilc;
+wire ilc_fromfifo;
+wire ilc_tofifo;
+wire is_w2c_back;
+wire w2c_pooled;
+wire w2c_conf;
+wire pooled_type;
+wire is_bb_add;
+wire bfc_idle;
+wire bfc_conf;
+wire dfc_idle;
+wire dwc_idle;
+wire mig_type;
+wire bias_en;
+wire bb_idle;
+wire PEC_tofifo;
+wire PEC_fromfifo;
+wire out_req;
+
 topcontrol#(
 .ADDR_LEN_WB(ADDR_LEN_WB),
 .ADDR_LEN_BP(ADDR_LEN_BP),
