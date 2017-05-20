@@ -46,6 +46,7 @@ reg [SINGLE_LEN - 1:0] weight_num_reg;
 
 reg working;
 
+reg working;
 assign idle = !working;
 
 always @ (posedge clk) begin
