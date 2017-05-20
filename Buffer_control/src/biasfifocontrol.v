@@ -13,7 +13,7 @@ module Bias_FIFO_CONTROL#(
 	input wire rst_n,
 	input wire conf,
 	
-	input wire [SINGLE_LEN - 1:0] bias_num, // ÐèÒªÒ»´Î¶ÁÕâÃ´¶à¸öbias£¬bias=1´ú±íËùÓÐbbÖÐµØÖ·Ôö¼Ó1¸ö¡£ÔÚDDRÖÐÊÇÁ¬Ðø X_PE byteÊý
+	input wire [SINGLE_LEN - 1:0] bias_num, // ï¿½ï¿½ÒªÒ»ï¿½Î¶ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½biasï¿½ï¿½bias=1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bbï¿½Ðµï¿½Ö·ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½DDRï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ X_PE byteï¿½ï¿½
 	input wire [SINGLE_LEN - 1:0] bias_ddr_byte, // X_PE*bias
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
@@ -37,7 +37,15 @@ module Bias_FIFO_CONTROL#(
 
 );
 
+reg working;
 assign idle = !working;
+
+reg [ADDR_LEN - 1:0] bb_st_addr_reg;
+reg [ADDR_LEN - 1:0] bb_addr_reg;
+reg [clogb2(BUFFER_NUM) - 1:0] count_buffer;
+reg [SINGLE_LEN - 1:0] count_addr;
+reg cto1;
+reg [SINGLE_LEN - 1:0] bias_num_reg;
 
 always @ (posedge clk) begin
 	bb_addr <= bb_addr_reg;
@@ -46,7 +54,6 @@ end
 
 
 
-reg working;
 always @ (posedge clk) begin
 	if(!rst_n) begin
 		ddr_conf <= 0;
@@ -64,13 +71,6 @@ always @ (posedge clk) begin
 	end
 
 end
-
-reg [ADDR_LEN - 1:0] bb_st_addr_reg;
-reg [ADDR_LEN - 1:0] bb_addr_reg;
-reg [clogb2(BUFFER_NUM) - 1:0] count_buffer;
-reg [SINGLE_LEN - 1:0] count_addr;
-reg cto1;
-reg [SINGLE_LEN - 1:0] bias_num_reg;
 
 
 always @ (posedge clk) begin

@@ -118,8 +118,8 @@ wire  [X_MAC*X_MESH-1:0]                              w2c_wea;
 wire [32*X_MAC*X_MESH-1:0] 							w2c_dina;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
 
-(*keep = "true"*)wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
-(*keep = "true"*)wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
+wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
+wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
 
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dwc_BP_addr;
@@ -212,7 +212,7 @@ wire [SINGLE_LEN - 1:0]   ddr_len_data;
 wire                      ddr_conf_data;
 wire                      ddr_fifo_empty_data;
 wire                      ddr_fifo_req_data;
-(*keep = "true"*)wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_data;
+wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_data;
 
 
 wire   [DDR_ADDR_LEN - 1:0]   ddr_st_addr_out_mux;
@@ -268,6 +268,27 @@ genvar i,j,k;
 //end
 //endgenerate
 
+
+wire id_w2c;
+wire id_wb;
+wire id_soon_ilc;
+wire ilc_fromfifo;
+wire ilc_tofifo;
+wire is_w2c_back;
+wire w2c_pooled;
+wire w2c_conf;
+wire pooled_type;
+wire is_bb_add;
+wire bfc_idle;
+wire bfc_conf;
+wire dfc_idle;
+wire dwc_idle;
+wire mig_type;
+wire bias_en;
+wire bb_idle;
+wire PEC_tofifo;
+wire PEC_fromfifo;
+wire out_req;
 
 topcontrol#(
 .ADDR_LEN_WB(ADDR_LEN_WB),
@@ -421,7 +442,7 @@ Weight_FIFO_CONTROL #(
 );
 
 
-(*DONT_TOUCH = "yes"*)BP_FIFO_CONTROL #(
+BP_FIFO_CONTROL #(
 .X_PE(X_PE),
 .X_MESH(X_MESH),
 .ADDR_LEN   (ADDR_LEN_BP  )
@@ -494,7 +515,7 @@ assign addrb = (!dwc_idle) ? dwc_BP_addr : ilc_addrb;
 assign mig_ddr_len = (!dwc_idle) ? ddr_len_dwrite : ddr_len_mux;
 assign mig_ddr_st_addr = (!dwc_idle) ? dwc_ddr_st_addr : ddr_st_addr_out_mux;
 
-(*DONT_TOUCH = "yes"*)muxddr mddr(
+muxddr mddr(
 .clk(clk),
 .rst_n(rst_n),
 .switch(switch),

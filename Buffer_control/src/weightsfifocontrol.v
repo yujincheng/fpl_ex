@@ -13,7 +13,7 @@ module Weight_FIFO_CONTROL#(
 	input wire rst_n,
 	input wire conf,
 	
-	input wire [SINGLE_LEN - 1:0] weight_num, // ÐèÒªÒ»´Î¶ÁÕâÃ´¶à¸öweights£¬weights=1´ú±íËùÓÐwbÖÐµØÖ·Ôö¼Ó4¸ö¡£ÔÚDDRÖÐÊÇÁ¬Ðø 9*X_PE*X_MESH byteÊý
+	input wire [SINGLE_LEN - 1:0] weight_num, // ï¿½ï¿½ÒªÒ»ï¿½Î¶ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½weightsï¿½ï¿½weights=1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wbï¿½Ðµï¿½Ö·ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½DDRï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 9*X_PE*X_MESH byteï¿½ï¿½
 	input wire [SINGLE_LEN - 1:0] weight_ddr_byte, // X_PE*X_MESH*weights
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
@@ -36,10 +36,18 @@ module Weight_FIFO_CONTROL#(
 	output wire idle
 
 );
+reg [ADDR_LEN - 1:0] wb_st_addr_reg;
+reg [ADDR_LEN - 1:0] wb_addr_reg;
+reg [clogb2(BUFFER_NUM) - 1:0] count_buffer;
+reg [clogb2(BUFFER_NUM) - 1:0] count_buffer_next;
+reg [SINGLE_LEN - 1:0] count_addr;
+reg [4 - 1:0] cto9;
+reg [SINGLE_LEN - 1:0] weight_num_reg;
+
+reg working;
 
 assign idle = !working;
 
-reg working;
 always @ (posedge clk) begin
 	if(!rst_n) begin
 		ddr_conf <= 0;
@@ -58,13 +66,6 @@ always @ (posedge clk) begin
 
 end
 
-reg [ADDR_LEN - 1:0] wb_st_addr_reg;
-reg [ADDR_LEN - 1:0] wb_addr_reg;
-reg [clogb2(BUFFER_NUM) - 1:0] count_buffer;
-reg [clogb2(BUFFER_NUM) - 1:0] count_buffer_next;
-reg [SINGLE_LEN - 1:0] count_addr;
-reg [4 - 1:0] cto9;
-reg [SINGLE_LEN - 1:0] weight_num_reg;
 
 always@ * begin
 	wb_addr <= wb_addr_reg;

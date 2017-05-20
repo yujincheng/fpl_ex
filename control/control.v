@@ -93,7 +93,7 @@ module topcontrol #(
 	
 	input  wire                         bfc_idle,
 	output reg 							bfc_conf,
-	output reg [SINGLE_LEN - 1:0  ]     bfc_bias_num, // �?要一次读这么多个bias，bias=9代表�?有bb中地�?增加1个�?�在DDR中是连续 X_PE byte�?
+	output reg [SINGLE_LEN - 1:0  ]     bfc_bias_num, // �?要一次读这么多个bias，bias=9代表�?有bb中地�?增加1个�?�在DDR中是连续 X_PE byte�?
 	output reg [SINGLE_LEN - 1:0  ]     bfc_bias_ddr_byte, // X_PE*bias
 	output reg [DDR_ADDR_LEN - 1:0]     bfc_ddr_st_addr,
 	output reg [ADDR_LEN_BB - 1:0 ]     bfc_bb_st_addr,
@@ -203,13 +203,13 @@ wire [ADDR_LEN_BP*4 - 1:0] w2c_st_addr_tmp;
 genvar index_i;
 generate
 	if (OVER_ADDR > 0) begin:long
-		for (index_i = 0;index_i < 4;index_i = index_i + 1) begin
+		for (index_i = 0;index_i < 4;index_i = index_i + 1) begin:control_1
 			assign ilc_st_addr_tmp[ADDR_LEN_BP*(index_i+1)-1:index_i*ADDR_LEN_BP] = {{OVER_ADDR{1'b0}},inst_ilc_st_addr[(index_i+1)*INST_ADDR_LEN -1 :index_i*INST_ADDR_LEN]};
 			assign w2c_st_addr_tmp[ADDR_LEN_BP*(index_i+1)-1:index_i*ADDR_LEN_BP] = {{OVER_ADDR{1'b0}},inst_w2c_st_addr[(index_i+1)*INST_ADDR_LEN -1 :index_i*INST_ADDR_LEN]};
 		end
 	end
 	else  begin:short
-		for (index_i = 0;index_i < 4;index_i = index_i + 1) begin
+		for (index_i = 0;index_i < 4;index_i = index_i + 1) begin:control_2
 			assign ilc_st_addr_tmp[ADDR_LEN_BP*(index_i+1)-1:index_i*ADDR_LEN_BP] = {inst_ilc_st_addr[(index_i+1)*INST_ADDR_LEN -1 :index_i*INST_ADDR_LEN]};
 			assign w2c_st_addr_tmp[ADDR_LEN_BP*(index_i+1)-1:index_i*ADDR_LEN_BP] = {inst_w2c_st_addr[(index_i+1)*INST_ADDR_LEN -1 :index_i*INST_ADDR_LEN]};
 		end
@@ -273,7 +273,7 @@ always @( posedge clk) begin
 	end
 	else if(!inst_empty) begin	
 		if( inst_type == 4'd0) begin
-			if( ( inst_is_w2c_back ? (idle_data_soon && idle_write_back && idle_data_in): idle_data_soon)) begin
+			if( ( inst_is_w2c_back ? (idle_data_soon && idle_write_back): idle_data_soon)) begin
 				if(wb_rd_conf) begin 
 					w2c_conf <= 0;
 					wb_rd_conf <= 0;
