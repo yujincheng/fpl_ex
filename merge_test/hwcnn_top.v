@@ -109,7 +109,7 @@ wire [32*X_MAC*X_MESH-1:0]                                dwire;
 wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
 
 wire [32*X_MAC*X_MESH-1:0]                                doutb;
-wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addrb;
+reg [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addrb;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                ilc_addrb;
 
 
@@ -124,9 +124,9 @@ wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
 
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dwc_BP_addr;
 
-(*keep = "true"*)wire  [X_MAC*X_MESH-1:0]                              wea;
-wire [32*X_MAC*X_MESH-1:0] 							dina;
-wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
+(*keep = "true"*)reg  [X_MAC*X_MESH-1:0]                              wea;
+reg [32*X_MAC*X_MESH-1:0] 							dina;
+reg [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
 
 
 
@@ -507,11 +507,14 @@ BP_WRITE_CONTROL #(
 .idle(dwc_idle)
 
 );
-assign dina = (!dfc_idle) ? dfc_BP_dina : w2c_dina;
-assign addra = (!dfc_idle) ? dfc_BP_addra : w2c_addra;
-assign wea = (!dfc_idle) ? dfc_BP_wea : w2c_wea;
 
-assign addrb = (!dwc_idle) ? dwc_BP_addr : ilc_addrb;
+
+always @ (posedge clk) begin
+    addrb <= (!dwc_idle) ? dwc_BP_addr : ilc_addrb;
+    addra <= (!dfc_idle) ? dfc_BP_addra : w2c_addra;
+    dina <= (!dfc_idle) ? dfc_BP_dina : w2c_dina;
+    wea <= (!dfc_idle) ? dfc_BP_wea : w2c_wea;
+end 
 assign mig_ddr_len = (!dwc_idle) ? ddr_len_dwrite : ddr_len_mux;
 assign mig_ddr_st_addr = (!dwc_idle) ? dwc_ddr_st_addr : ddr_st_addr_out_mux;
 
@@ -650,8 +653,8 @@ WeightBuffer #(
 
 Winograd_PE_CORE#(
 
-.X_PE(X_PE),
-.MESH_N(X_MESH)
+.X_PE(15),
+.MESH_N(15)
 ) PEC
 (
 	.clk(clk),

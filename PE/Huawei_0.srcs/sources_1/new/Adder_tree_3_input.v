@@ -39,7 +39,7 @@ module Adder_tree_3_input
 );
 
   
-  wire signed [IN_BIT-1:0] in_data [0:15];
+  wire signed [IN_BIT-1:0] in_data [0:IN_NUM-1];
   generate
   genvar i;
   for(i=0;i<IN_NUM;i=i+1)
@@ -74,7 +74,8 @@ module Adder_tree_3_input
       lvl1_reg[2]<=in_data[6]+in_data[7]+in_data[8];
       lvl1_reg[3]<=in_data[9]+in_data[10]+in_data[11];
       lvl1_reg[4]<=in_data[12]+in_data[13]+in_data[14];
-      lvl1_reg[5]<=in_data[15]+bias_wire;
+//      lvl1_reg[5]<=in_data[15]+bias_wire;
+      lvl1_reg[5]<= bias_wire;
     end
   end
   
