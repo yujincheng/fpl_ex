@@ -59,11 +59,13 @@ COMPONENT xip_w256_r512
     din : IN STD_LOGIC_VECTOR(255 DOWNTO 0);
     wr_en : IN STD_LOGIC;
     rd_en : IN STD_LOGIC;
-    dout : OUT STD_LOGIC_VECTOR(511 DOWNTO 0);
+    dout : OUT STD_LOGIC_VECTOR(255 DOWNTO 0);
     full : OUT STD_LOGIC;
     almost_full : OUT STD_LOGIC;
     empty : OUT STD_LOGIC;
-    prog_empty : OUT STD_LOGIC
+    prog_empty : OUT STD_LOGIC;
+    wr_rst_busy : OUT STD_LOGIC;
+    rd_rst_busy : OUT STD_LOGIC
   );
 END COMPONENT;
 -- COMP_TAG_END ------ End COMPONENT Declaration ------------
@@ -83,7 +85,9 @@ your_instance_name : xip_w256_r512
     full => full,
     almost_full => almost_full,
     empty => empty,
-    prog_empty => prog_empty
+    prog_empty => prog_empty,
+    wr_rst_busy => wr_rst_busy,
+    rd_rst_busy => rd_rst_busy
   );
 -- INST_TAG_END ------ End INSTANTIATION Template ---------
 

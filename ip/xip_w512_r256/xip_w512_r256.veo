@@ -60,11 +60,13 @@ xip_w512_r256 your_instance_name (
   .din(din),                  // input wire [511 : 0] din
   .wr_en(wr_en),              // input wire wr_en
   .rd_en(rd_en),              // input wire rd_en
-  .dout(dout),                // output wire [255 : 0] dout
+  .dout(dout),                // output wire [511 : 0] dout
   .full(full),                // output wire full
   .almost_full(almost_full),  // output wire almost_full
   .empty(empty),              // output wire empty
-  .prog_empty(prog_empty)    // output wire prog_empty
+  .prog_empty(prog_empty),    // output wire prog_empty
+  .wr_rst_busy(wr_rst_busy),  // output wire wr_rst_busy
+  .rd_rst_busy(rd_rst_busy)  // output wire rd_rst_busy
 );
 // INST_TAG_END ------ End INSTANTIATION Template ---------
 
