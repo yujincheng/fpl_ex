@@ -653,8 +653,8 @@ WeightBuffer #(
 
 Winograd_PE_CORE#(
 
-.X_PE(15),
-.MESH_N(15)
+.X_PE(14),
+.MESH_N(14)
 ) PEC
 (
 	.clk(clk),

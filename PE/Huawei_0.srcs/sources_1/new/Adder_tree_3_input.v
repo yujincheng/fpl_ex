@@ -70,12 +70,15 @@ module Adder_tree_3_input
     else if(in_valid[0])
     begin
       lvl1_reg[0]<=in_data[0]+in_data[1]+in_data[2];
-      lvl1_reg[1]<=in_data[3]+in_data[4]+in_data[5];
+      lvl1_reg[1]<=in_data[3]+in_data[4]++in_data[5];
       lvl1_reg[2]<=in_data[6]+in_data[7]+in_data[8];
-      lvl1_reg[3]<=in_data[9]+in_data[10]+in_data[11];
-      lvl1_reg[4]<=in_data[12]+in_data[13]+in_data[14];
+//      lvl1_reg[3]<=in_data[9]+in_data[10]+in_data[11];
+//      lvl1_reg[4]<=in_data[12]+in_data[13]+in_data[14];
 //      lvl1_reg[5]<=in_data[15]+bias_wire;
-      lvl1_reg[5]<= bias_wire;
+
+      lvl1_reg[3]<=in_data[9]+in_data[10];
+      lvl1_reg[4]<=in_data[11]+in_data[12];
+      lvl1_reg[5]<=in_data[13]+bias_wire;
     end
   end
   
