@@ -233,41 +233,43 @@ wire  ddr_conf_dwrite;
 wire  [SINGLE_LEN - 1:0]     mig_ddr_len;
 wire [DDR_ADDR_LEN - 1:0] mig_ddr_st_addr;
 
+`define sim_top
+`ifdef sim_top
 genvar i,j,k;
-//generate
-// for (i=0;i<X_MESH;i = i+1) begin:ass   
-//       for (j =0;j<X_MAC;j=j+1) begin:assh
-//            assign doutb_show[i][j] = doutb[j*32+i*32*X_MAC +: 32] ;
-//            assign dina_show[i][j] = dina[j*32+i*32*X_MAC +: 32] ;
-//            assign wea_show[i][j] = w2c_wea[j+i*X_MAC];
-//            assign addrb_show[i][j] = addrb[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
-//            assign addra_show[i][j] = addra[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
-//            assign dwire_show[i][j] = dwire[j*32+i*32*X_MAC +: 32] ;
-//       end
-// end
-//endgenerate 
+generate
+ for (i=0;i<X_MESH;i = i+1) begin:ass   
+       for (j =0;j<X_MAC;j=j+1) begin:assh
+            assign doutb_show[i][j] = doutb[j*32+i*32*X_MAC +: 32] ;
+            assign dina_show[i][j] = dina[j*32+i*32*X_MAC +: 32] ;
+            assign wea_show[i][j] = w2c_wea[j+i*X_MAC];
+            assign addrb_show[i][j] = addrb[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
+            assign addra_show[i][j] = addra[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
+            assign dwire_show[i][j] = dwire[j*32+i*32*X_MAC +: 32] ;
+       end
+ end
+endgenerate 
 
-//generate
-// for (i=0;i< X_PE;i = i+1) begin:ass1   
-//       for (j =0;j< X_MESH;j=j+1) begin:assh
-//			for (k =0;k < 9;k=k+1) begin:asshh
-//				assign ker_out_show[i][j][k] = wb_ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8];
-//			end
-//       end
-// end
-//endgenerate
+generate
+ for (i=0;i< X_PE;i = i+1) begin:ass1   
+       for (j =0;j< X_MESH;j=j+1) begin:assh
+			for (k =0;k < 9;k=k+1) begin:asshh
+				assign ker_out_show[i][j][k] = wb_ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8];
+			end
+       end
+ end
+endgenerate
 
-//generate
-//for (i=0;i<X_MESH;i = i+1) begin:ass2   
-//        assign result_wire_pool_show[i] = result_wire_pool[i*COM_DATALEN +: COM_DATALEN];		
-//       for (j =0;j<2;j =j+1) begin:assh
-//		for (k =0;k<2;k = k+1) begin:assh3
-//            assign result_wire_unpool_show[i][j][k] = result_wire_unpool[k*COM_DATALEN + j*COM_DATALEN*2 +i*COM_DATALEN*4 +: COM_DATALEN];			
-//		end
-//       end
-//end
-//endgenerate
-
+generate
+for (i=0;i<X_MESH;i = i+1) begin:ass2   
+        assign result_wire_pool_show[i] = result_wire_pool[i*COM_DATALEN +: COM_DATALEN];		
+       for (j =0;j<2;j =j+1) begin:assh
+		for (k =0;k<2;k = k+1) begin:assh3
+            assign result_wire_unpool_show[i][j][k] = result_wire_unpool[k*COM_DATALEN + j*COM_DATALEN*2 +i*COM_DATALEN*4 +: COM_DATALEN];			
+		end
+       end
+end
+endgenerate
+`endif
 
 wire id_w2c;
 wire id_wb;
