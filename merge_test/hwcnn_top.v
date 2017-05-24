@@ -32,7 +32,7 @@ module hwcnn_top #(
 	parameter INST_LEN = 220,
 	parameter COM_DATALEN = 24,
 	parameter DDR_ADDR_LEN = 32,
-	parameter DDR_DATA_LEN = 512,
+	parameter DDR_DATA_LEN = 256,
 	parameter SINGLE_LEN = 24,
 	
 	parameter C_AXI_ID_WIDTH           = 4,

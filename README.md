@@ -96,6 +96,13 @@ Overleaf链接：https://www.overleaf.com/8702087qghmbvdwbzjj
 
 汪
 
+# Instruction Descibe
+
+## data from ddr to dma
+
+op:3
+
+example: line_width = 0x11 means a single line is 17x4 = 68 pixels and read 8 input channel and 2 lines, totally 68x8x2 = 1088 byte(pixels)
 
 # 实验总结
 

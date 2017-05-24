@@ -9,7 +9,7 @@ module BP_FIFO_CONTROL #(
 	parameter DATA_LEN = 32,
 	parameter MUXCONTROL = 4,
 	parameter SINGLE_LEN = 24,
-	parameter BUFFER_NUM = 64
+	parameter BUFFER_NUM = X_MAC*X_MESH
 )(
 	input wire clk,
 	input wire rst_n,
@@ -30,10 +30,10 @@ module BP_FIFO_CONTROL #(
 	
 	input wire ddr_fifo_empty,
 	output reg ddr_fifo_req,
-	input wire [DATA_LEN*16 - 1:0] ddr_fifo_data, //16 here is 512/DATA_LEN
+	input wire [DATA_LEN*8 - 1:0] ddr_fifo_data, //8 here is 256/DATA_LEN
 	
 	output wire [ADDR_LEN*BUFFER_NUM - 1:0] BP_addr_out,
-	output wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_out, //8 here is 512/DATA_LEN
+	output wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_out, //8 here is 256/DATA_LEN
 	output reg [BUFFER_NUM - 1:0] BP_wea,
 	
 	output wire idle
@@ -49,7 +49,7 @@ reg[1:0] count_line;
 reg [SINGLE_LEN - 1:0] count_in_line;
  reg [ADDR_LEN - 1:0] BP_addr_reg;
  reg [ADDR_LEN - 1:0] BP_addr; 
-reg [DATA_LEN*16 - 1:0] BP_data; // 16 here is 512/DATA_LEN
+reg [DATA_LEN*8 - 1:0] BP_data; // 8 here is 256/DATA_LEN
 
 
  genvar m,n;

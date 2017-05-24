@@ -8,10 +8,10 @@ module BP_WRITE_CONTROL #(
 	parameter ADDR_LEN = 16,
 	parameter DATA_LEN = 32,
 	parameter MUXCONTROL = 4,
-	parameter DDR_DATA_LEN = 512,
+	parameter DDR_DATA_LEN = 256,
 	parameter C_AXI_DATA_WIDTH = 256,
 	parameter SINGLE_LEN = 24,
-	parameter BUFFER_NUM = 64
+	parameter BUFFER_NUM = X_MAC*X_MESH
 )(
 	input wire clk,
 	input wire rst_n,
@@ -41,7 +41,7 @@ module BP_WRITE_CONTROL #(
 );
 
 
-wire [DATA_LEN*16 - 1:0] ddr_write_data_mac[X_MAC - 1:0];
+wire [DATA_LEN*X_MESH - 1:0] ddr_write_data_mac[X_MAC - 1:0];
 
 reg working;
 reg working_r1;
@@ -51,7 +51,6 @@ reg [SINGLE_LEN - 1:0] Line_width_reg;
 reg[1:0] count_line;
 reg [SINGLE_LEN - 1:0] count_in_line;
 reg [DDR_DATA_LEN - 1:0] ddr_write_data;
-wire [DDR_DATA_LEN - 1:0] ddr_write_data_niu;
  reg [ADDR_LEN - 1:0] BP_addr_reg;
  wire ddr_fifo_near_full;
 reg ddr_fifo_en;
@@ -59,7 +58,6 @@ reg ddr_fifo_en_r1;
 reg ddr_fifo_en_r2;
 
 assign idle = (!working && !working_r1);
-assign ddr_write_data_niu = {ddr_write_data[DDR_DATA_LEN/2 - 1:0],ddr_write_data[DDR_DATA_LEN-1:DDR_DATA_LEN/2]};
 
 
 genvar m,n,l;
@@ -159,10 +157,10 @@ always @ (posedge clk) begin
 	end
 end
 
-   xip_w512_r256 x6464(
+   xip_fifo_256_16 x6464(
 	  .clk(clk),
 	  .srst(~rst_n),
-	  .din(ddr_write_data_niu),
+	  .din(ddr_write_data),
 	  .wr_en(ddr_fifo_en_r1),
 	  .rd_en(ddr_write_req),
 	  .dout(ddr_write_data_out),

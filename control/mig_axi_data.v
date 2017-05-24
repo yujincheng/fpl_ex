@@ -2,7 +2,7 @@ module mig_axi_data #(
    parameter C_AXI_ID_WIDTH           = 4,
    parameter C_AXI_ADDR_WIDTH         = 64, 
    parameter C_AXI_DATA_WIDTH         = 256,
-   parameter DDR_DATA_LEN = 512,
+   parameter DDR_DATA_LEN = 256,
    
 	parameter SINGLE_LEN  = 24
 )(
@@ -86,9 +86,6 @@ reg [SINGLE_LEN - 1:0] rd_data_left;
 reg [SINGLE_LEN - 1:0] wr_data_left;
 
 assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle;
-wire [DDR_DATA_LEN - 1:0] ddr_fifo_data_niu;
-
-assign ddr_fifo_data = {ddr_fifo_data_niu[DDR_DATA_LEN/2 - 1 : 0],ddr_fifo_data_niu[DDR_DATA_LEN - 1:DDR_DATA_LEN/2]};
 
 //////////////////////	 
 //Write Address Channel
@@ -288,13 +285,13 @@ always @(posedge clk) begin
     end
 end
 
-xip_w256_r512 x256x32(
+xip_fifo_256_16 x256x32(
   .clk(clk),
   .srst(~rst_n),
   .din(axi_rdata),
   .wr_en(axi_rready && axi_rvalid),
   .rd_en(ddr_fifo_req),
-  .dout(ddr_fifo_data_niu),
+  .dout(ddr_fifo_data),
   .almost_full(fifo_near_full),
   .prog_empty(ddr_fifo_near_empty),
   .full(fifo_full),

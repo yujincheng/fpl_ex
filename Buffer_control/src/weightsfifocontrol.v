@@ -13,7 +13,7 @@ module Weight_FIFO_CONTROL#(
 	input wire rst_n,
 	input wire conf,
 	
-	input wire [SINGLE_LEN - 1:0] weight_num, // ÐèÒªÒ»´Î¶ÁÕâÃ´¶à¸öweights£¬weights=1´ú±íËùÓÐwbÖÐµØÖ·Ôö¼Ó4¸ö¡£ÔÚDDRÖÐÊÇÁ¬Ðø 9*X_PE*X_MESH byteÊý
+	input wire [SINGLE_LEN - 1:0] weight_num, // ï¿½ï¿½ÒªÒ»ï¿½Î¶ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½weightsï¿½ï¿½weights=1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wbï¿½Ðµï¿½Ö·ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½DDRï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 9*X_PE*X_MESH byteï¿½ï¿½
 	input wire [SINGLE_LEN - 1:0] weight_ddr_byte, // X_PE*X_MESH*weights
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
@@ -26,11 +26,11 @@ module Weight_FIFO_CONTROL#(
 	
 	input wire ddr_fifo_empty,
 	output reg ddr_fifo_req,
-	input wire [DATA_LEN* 8 - 1:0] ddr_fifo_data, //8 here is 512/DATA_LEN
+	input wire [DATA_LEN* 4 - 1:0] ddr_fifo_data, //4 here is 256/DATA_LEN
 	
 	
 	output reg [ADDR_LEN - 1:0] wb_addr,
-	output reg [DATA_LEN* 8 - 1:0] wb_data, //8 here is 512/DATA_LEN
+	output reg [DATA_LEN* 4 - 1:0] wb_data, //4 here is 256/DATA_LEN
 	output reg [BUFFER_NUM - 1:0] wb_wea,
 	
 	output wire idle
@@ -103,7 +103,7 @@ always @ (posedge clk) begin
 					wb_addr_reg <= wb_st_addr_reg;
 					cto9 <= cto9 + 1;
 				end
-				else if(count_buffer == (BUFFER_NUM/8-1) && count_addr == (weight_num_reg-1) && cto9 == 8) begin //8 here is 512/DATA_LEN
+				else if(count_buffer == (BUFFER_NUM/4-1) && count_addr == (weight_num_reg-1) && cto9 == 8) begin //4 here is 256/DATA_LEN
 					working <= 0;
 					cto9 <= 0;
 					count_addr <= 0;
@@ -150,7 +150,7 @@ always @ (posedge clk) begin
 	else if(working) begin
 		if(!ddr_fifo_empty && ddr_fifo_req) begin
 			for (i = 0;i < BUFFER_NUM;i = i + 1) begin
-				if( i >= 8*count_buffer_next && i <  8*(count_buffer_next+1)) begin //8 here is 512/DATA_LEN
+				if( i >= 4*count_buffer_next && i <  4*(count_buffer_next+1)) begin //4 here is 256/DATA_LEN
 					wb_wea[i] <= 1;
 				end
 				else begin

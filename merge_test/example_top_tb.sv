@@ -330,7 +330,9 @@ always @(posedge c0_ddr3_clk) c0_init_calib_complete_r <= c0_init_calib_complete
 hwcnn_top #(
      .C_AXI_ID_WIDTH (C_AXI_ID_WIDTH),
      .C_AXI_ADDR_WIDTH (C_AXI_ADDR_WIDTH),
-     .C_AXI_DATA_WIDTH (C_AXI_DATA_WIDTH)
+     .C_AXI_DATA_WIDTH (C_AXI_DATA_WIDTH),
+     .X_PE(8),
+     .X_MESH(8)
     // .C_AXI_NBURST_SUPPORT (C_AXI_NBURST_SUPPORT),
     // .APP_DATA_WIDTH (APP_DATA_WIDTH)
 )

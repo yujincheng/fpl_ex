@@ -11,7 +11,7 @@ parameter DATAWIDTH = BUFFER_NUM*DATA_LEN,
 parameter ADDRWIDTH = BUFFER_NUM*ADDR_LEN
 )(
 
-input wire [DATA_LEN*8 - 1:0]           data_wr              ,  //8 here is 512/DATA_LEN
+input wire [DATA_LEN*4 - 1:0]           data_wr              ,  //4 here is 256/DATA_LEN
 input wire [ADDR_LEN - 1:0]           wr_addr           ,
 input wire [BUFFER_NUM - 1:0]         wr_en                ,
 
