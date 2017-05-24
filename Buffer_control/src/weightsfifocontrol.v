@@ -3,6 +3,7 @@ module Weight_FIFO_CONTROL#(
 	parameter X_PE = 16,
 	parameter X_MESH = 16,
 	parameter DDR_ADDR_LEN = 32,
+	parameter DDR_DATA_LEN = 256,
 	parameter ADDR_LEN = 16,
 	parameter DATA_LEN = 64,
 	parameter MUXCONTROL = 4,
@@ -26,11 +27,11 @@ module Weight_FIFO_CONTROL#(
 	
 	input wire ddr_fifo_empty,
 	output reg ddr_fifo_req,
-	input wire [DATA_LEN* 4 - 1:0] ddr_fifo_data, //4 here is 256/DATA_LEN
+	input wire [DDR_DATA_LEN - 1:0] ddr_fifo_data, //4 here is 256/DATA_LEN
 	
 	
 	output reg [ADDR_LEN - 1:0] wb_addr,
-	output reg [DATA_LEN* 4 - 1:0] wb_data, //4 here is 256/DATA_LEN
+	output reg [DDR_DATA_LEN - 1:0] wb_data,
 	output reg [BUFFER_NUM - 1:0] wb_wea,
 	
 	output wire idle
@@ -39,6 +40,7 @@ module Weight_FIFO_CONTROL#(
 
 reg working;
 assign idle = !working;
+
 
 always @ (posedge clk) begin
 	if(!rst_n) begin
@@ -103,7 +105,7 @@ always @ (posedge clk) begin
 					wb_addr_reg <= wb_st_addr_reg;
 					cto9 <= cto9 + 1;
 				end
-				else if(count_buffer == (BUFFER_NUM/4-1) && count_addr == (weight_num_reg-1) && cto9 == 8) begin //4 here is 256/DATA_LEN
+				else if(count_buffer == (BUFFER_NUM/((DDR_DATA_LEN/DATA_LEN))-1) && count_addr == (weight_num_reg-1) && cto9 == 8) begin //4 here is 256/DATA_LEN
 					working <= 0;
 					cto9 <= 0;
 					count_addr <= 0;
@@ -150,7 +152,7 @@ always @ (posedge clk) begin
 	else if(working) begin
 		if(!ddr_fifo_empty && ddr_fifo_req) begin
 			for (i = 0;i < BUFFER_NUM;i = i + 1) begin
-				if( i >= 4*count_buffer_next && i <  4*(count_buffer_next+1)) begin //4 here is 256/DATA_LEN
+				if( i >= (DDR_DATA_LEN/DATA_LEN)*count_buffer_next && i <  (DDR_DATA_LEN/DATA_LEN)*(count_buffer_next+1)) begin
 					wb_wea[i] <= 1;
 				end
 				else begin

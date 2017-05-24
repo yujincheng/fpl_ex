@@ -5,6 +5,7 @@ module BP_FIFO_CONTROL #(
 	parameter X_PE = 16,
 	parameter X_MESH = 16,
 	parameter DDR_ADDR_LEN = 32,
+        parameter DDR_DATA_LEN = 256,
 	parameter ADDR_LEN = 16,
 	parameter DATA_LEN = 32,
 	parameter MUXCONTROL = 4,
@@ -30,7 +31,7 @@ module BP_FIFO_CONTROL #(
 	
 	input wire ddr_fifo_empty,
 	output reg ddr_fifo_req,
-	input wire [DATA_LEN*8 - 1:0] ddr_fifo_data, //8 here is 256/DATA_LEN
+	input wire [DDR_DATA_LEN - 1:0] ddr_fifo_data, //8 here is 256/DATA_LEN
 	
 	output wire [ADDR_LEN*BUFFER_NUM - 1:0] BP_addr_out,
 	output wire [DATA_LEN*BUFFER_NUM - 1:0]  BP_data_out, //8 here is 256/DATA_LEN
@@ -49,7 +50,7 @@ reg[1:0] count_line;
 reg [SINGLE_LEN - 1:0] count_in_line;
  reg [ADDR_LEN - 1:0] BP_addr_reg;
  reg [ADDR_LEN - 1:0] BP_addr; 
-reg [DATA_LEN*8 - 1:0] BP_data; // 8 here is 256/DATA_LEN
+reg [DDR_DATA_LEN - 1:0] BP_data; // 8 here is 256/DATA_LEN
 
 
  genvar m,n;
@@ -144,13 +145,13 @@ always @ (posedge clk) begin
 	end
 	else if(working_read) begin
 		if(!ddr_fifo_empty && ddr_fifo_req) begin
-			for (i = 0;i < 4;i = i + 1) begin
-				for (j = 0;j < 16;j = j + 1) begin					
+			for (i = 0;i < X_MAC;i = i + 1) begin
+				for (j = 0;j < X_MESH;j = j + 1) begin					
 					if( i == BP_num_reg) begin
-						BP_wea[i+4*j] <= 1;
+						BP_wea[i+X_MAC*j] <= 1;
 					end
 					else begin
-						BP_wea[i+4*j] <= 0;
+						BP_wea[i+X_MAC*j] <= 0;
 					end
 				end
 			end

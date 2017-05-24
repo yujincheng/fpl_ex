@@ -5,13 +5,14 @@ parameter X_MESH = 16,
 parameter ADDR_LEN = 16,
 parameter DATA_LEN = 64,
 parameter MUXCONTROL = 4,
+parameter DDR_DATA_LEN = 256,
 parameter RAM_DEPTH = 2**ADDR_LEN,
 parameter BUFFER_NUM = 8*X_PE*X_MESH/(DATA_LEN),
 parameter DATAWIDTH = BUFFER_NUM*DATA_LEN,
 parameter ADDRWIDTH = BUFFER_NUM*ADDR_LEN
 )(
 
-input wire [DATA_LEN*4 - 1:0]           data_wr              ,  //4 here is 256/DATA_LEN
+input wire [DDR_DATA_LEN - 1:0]           data_wr              ,  //4 here is 256/DATA_LEN
 input wire [ADDR_LEN - 1:0]           wr_addr           ,
 input wire [BUFFER_NUM - 1:0]         wr_en                ,
 
@@ -56,8 +57,8 @@ generate
 		assign addra[i*ADDR_LEN +: ADDR_LEN] = wr_addr;
 		assign addrb_show[i] = valid_addr;
  end
- for (i=0;i<BUFFER_NUM/8;i = i+1) begin: dina8
-		assign dina[i*DATA_LEN*8 +: DATA_LEN*8] = data_wr; //8 here is 512/DATA_LEN 
+ for (i=0;i<BUFFER_NUM/(DDR_DATA_LEN/DATA_LEN);i = i+1) begin: dina8
+		assign dina[i*DDR_DATA_LEN +: DDR_DATA_LEN] = data_wr; //4 here is 256/DATA_LEN 
  end
 endgenerate
 

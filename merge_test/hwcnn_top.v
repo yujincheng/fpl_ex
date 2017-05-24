@@ -22,9 +22,9 @@
 
 
 module hwcnn_top #(
-	parameter X_PE = 16,
+	parameter X_PE = 8,
 	parameter X_MAC = 4,
-	parameter X_MESH = 16,
+	parameter X_MESH = 8,
 	parameter ADDR_LEN_WB = 13,
 	parameter ADDR_LEN_BB = 7,
 	parameter ADDR_LEN_BP = 13,
@@ -267,6 +267,28 @@ genvar i,j,k;
 //       end
 //end
 //endgenerate
+
+
+wire id_w2c;
+wire id_wb;
+wire id_soon_ilc;
+wire ilc_fromfifo;
+wire ilc_tofifo;
+wire is_w2c_back;
+wire w2c_pooled;
+wire w2c_conf;
+wire pooled_type;
+wire is_bb_add;
+wire bfc_idle;
+wire bfc_conf;
+wire dfc_idle;
+wire dwc_idle;
+wire mig_type;
+wire bias_en;
+wire bb_idle;
+wire PEC_tofifo;
+wire PEC_fromfifo;
+wire out_req;
 
 
 topcontrol#(
