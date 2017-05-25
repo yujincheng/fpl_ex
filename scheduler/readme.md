@@ -17,7 +17,7 @@ B1C0R0, B1C16R0, ... B1C48R0, B2C0R0 ...
 
 ### LOAD DATA指令
 
-要进行计算的最小数据单元是 $2\times width \times 16channel$ ,每次Load进来512bit=64Byte的结构为$1\times 4B \times 16channel$ ,随后读同一行中的后4B,读满一行后读第2行。
+要进行计算的最小数据单元是 $2\times width \times 8channel$ ,每次Load进来512bit=64Byte的结构为$2\times 4B \times 8channel$ ,随后读同一行中的后4B,读满一行后读第2行。
 
 - DDR中数据:
 - C0R0col0~3, C1R0col0~3 ... C15R0col0~3, C0R0col4~7 ...  C15R0col-end, 

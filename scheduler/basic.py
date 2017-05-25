@@ -3,6 +3,13 @@ from bitstring import BitArray
 from collections import OrderedDict
 from pdb import set_trace
 
+# Instruction types
+INST_TYPE_COMPUTE = 0
+INST_TYPE_LOAD_WEIGHT = 1
+INST_TYPE_LOAD_BIAS = 2
+INST_TYPE_LOAD_DATA = 3
+INST_TYPE_WRITE_DATA = 4
+
 # Hardware configuration
 INST_LEN = 256
 ADDR_LENGTH = 16
@@ -13,6 +20,10 @@ BIAS_BRAM_WIDTH = 8
 WEIGHT_BRAM_WIDTH = 8
 INTER_WIDTH = 3 # 24bit representing a single number
 
+DDR_ADDR_BYTE = 1 # the unit of ddr address
+DDR_WEIGHT_WIDTH = 32
+DDR_BIAS_WIDTH = 32
+
 # for bias/ weights
 SINGLE_LEN = 24
 DDR_ADDR_LEN = 32
@@ -20,8 +31,8 @@ ADDR_LEN_BB = BIAS_ADDR_LENGTH
 ADDR_LEN_WB = WEIGHT_ADDR_LENGTH
 ADDR_LEN_BP = ADDR_LENGTH
 
-INPUT_PARALL = 16
-OUTPUT_PARALL = 16
+INPUT_PARALL = 8
+OUTPUT_PARALL = 8
 
 KERNEL_SIZE = 3
 
@@ -151,6 +162,10 @@ class Bram(object):
             self.data[addr * self.width:addr * self.width + len(data)] = data
         else:
             self.data[addr * self.width:] = data[:self.length - addr * self.width]
+            print self.length
+            print addr
+            print self.width
+            print len(data)
             self.data[:(addr * self.width + len(data)) % (self.length * self.width)] = data[self.length - addr * self.width:]
     
         self.o_tail_ = (self.o_tail_ + len(data) / self.width + (len(data) % self.width != 0)) % self.length
@@ -187,6 +202,13 @@ class Inst(object):
 	        ('bias_addr', BIAS_ADDR_LENGTH),
 	        ('bias_shift',5)# shift left
 	        ]),
+    	OrderedDict([ # load weight
+    		('inst_type',4),
+            ('wfc_weight_num', SINGLE_LEN),
+            ('wfc_weight_ddr_byte', SINGLE_LEN),
+            ('wfc_ddr_st_addr', DDR_ADDR_LEN),
+            ('wfc_wb_st_addr', ADDR_LEN_WB)
+            ]),
     	OrderedDict([ # load bias
     		('inst_type',4),
             ('bfc_bias_num', SINGLE_LEN),
@@ -194,13 +216,22 @@ class Inst(object):
             ('bfc_ddr_st_addr', DDR_ADDR_LEN),
             ('bfc_bb_st_addr', ADDR_LEN_BB)
     		]),
-    	OrderedDict([ # load weight
-    		('inst_type',4),
-            ('wfc_weight_num', SINGLE_LEN),
-            ('wfc_weight_ddr_byte', SINGLE_LEN),
-            ('wfc_ddr_st_addr', DDR_ADDR_LEN),
-            ('wfc_wb_st_addr', ADDR_LEN_WB)
-            ])]
+        OrderedDict([ # load data
+            ('inst_type',4),
+            ('dfc_data_width', SINGLE_LEN),
+            ('dfc_data_ddr_byte', SINGLE_LEN),
+            ('dfc_ddr_st_addr',DDR_ADDR_LEN),
+            ('dfc_data_st_addr', SINGLE_LEN),
+            ('dfc_st_mac', 2)
+            ]),
+        OrderedDict([ # write data
+            ('inst_type',4),
+            ('dwc_data_width', SINGLE_LEN),
+            ('dwc_data_ddr_byte', SINGLE_LEN),
+            ('dwc_ddr_st_addr',DDR_ADDR_LEN),
+            ('dwc_data_st_addr', SINGLE_LEN),
+            ('dwc_st_mac', 2)
+        ])]
 
     #def __new__(self, *args, **kwargs):
     #    BitArray.__new__(self, length = INST_LEN)

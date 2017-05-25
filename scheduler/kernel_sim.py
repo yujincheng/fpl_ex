@@ -3,6 +3,7 @@ from scipy.signal import convolve2d
 from pdb import set_trace
 from inst import Scheduler
 from basic import *
+from split import HardwareConfig
 import config
 
 
@@ -35,6 +36,8 @@ class KernelSim:
 
 
 	def run_inst(self, inst):
+		if inst.p('inst_type') != 0:
+			return None
 		input_data = np.zeros((INPUT_PARALL, 4, inst.p('ilc_linelen'))).astype('int')
 		bsr_buffermux = inst.p('bsr_buffermux')
 		ilc_st_addr = inst.p('ilc_st_addr')
@@ -107,39 +110,38 @@ class KernelSim:
 			write_addr = [0] * 4
 			for i in range(4):
 				write_addr[3-i] = (w2c_st_addr >> (i * ADDR_LENGTH)) & ((1 << ADDR_LENGTH) - 1)
-			
 			for i in range(OUTPUT_PARALL):
 				for j in range(write_data.shape[1]):
 					self.io_bram_[i][(inst.p('w2c_valid_mac') + j) % 4].write_data(write_addr[(inst.p('w2c_valid_mac') + j) % 4], write_data[i][j])
-			set_trace()
+			# set_trace()
 		return self.inst_out
 		
 
 def test_load_net():
-	import fordata.gen_weights as gw
-	import fordata.gen_bias as gb
-	import fordata.gen_input as gi
+	import data.gen_weights as gw
+	import data.gen_bias as gb
+	import data.gen_input as gi
 	from pickle import load
 
-	finput = open('fordata/data/input_data.pickle','r')
+	finput = open('data/blob/input_data.pickle','r')
 	data_input = load(finput)
 	bram_input = gi.input_toBRAM(data_input) # 16 * 4 * length
 	finput.close()
 
-	fweight = open('fordata/weights/input_weight.pickle','r')
+	fweight = open('data/weights/input_weight.pickle','r')
 	data_weight = load(fweight)
 	bram_weight = gw.weight_toBRAM(data_weight)
 	bram_weight = bram_weight['layer_0']
 	fweight.close()
 
-	fbias = open('fordata/bias/bias.pickle','r')
+	fbias = open('data/bias/bias.pickle','r')
 	data_bias = load(fbias)
 	bram_bias = gb.bias_toBRAM(data_bias)
 	bram_bias = bram_bias['layer_0']
 	fbias.close()
-	set_trace()
+	# set_trace()
 	# init bram
-	io_bram = [[Bram(512,4) for i in range(4)] for j in range(16)]
+	io_bram = [[Bram(16*1024,4) for i in range(4)] for j in range(16)]
 	weight_buf = [[Bram(32,8) for i in range(2)] for j in range(16)]
 	bias_buf = [Bram(32,8) for i in range(2)]
 
@@ -157,12 +159,12 @@ def single_inst():
 
 	kernel_sim = KernelSim(io_bram, weight_buf, bias_buf)
 
-	test_inst = Inst()
+	test_inst = Inst(0)
 	t = BitArray('uint:13=1024,uint:13=1024,uint:13=1024,uint:13=1024')
 
 	test_inst.set_inst(0, 0, 0, 64, 0, 0b11100100, 0, 1, 1, t.uint, 62, 0, 0, 0, 0, 0, 1, 0, 0)
 	result = kernel_sim.run_inst(test_inst)
-	#set_trace()
+	set_trace()
 
 def layer_insts_test():
 	io_bram, weight_buf, bias_buf = test_load_net()
@@ -170,7 +172,7 @@ def layer_insts_test():
 
 	layer1 = Layerparam()
 	net = [layer1]
-	scheduler = Scheduler(net, config.hardware_config)
+	scheduler = Scheduler(net, HardwareConfig(config.hardware_config))
 	insts = scheduler.calc_net()
 
 	for inst in insts:
@@ -178,5 +180,5 @@ def layer_insts_test():
 	set_trace()
 
 if __name__=='__main__':
-
+	# single_inst()
 	layer_insts_test()
