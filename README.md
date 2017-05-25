@@ -96,13 +96,67 @@ Overleaf链接：https://www.overleaf.com/8702087qghmbvdwbzjj
 
 汪
 
-# Instruction Descibe
+# 指令描述
 
-## data from ddr to dma
+## data from ddr
 
-op:3
+inst_dfc_st_mac,inst_dfc_data_st_addr,inst_dfc_ddr_st_addr,inst_dfc_data_ddr_byte,inst_dfc_data_width,inst_type
 
-example: line_width = 0x11 means a single line is 17x4 = 68 pixels and read 8 input channel and 2 lines, totally 68x8x2 = 1088 byte(pixels)
+1_000000_00000000_000440_000011_3
+
+inst_type:3 代表是数据从DDR搬运到片上的操作
+
+inst_dfc_data_width: 0x000011 代表 line_width = 0x11 每一行有 17x4 = 68 个像素。 
+
+inst_dfc_data_ddr_byte : 0x000440 代表DDR中数据的长度，可以简单理解成。 0x000011* 8* 8
+
+inst_dfc_ddr_st_addr：0x00000000 代表DDR对应数据的起始地址
+
+inst_dfc_data_st_addr: 0x000000 代表边上Buffer Pool对应的起始地址
+
+inst_dfc_st_mac: 1 代表，Buffer Pool 中选择整列的其实行数，1代表写入的行数为 1,2 行。0 代表0,1行。3 代表 3,0行。
+
+## data  to ddr
+
+该指令和data from DDR完全一致，唯独inst_type=4
+
+1_000000_00000000_000440_000011_4
+
+## data to weight buffer
+
+inst_wfc_wb_st_addr,inst_wfc_ddr_st_addr,inst_wfc_weight_ddr_byte,inst_wfc_weight_num,inst_type
+
+000000_00000000_000480_000002_1
+
+inst_type = 1 代表数据为buffer指令
+
+inst_wfc_weight_num = 2 代表对于 X_MESH x X_PE 个 weight buffer 每个传输完整的 2 个weights，一共传输 2xX_MESHxX_PEx9 个数据
+
+inst_wfc_weight_ddr_byte = 0x480 代表传输DDR 传输数据为0x480byte 可以简单理解成 0x2xX_MESHxX_PEx9 = 1152 = 0x480
+
+inst_wfc_ddr_st_addr = 0x00000000 代表的DDR起始地址
+
+inst_wfc_wb_st_addr = 0x000000 代表每一个 weight buffer 的起始地址
+
+## data to bias buffer
+
+inst_bfc_bb_st_addr,inst_bfc_ddr_st_addr,inst_bfc_bias_ddr_byte,inst_bfc_bias_num,inst_type
+
+000000_00000000_000020_000001_2
+
+inst_type = 2
+
+inst_bfc_bias_num = 1 代表对 X_PE 个bias buffer每个传输1gebias
+
+inst_bfc_bias_ddr_byte = 0x20 考虑到数据对齐和硬件限制，这里inst_bfc_bias_ddr_byte = inst_bfc_bias_num * 32
+
+inst_bfc_ddr_st_addr 代表 DDR 中数据的地址
+
+inst_bfc_bb_st_addr 代表传输到片上的地址
+
+## 计算指令
+计算指令是我们这个设计的核心指令
+
 
 # 实验总结
 
