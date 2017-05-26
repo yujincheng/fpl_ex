@@ -97,16 +97,16 @@ always @ (posedge clk)begin:BLOCKNAME
 	 end
 end
 
-always @ (*)begin:BLOCKN1
+always @ (posedge clk)begin:BLOCKN1
 	integer i,j;
     for (i = 0; i < X_MESH; i = i + 1) begin: MUX_INIT_1   
         for (j = 0; j < X_MAC; j = j + 1) begin: MUX_INIT_2   
             case (buffermux[j*2 +: 2])
-                2'b00: dout_show_after[i][j] = (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][0];
-                2'b01: dout_show_after[i][j] = (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][1];
-                2'b10: dout_show_after[i][j] = (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][2];
-                2'b11: dout_show_after[i][j] = (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][3];
-                default: dout_show_after[i][j] = (iszero[j]) ? { DATA_LEN{1'b0} }: dout_show[i][j];
+                2'b00: dout_show_after[i][j] <= (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][0];
+                2'b01: dout_show_after[i][j] <= (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][1];
+                2'b10: dout_show_after[i][j] <= (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][2];
+                2'b11: dout_show_after[i][j] <= (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][3];
+                default: dout_show_after[i][j] <= (iszero[j]) ? { DATA_LEN{1'b0} }: dout_show[i][j];
             endcase
         end
     end

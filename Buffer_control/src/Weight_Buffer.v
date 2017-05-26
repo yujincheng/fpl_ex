@@ -16,12 +16,12 @@ input wire [ADDR_LEN - 1:0]           wr_addr           ,
 input wire [BUFFER_NUM - 1:0]         wr_en                ,
 
 
-output wire [X_PE*X_MESH*8*9 - 1 : 0] ker_out              ,
+output reg [X_PE*X_MESH*8*9 - 1 : 0] ker_out              ,
 input wire [ADDR_LEN - 1:0]           st_rd_addr           ,
-output wire                           ker_en               ,
+output reg                           ker_en               ,
 input wire                            rd_conf              ,
-output wire                            idle             ,
-output wire 							indata_valid,
+output reg                            idle             ,
+output reg 							indata_valid,
 input wire                            clk                  ,
 input wire 							  rst_n
 
@@ -43,7 +43,9 @@ generate
  for (i=0;i<X_PE;i = i+1) begin:ass   
        for (j =0;j<X_MESH;j=j+1) begin:assh
 			for (k =0;k < 9;k=k+1) begin:asshh
-				assign ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8] = ker_out_show[i][j][k];
+			     always @ (posedge clk) begin
+				    ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8] <= ker_out_show[i][j][k];
+				 end
 			end
 			assign doutb_show[i][j] = doutb[j*8 + i*8*X_MESH +: 8];
        end
@@ -106,9 +108,15 @@ always@ (posedge clk) begin:always1
 	end	
 end
 
-assign ker_en = (cto9 == 10);
-assign indata_valid = (cto9 == 7);
-assign idle = (!working || ker_en); 
+//assign ker_en = (cto9 == 10);
+//assign indata_valid = (cto9 == 7);
+//assign idle = (!working || ker_en); 
+
+always @ (posedge clk) begin
+ ker_en <= (cto9 == 10);
+ indata_valid <= (cto9 == 7);
+ idle <= (!working || ker_en); 
+end
 
 WeightBufferPool#(
 .X_PE       (X_PE      ),
