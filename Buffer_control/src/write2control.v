@@ -22,6 +22,7 @@ output wire [DATAWIDTH-1:0] data_a,
 output wire [BUFFER_NUM - 1:0] wea,
 output wire req,
 output wire idle,
+input wire indata_valid,
 input wire dvalid,
 
 input wire [4*COM_DATALEN*X_MESH - 1:0]  in_data_4,
@@ -31,7 +32,7 @@ input wire [4:0] shift_len,
 input wire is_relu,
 
 
-input wire conf,
+input wire conf_input,
 
 input rst_n,
 input clk
@@ -50,6 +51,48 @@ reg  [MUXCONTROL - 1:0] control;
 reg working;
 reg [MAX_LINE_LEN - 1:0] linelen_left;
 reg [DATA_LEN-1:0] data_a_show[X_MESH-1:0][X_MAC-1:0];
+
+reg conf_wait;
+
+reg [ADDR_LEN*X_MAC - 1:0] st_addr_reg;
+reg [MAX_LINE_LEN - 1:0] linelen_reg;
+
+always @(posedge clk) begin
+    if (!rst_n) begin
+        conf_wait <= 0;
+    end
+    else if(conf_input) begin
+        conf_wait <= 1;
+    end
+    else if(indata_valid & conf_wait) begin
+        conf_wait <= 0;    
+    end    
+end
+
+wire conf_r10 = conf_wait & indata_valid;
+
+reg [9:0] conf_vec;
+always @(posedge clk) begin:DELAY
+    integer i_d;    
+    for (i_d = 1;i_d <= 9;i_d = i_d + 1) begin
+        conf_vec[i_d] <= conf_vec[i_d - 1];
+    end
+    conf_vec[0] <= conf_r10;
+end
+
+wire conf = conf_vec[9];
+
+always @(posedge clk) begin
+    if (!rst_n) begin
+        linelen_reg <= 0;
+        st_addr_reg <= 0;
+    end
+    else if (conf_input) begin
+        linelen_reg <= linelen;
+        st_addr_reg <= st_addr;
+    end
+end
+
 
 localparam ST_IDLE = 0;
 localparam ST_4_ENABLE = 1;
@@ -109,16 +152,16 @@ integer j;
 	else begin: ere
 		if(conf) begin
 			for (j =0;j<X_MAC;j=j+1) begin:assh
-				st_addr_show[j] <= st_addr[j*ADDR_LEN +: ADDR_LEN] - 1;
+				st_addr_show[j] <= st_addr_reg[j*ADDR_LEN +: ADDR_LEN] - 1;
 			end
 			working <= 1;
 			if(pooled) begin
 				control <= ST_1_BUF1;
-				linelen_left <= linelen - 1;
+				linelen_left <= linelen_reg - 1;
 			end
 			else begin
 				control <= ST_4_BUF1;
-				linelen_left <= linelen - 2;
+				linelen_left <= linelen_reg - 2;
 			end
 		end
 		else if (working && dvalid)begin

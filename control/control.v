@@ -93,7 +93,7 @@ module topcontrol #(
 	
 	input  wire                         bfc_idle,
 	output reg 							bfc_conf,
-	output reg [SINGLE_LEN - 1:0  ]     bfc_bias_num, // �?要一次读这么多个bias，bias=9代表�?有bb中地�?增加1个�?�在DDR中是连续 X_PE byte�?
+	output reg [SINGLE_LEN - 1:0  ]     bfc_bias_num, // �?要一次读这么多个bias，bias=9代表�?有bb中地�?增加1个�?�在DDR中是连续 X_PE byte�?
 	output reg [SINGLE_LEN - 1:0  ]     bfc_bias_ddr_byte, // X_PE*bias
 	output reg [DDR_ADDR_LEN - 1:0]     bfc_ddr_st_addr,
 	output reg [ADDR_LEN_BB - 1:0 ]     bfc_bb_st_addr,
@@ -273,7 +273,7 @@ always @( posedge clk) begin
 	end
 	else if(!inst_empty) begin	
 		if( inst_type == 4'd0) begin
-			if( ( inst_is_w2c_back ? (idle_data_soon && idle_write_back && idle_data_in): idle_data_soon)) begin
+			if( ( inst_is_w2c_back ? (idle_data_soon && idle_write_back): idle_data_soon)) begin
 				if(wb_rd_conf) begin 
 					w2c_conf <= 0;
 					wb_rd_conf <= 0;

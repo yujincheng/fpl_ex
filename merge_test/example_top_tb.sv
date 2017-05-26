@@ -102,7 +102,7 @@ module example_top_tb #
                                               // # = 32, 64, 128, 256.
     parameter C_AXI_NBURST_SUPPORT   = 0,
 parameter INST_LEN = 220,
-parameter FILE_NAME = "..//sim_data//inst.txt",
+parameter FILE_NAME = "..//test.txt",
   `ifdef SIMULATION_MODE
     parameter SIMULATION            = "TRUE" 
   `else
