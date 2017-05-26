@@ -289,7 +289,7 @@ wire bb_idle;
 wire PEC_tofifo;
 wire PEC_fromfifo;
 wire out_req;
-
+wire axi_ug_idle;
 
 topcontrol#(
 .ADDR_LEN_WB(ADDR_LEN_WB),
@@ -499,7 +499,7 @@ BP_WRITE_CONTROL #(
 .ddr_write_empty (ddr_write_empty_dwrite),
 .ddr_write_req   (ddr_write_req_dwrite),
 .ddr_write_data_out  (ddr_write_data_dwrite),
-
+.axi_ug_idle(axi_ug_idle),
 
 .conf  (dwc_conf),
 .BP_addr_out (dwc_BP_addr),
@@ -626,7 +626,9 @@ mig_axi_data#(
  
  .in_fifo_empty(ddr_write_empty_dwrite),
  .in_fifo_req(ddr_write_req_dwrite),
- .in_fifo_data(ddr_write_data_dwrite)
+ .in_fifo_data(ddr_write_data_dwrite),
+ 
+ .idle(axi_ug_idle)
 	 
  );
 

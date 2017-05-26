@@ -20,6 +20,8 @@ module BP_WRITE_CONTROL #(
 	//input wire [SINGLE_LEN - 1:0] data_num, // ��Ҫһ�ζ���ô���weights��weights=1��������wb�е�ַ����4������DDR�������� 9*X_PE*X_MESH byte��
 	input wire [SINGLE_LEN - 1:0] data_ddr_byte, // X_PE*X_MESH*weights
 	
+	input wire axi_ug_idle,
+	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
 	input wire [ADDR_LEN - 1:0] BP_st_addr,
 	input wire [2 - 1:0] BP_st_num,
@@ -57,7 +59,7 @@ reg ddr_fifo_en;
 reg ddr_fifo_en_r1;
 reg ddr_fifo_en_r2;
 
-assign idle = (!working && !working_r1);
+assign idle = (!working && !working_r1 && axi_ug_idle);
 
 
 genvar m,n,l;
