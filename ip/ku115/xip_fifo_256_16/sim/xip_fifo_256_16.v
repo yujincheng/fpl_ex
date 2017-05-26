@@ -63,6 +63,7 @@ module xip_fifo_256_16 (
   full,
   almost_full,
   empty,
+  prog_full,
   prog_empty,
   wr_rst_busy,
   rd_rst_busy
@@ -85,6 +86,7 @@ output wire full;
 output wire almost_full;
 (* X_INTERFACE_INFO = "xilinx.com:interface:fifo_read:1.0 FIFO_READ EMPTY" *)
 output wire empty;
+output wire prog_full;
 output wire prog_empty;
 output wire wr_rst_busy;
 output wire rd_rst_busy;
@@ -129,9 +131,9 @@ output wire rd_rst_busy;
     .C_PROG_EMPTY_THRESH_ASSERT_VAL(8),
     .C_PROG_EMPTY_THRESH_NEGATE_VAL(9),
     .C_PROG_EMPTY_TYPE(1),
-    .C_PROG_FULL_THRESH_ASSERT_VAL(15),
-    .C_PROG_FULL_THRESH_NEGATE_VAL(14),
-    .C_PROG_FULL_TYPE(0),
+    .C_PROG_FULL_THRESH_ASSERT_VAL(13),
+    .C_PROG_FULL_THRESH_NEGATE_VAL(12),
+    .C_PROG_FULL_TYPE(1),
     .C_RD_DATA_COUNT_WIDTH(5),
     .C_RD_DEPTH(16),
     .C_RD_FREQ(1),
@@ -327,7 +329,7 @@ output wire rd_rst_busy;
     .data_count(),
     .rd_data_count(),
     .wr_data_count(),
-    .prog_full(),
+    .prog_full(prog_full),
     .prog_empty(prog_empty),
     .sbiterr(),
     .dbiterr(),

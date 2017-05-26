@@ -128,27 +128,25 @@ always @ (posedge clk) begin
 	end
 	else if (working) begin
 		if(!ddr_fifo_near_full) begin
-			if(ddr_fifo_en) begin
-				if(count_in_line == Line_width_reg-1 && count_line==1) begin
-					working <= 0;
-					count_in_line <= 0;
-					BP_addr_reg <= 0;
-					count_line <= 0;	
-					ddr_fifo_en <= 0;
-				end				
-				else if(count_in_line == Line_width_reg-1 && count_line==0) begin
-					count_in_line <= 0;
-					count_line <= 1;
-					BP_num_reg <= BP_num_reg + 1;
-					BP_addr_reg <= BP_st_addr;
-					ddr_fifo_en <= 1;
-				end
-				else if(count_in_line < Line_width_reg-1) begin
-					BP_addr_reg <=  BP_addr_reg + 1;
-					count_in_line <= count_in_line + 1;
-					ddr_fifo_en <= 1;
-				end
-			end
+            if(count_in_line == Line_width_reg-1 && count_line==1) begin
+                working <= 0;
+                count_in_line <= 0;
+                BP_addr_reg <= 0;
+                count_line <= 0;	
+                ddr_fifo_en <= 0;
+            end				
+            else if(count_in_line == Line_width_reg-1 && count_line==0) begin
+                count_in_line <= 0;
+                count_line <= 1;
+                BP_num_reg <= BP_num_reg + 1;
+                BP_addr_reg <= BP_st_addr;
+                ddr_fifo_en <= 1;
+            end
+            else if(count_in_line < Line_width_reg-1) begin
+                BP_addr_reg <=  BP_addr_reg + 1;
+                count_in_line <= count_in_line + 1;
+                ddr_fifo_en <= 1;
+            end
 		end
 		else begin
 			ddr_fifo_en <= 0;
@@ -159,6 +157,8 @@ always @ (posedge clk) begin
 	end
 end
 
+wire ddr_fifo_full;
+
    xip_fifo_256_16 x6464(
 	  .clk(clk),
 	  .srst(~rst_n),
@@ -166,7 +166,8 @@ end
 	  .wr_en(ddr_fifo_en_r1),
 	  .rd_en(ddr_write_req),
 	  .dout(ddr_write_data_out),
-	  .full(ddr_fifo_near_full),
+	  .prog_full(ddr_fifo_near_full),
+	  .full(ddr_fifo_full),
 	  .empty(ddr_write_empty)
 	 );
 
