@@ -85,8 +85,8 @@ reg [SINGLE_LEN - 1:0] wr_cmd_left;
 reg [SINGLE_LEN - 1:0] rd_data_left;
 reg [SINGLE_LEN - 1:0] wr_data_left;
 
-assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle;
-
+assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle &(b_count == wr_transe_count);
+reg [7:0] wr_transe_count;
 //////////////////////	 
 //Write Address Channel
 //////////////////////
@@ -103,6 +103,7 @@ always @(posedge clk) begin
 	   axi_awprot <= 0;
 		wr_cmd_idle <= 1;
 		wr_cmd_left <= 0;
+		wr_transe_count <= 0;
 	end 
 	else if (ddr_conf && (cmd_type == 1) ) begin
 		wr_cmd_idle <= 0;
@@ -112,6 +113,7 @@ always @(posedge clk) begin
 		axi_awlen <= ((ddr_len >> shift_dlen  ) > 8)? 7 : (ddr_len >> shift_dlen  )-1;
 		axi_awsize <= axi_size;
 		axi_awburst <= 01;
+        wr_transe_count <= 0;
 	end
 	else if (!wr_cmd_idle) begin
 		if (axi_awvalid == 0)begin
@@ -119,6 +121,7 @@ always @(posedge clk) begin
 		end		
 		else if (axi_awready && axi_awvalid) begin
 			axi_awvalid <= 1'b0;
+		   wr_transe_count <= wr_transe_count + 1;
 		   axi_awid <= 0;
 		   axi_awaddr <= axi_awaddr + addr_step;
 		   axi_awlen <= (wr_cmd_left > 8) ? 7 : (wr_cmd_left-1);
@@ -279,9 +282,18 @@ always @(posedge clk) begin
 	end 
 end
 
+reg [7:0] b_count;
+
 always @(posedge clk) begin
 	if (!rst_n || !init_cmptd) begin
 		axi_bready <= 1;
+		b_count <= 0;
+    end
+    else if (ddr_conf && (cmd_type == 1) ) begin
+        b_count <= 0;
+    end
+    if(axi_bvalid) begin
+        b_count <= b_count + 1;
     end
 end
 
