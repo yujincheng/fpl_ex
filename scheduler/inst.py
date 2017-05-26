@@ -100,10 +100,11 @@ class Scheduler():
         #TODO consider load weights
         addr = self.weight_addr[layer_index]
         addr += output_channel_index // OUTPUT_PARALL * KERNEL_SIZE * KERNEL_SIZE * \
-            ceil_div(self.net[layer_index].input_channel, INPUT_PARALL)
-        addr += input_channel_index // INPUT_PARALL * KERNEL_SIZE * KERNEL_SIZE
+            ceil_div(self.net[layer_index].input_channel, INPUT_PARALL) #* DDR_WEIGHT_DIV
+        addr += input_channel_index // INPUT_PARALL * KERNEL_SIZE * KERNEL_SIZE # * DDR_WEIGHT_DIV
+        #addr += output_channel_index // (OUTPUT_PARALL / DDR_WEIGHT_DIV) * KERNEL_SIZE * KERNEL_SIZE
         
-        # for test
+        #TEST
         addr %= self.config.bram_length
 
         return addr
@@ -126,7 +127,7 @@ class Scheduler():
 
                     dfc_ddr_st_addr += dfc_data_ddr_byte
                     if dfc_st_mac % 4 == 2:
-                        dfc_data_st_addr += dfc_data_width * DATA_BRAM_WIDTH
+                        dfc_data_st_addr += dfc_data_width
         return insts
     
 
@@ -208,17 +209,10 @@ class Scheduler():
     def get_ddr_b_addr(self, start_index):
         return self.get_ddr_b_block_n(0, start_index) * DDR_BIAS_WIDTH
 
-    def calc_interlayer(self, start_index, end_index):
-        # assuming that the io pointers are correctly set
-        # set write addrs
-
-        print str(start_index) + ' to ' +  str(end_index)
+    def inst_load_interlayer_weights(self, start_index, end_index):
         insts = []
-
-        # load weights
         inst = Inst(INST_TYPE_LOAD_WEIGHT)
 
-        #TODO Multilayer support:
         wfc_wb_st_addr = 0
         wfc_ddr_st_addr = self.get_ddr_w_addr(start_index)
         wfc_weight_num = self.get_ddr_w_block_n(start_index, end_index)
@@ -226,6 +220,31 @@ class Scheduler():
         inst.set_inst(INST_TYPE_LOAD_WEIGHT, wfc_weight_num, wfc_weight_ddr_byte, \
             wfc_ddr_st_addr, wfc_wb_st_addr)
         insts.append(inst)
+
+        self.weight_addr[0] = wfc_wb_st_addr # 0 
+        for i in range(start_index, end_index - 1):
+            self.weight_addr[i + 1] = self.weight_addr[i] + 3 * 3 * \
+                ceil_div(self.net[i].output_channel, OUTPUT_PARALL) * \
+                ceil_div(self.net[i].input_channel, INPUT_PARALL)
+        return insts
+
+    def inst_load_interlayer_bias(self, start_index, end_index):
+        insts = []
+        inst = Inst(INST_TYPE_LOAD_BIAS)
+        bfc_bias_num = self.get_ddr_b_block_n(start_index, end_index)
+        bfc_bias_ddr_byte = bfc_bias_num * DDR_BIAS_WIDTH
+        bfc_ddr_st_addr = self.get_ddr_b_addr(start_index)
+        bfc_bb_st_addr = 0
+        inst.set_inst(INST_TYPE_LOAD_BIAS, bfc_bias_num, bfc_bias_ddr_byte,
+            bfc_ddr_st_addr, bfc_bb_st_addr)
+        insts.append(inst)
+        return insts
+
+    def calc_interlayer(self, start_index, end_index):
+        # assuming that the io pointers are correctly set
+        # set write addrs
+
+        print str(start_index) + ' to ' +  str(end_index)
 
         self.blob_addr[start_index + 1] = self.bram.get_write_addr() #start address for inter blob data
         inter_length =  0 # length of inter blob data in each BRAM in unit of BRAD_WIDTH
@@ -236,16 +255,11 @@ class Scheduler():
 
         self.bram.malloc_inter(self.blob_addr[end_index] - self.blob_addr[start_index + 1])
 
+        insts = []
+        # load weights
+        insts = insts + self.inst_load_interlayer_weights(start_index, end_index)
         # load bias
-        #TODO multilayer
-        inst = Inst(INST_TYPE_LOAD_BIAS)
-        bfc_bias_num = self.get_ddr_b_block_n(start_index, end_index)
-        bfc_bias_ddr_byte = bfc_bias_num * DDR_BIAS_WIDTH
-        bfc_ddr_st_addr = self.get_ddr_b_addr(start_index)
-        bfc_bb_st_addr = 0
-        inst.set_inst(INST_TYPE_LOAD_BIAS, bfc_bias_num, bfc_bias_ddr_byte,
-            bfc_ddr_st_addr, bfc_bb_st_addr)
-        insts.append(inst)
+        insts = insts + self.inst_load_interlayer_bias(start_index, end_index)
 
         # start compute
         row_index = 0
@@ -340,7 +354,6 @@ class Scheduler():
             else:
                 outrow = (row_index + ilc_ispad)
             w2c_st_addr = [self.get_data_addr(layer_index + 1, outrow, output_channel_head)] * 4
-            # print w2c_st_addr
             w2c_st_addr = self.addr4in1(w2c_st_addr)
             
             last_w2c_valid_mac = last.p('w2c_valid_mac')
@@ -441,14 +454,13 @@ class Scheduler():
                     w2c_linelen, w2c_pooled, pooled_type, wb_st_rd_addr, w2c_shift_len, \
                     w2c_valid_mac, is_bb_, bias_addr, bias_shift)
                 insts.append(inst)
-
         return insts 
         
 
 
     '''
     def calc_layer(layer, addr_offset = [0] * 4):
-        #TODO
+        #
         #OUTPUT channel
         # addr_offset
         write_addr = [256] * 4
@@ -480,7 +492,7 @@ class Scheduler():
         w2c_pooled = layer.pooling
         pooled_type = layer.maxpooling
 
-        w2c_shift_len = 0 #TODO
+        w2c_shift_len = 0 #
 
         insts = []
 
@@ -738,7 +750,6 @@ if __name__ == '__main__':
         #print_net(net[i], fblob[i])
         print ''
 
-    set_trace()
     hardware_config = split.HardwareConfig(config.hardware_config)
     #split.split_net(net['1layer'], hardware_config)
     #scheduler = Scheduler(net, hardware_config)

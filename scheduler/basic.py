@@ -20,10 +20,6 @@ BIAS_BRAM_WIDTH = 8
 WEIGHT_BRAM_WIDTH = 8
 INTER_WIDTH = 3 # 24bit representing a single number
 
-DDR_ADDR_BYTE = 1 # the unit of ddr address
-DDR_WEIGHT_WIDTH = 32
-DDR_BIAS_WIDTH = 32
-
 # for bias/ weights
 SINGLE_LEN = 24
 DDR_ADDR_LEN = 32
@@ -36,6 +32,10 @@ OUTPUT_PARALL = 8
 
 KERNEL_SIZE = 3
 
+DDR_ADDR_BYTE = 1 # the unit of ddr address
+DDR_WEIGHT_WIDTH = 32
+DDR_WEIGHT_DIV = INPUT_PARALL * OUTPUT_PARALL / DDR_WEIGHT_WIDTH #2
+DDR_BIAS_WIDTH = 32
 
 ceil_div = lambda x, y:-(-x//y)
 ceil_to = lambda x, y: ceil_div(x,y) * y
