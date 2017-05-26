@@ -84,11 +84,14 @@ always@ (posedge clk) begin:always1
 	else if(working) begin
 		if(!cto1) begin
 			cto1 <= 1;
-			working <= 0;
-		   for (j =0;j<X_PE;j=j+1) begin:assh
-				if(is_zero) bias_out_reg[j] <= 0;
-				else bias_out_reg[j] <= (doutb_show[j] <<< bias_shift);
-		   end
+		end
+		else if(cto1) begin
+           working <= 0;
+           for (j =0;j<X_PE;j=j+1) begin:assh
+                if(is_zero) bias_out_reg[j] <= 0;
+                else bias_out_reg[j] <= (doutb_show[j] <<< bias_shift);
+           end
+		
 		end
 	end
 end
