@@ -443,7 +443,7 @@ Weight_FIFO_CONTROL #(
 );
 
 
-(*DONT_TOUCH = "yes"*)BP_FIFO_CONTROL #(
+BP_FIFO_CONTROL #(
 .X_PE(X_PE),
 .X_MESH(X_MESH),
 .ADDR_LEN   (ADDR_LEN_BP  )

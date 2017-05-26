@@ -273,7 +273,7 @@ always @( posedge clk) begin
 	end
 	else if(!inst_empty) begin	
 		if( inst_type == 4'd0) begin
-			if( ( inst_is_w2c_back ? (idle_data_soon && idle_write_back): idle_data_soon)) begin
+			if( ( inst_is_w2c_back ? (idle_data_soon && idle_write_back ): idle_data_soon)) begin
 				if(wb_rd_conf) begin 
 					w2c_conf <= 0;
 					wb_rd_conf <= 0;
@@ -288,7 +288,7 @@ always @( posedge clk) begin
 					ilc_fromfifo   <= inst_ilc_fromfifo;
 					ilc_tofifo     <= inst_ilc_tofifo;
 					ilc_ispad      <= inst_ilc_ispad;
-					ilc_st_addr    <= inst_ilc_st_addr;
+					ilc_st_addr    <= ilc_st_addr_tmp;
 					ilc_linelen    <= inst_ilc_linelen;
 					pooled_type <= inst_pooled_type;
 					if(inst_is_w2c_back) begin
