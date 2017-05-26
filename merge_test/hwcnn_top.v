@@ -93,7 +93,7 @@ input wire inst_empty,
   output                              axi_rready  // Read Response ready
 );
 
-wire [64*8 - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
+wire [DDR_DATA_LEN - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
 wire [ADDR_LEN_WB - 1:0]                               wfc_wr_addr ;
 wire [X_PE*2 - 1:0]                                               wfc_wea      ;
 wire                                                wb_wr_ready   ;
@@ -142,16 +142,16 @@ wire [3:0]                                           bsr_iszero;
 wire 											ilc_ispad;
 wire [MAX_LINE_LEN - 1 : 0]										ilc_linelen;
 wire [MAX_LINE_LEN - 1 : 0]										w2c_linelen;
-wire [4*ADDR_LEN_BP-1 : 0]										ilc_st_addr;
-wire [4*ADDR_LEN_BP-1 : 0]										w2c_st_addr;
+wire [X_MAC*ADDR_LEN_BP-1 : 0]										ilc_st_addr;
+wire [X_MAC*ADDR_LEN_BP-1 : 0]										w2c_st_addr;
 wire [4:0]		w2c_shift_len;
 wire [1:0] 		w2c_valid_mac;
 wire [7:0]                                           bsr_buffermux;
 wire                                                out_valid;
 wire                                                indata_valid;
-wire [COM_DATALEN*4*16 - 1:0] 							result_wire_unpool;
+wire [COM_DATALEN*4*X_PE - 1:0] 							result_wire_unpool;
 wire [COM_DATALEN-1:0] 							result_wire_unpool_show[X_MESH-1:0][2-1:0][2-1:0];
-wire [COM_DATALEN*16 - 1:0] 							result_wire_pool;
+wire [COM_DATALEN*X_PE - 1:0] 							result_wire_pool;
 wire [COM_DATALEN-1:0] 							result_wire_pool_show[X_MESH-1:0];
 wire result_valid;
 wire result_valid_pool;
@@ -190,7 +190,7 @@ wire [1:0] dwc_st_mac;
 
 wire [ADDR_LEN_BB - 1:0]           bfc_wr_addr ;
 wire [X_PE/8 - 1:0]        bfc_wea      ;
-wire [64*8 - 1:0] bfc_data_wr;  //8 here is 512/DATA_LEN
+wire [DDR_DATA_LEN - 1:0] bfc_data_wr;
 
 wire [1:0] switch;
 wire [DDR_ADDR_LEN - 1:0] ddr_st_addr_out_bias;

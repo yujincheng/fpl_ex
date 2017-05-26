@@ -159,12 +159,14 @@ wire  [SINGLE_LEN - 1:0]         inst_bfc_bias_num;
 wire  [SINGLE_LEN - 1:0] inst_bfc_bias_ddr_byte; //inst_bfc_bias_num * 16 
 wire  [DDR_ADDR_LEN - 1:0] inst_bfc_ddr_st_addr;
 wire  [SINGLE_LEN - 1:0] inst_bfc_bb_st_addr;
+wire  [3:0]                      inst_dep_bf;
 
 //load_weight
 wire  [SINGLE_LEN - 1:0]         inst_wfc_weight_num;
 wire  [SINGLE_LEN - 1:0] inst_wfc_weight_ddr_byte; 
 wire  [DDR_ADDR_LEN - 1:0] inst_wfc_ddr_st_addr;
 wire  [SINGLE_LEN - 1:0] inst_wfc_wb_st_addr;
+wire  [3:0]                      inst_dep_wf;
 
 //load_data
 wire  [SINGLE_LEN - 1:0]         inst_dfc_data_width;
@@ -172,6 +174,7 @@ wire  [SINGLE_LEN - 1:0] inst_dfc_data_ddr_byte;
 wire  [DDR_ADDR_LEN - 1:0] inst_dfc_ddr_st_addr;
 wire  [SINGLE_LEN - 1:0] inst_dfc_data_st_addr;
 wire  [1: 0] inst_dfc_st_mac;
+wire  [3:0]                      inst_dep_df;
 
 //write_data
 wire  [SINGLE_LEN - 1:0]         inst_dwc_data_width;
@@ -179,19 +182,20 @@ wire  [SINGLE_LEN - 1:0] inst_dwc_data_ddr_byte;
 wire  [DDR_ADDR_LEN - 1:0] inst_dwc_ddr_st_addr;
 wire  [SINGLE_LEN - 1:0] inst_dwc_data_st_addr;
 wire  [1: 0] inst_dwc_st_mac;
+wire  [3:0]                      inst_dep_dw;
 
 
 
 assign {inst_dep,inst_bias_shift     ,inst_bias_addr      ,inst_is_bb_         ,inst_w2c_valid_mac  ,inst_w2c_shift_len  ,inst_wb_st_rd_addr  ,inst_pooled_type    ,inst_w2c_pooled     ,inst_w2c_linelen    ,inst_w2c_st_addr    ,inst_is_w2c_back    ,inst_ilc_tofifo     ,inst_ilc_fromfifo   ,inst_bsr_buffermux  ,inst_bsr_iszero     ,inst_ilc_linelen    ,inst_ilc_ispad      ,inst_ilc_st_addr,inst_type} = instruct;
 
 
-assign {inst_bfc_bb_st_addr,inst_bfc_ddr_st_addr,inst_bfc_bias_ddr_byte,inst_bfc_bias_num,inst_type_t1} = instruct;
+assign {inst_dep_bf,inst_bfc_bb_st_addr,inst_bfc_ddr_st_addr,inst_bfc_bias_ddr_byte,inst_bfc_bias_num,inst_type_t1} = instruct;
 
-assign {inst_wfc_wb_st_addr,inst_wfc_ddr_st_addr,inst_wfc_weight_ddr_byte,inst_wfc_weight_num,inst_type_t2} = instruct;
+assign {inst_dep_wf,inst_wfc_wb_st_addr,inst_wfc_ddr_st_addr,inst_wfc_weight_ddr_byte,inst_wfc_weight_num,inst_type_t2} = instruct;
 
-assign {inst_dfc_st_mac,inst_dfc_data_st_addr,inst_dfc_ddr_st_addr,inst_dfc_data_ddr_byte,inst_dfc_data_width,inst_type_t3} = instruct;
+assign {inst_dep_df,inst_dfc_st_mac,inst_dfc_data_st_addr,inst_dfc_ddr_st_addr,inst_dfc_data_ddr_byte,inst_dfc_data_width,inst_type_t3} = instruct;
 
-assign {inst_dwc_st_mac,inst_dwc_data_st_addr,inst_dwc_ddr_st_addr,inst_dwc_data_ddr_byte,inst_dwc_data_width,inst_type_t4} = instruct;
+assign {inst_dep_dw,inst_dwc_st_mac,inst_dwc_data_st_addr,inst_dwc_ddr_st_addr,inst_dwc_data_ddr_byte,inst_dwc_data_width,inst_type_t4} = instruct;
 
 
 
@@ -328,7 +332,7 @@ always @( posedge clk) begin
 					wfc_conf <= 0;
 					inst_req <= 0;
 				end
-				else begin
+				else if( ~((inst_dep_wf[2] && ~ idle_data_soon) ) )begin
 					wfc_conf <= 1;
 					switch <= 1;
 					mig_type <= 0;
@@ -353,7 +357,7 @@ always @( posedge clk) begin
 					bfc_conf <= 0;
 					inst_req <= 0;
 				end
-				else begin
+				else if( ~((inst_dep_bf[2] && ~ idle_data_soon) ) )begin
 					bfc_conf <= 1;
 					switch <= 2;
 					mig_type <= 0;
@@ -375,7 +379,7 @@ always @( posedge clk) begin
 					dfc_conf <= 0;
 					inst_req <= 0;
 				end
-				else begin
+				else if( ~((inst_dep_df[2] && ~ idle_data_soon) ) )begin
 					dfc_conf <= 1;
 					switch <= 3;
 					mig_type <= 0;
@@ -398,7 +402,7 @@ always @( posedge clk) begin
 					dwc_conf <= 0;
 					inst_req <= 0;
 				end
-				else begin
+				else if( ~((inst_dep_dw[2] && ~ idle_data_soon) ) )begin
 					dwc_conf <= 1;
 					//switch <= 3;
 					mig_type <= 1;
