@@ -781,6 +781,32 @@ parameter id = 0
         end
     endtask
 
+
+//    task mem_dump;
+//        reg  [BA_BITS-1:0]  bank;
+//        reg  [ROW_BITS-1:0] row;
+//        reg  [COL_BITS-1:0] col;
+//        reg    [BL_MAX*DQ_BITS-1:0] data;
+//        reg [BA_BITS + ROW_BITS + COL_BITS - 1 : 0] addr;
+//        integer fp_w;
+//        begin
+//            fp_w = $fopen("..//data_out.txt", "w");
+//            for(addr=0; addr<32'h1a0; addr = addr + 8) begin
+//                bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
+//                row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
+//                col = addr [COL_BITS - 1 : 0];        
+//                memory_read(bank,row,col,data);
+//                $display("PPP: %x", data);
+//                $fwrite(fp_w, "%x : %x\n", addr, data);
+//            end
+//            $fclose(fp_w);
+//        end
+//    endtask   
+
+
+
+
+
     task memory_read;
         input  [BA_BITS-1:0]  bank;
         input  [ROW_BITS-1:0] row;

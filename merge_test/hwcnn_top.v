@@ -628,7 +628,7 @@ mig_axi_data#(
  .in_fifo_req(ddr_write_req_dwrite),
  .in_fifo_data(ddr_write_data_dwrite),
  
- .idle(axi_ug_idle)
+  .write_idle(axi_ug_idle)
 	 
  );
 

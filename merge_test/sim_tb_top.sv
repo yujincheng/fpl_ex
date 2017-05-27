@@ -361,5 +361,70 @@ generate
   end
 endgenerate
 
+initial begin
+#70000000 mem_dump();
+end
+
+
+`include "4096Mb_ddr3_parameters.vh"
+
+
+
+parameter check_strict_mrbits = 1;
+parameter check_strict_timing = 1;
+parameter feature_pasr = 1;
+parameter feature_truebl4 = 0;
+parameter feature_odt_hi = 0;
+parameter PERTCKAVG=TDLLK;
+
+// text macros
+`define DQ_PER_DQS DQ_BITS/DQS_BITS
+`define BANKS      (1<<BA_BITS)
+`define MAX_BITS   (BA_BITS+ROW_BITS+COL_BITS-BL_BITS)
+`define MAX_SIZE   (1<<(BA_BITS+ROW_BITS+COL_BITS-BL_BITS))
+`define MEM_SIZE   (1<<MEM_BITS)
+`define MAX_PIPE   4*CL_MAX
+
+task mem_dump;
+    reg  [BA_BITS-1:0]  bank;
+    reg  [ROW_BITS-1:0] row;
+    reg  [COL_BITS-1:0] col;
+    reg    [BL_MAX*DQ_BITS-1:0] data;
+    reg [BA_BITS + ROW_BITS + COL_BITS - 1 : 0] addr;
+    reg [511:0] data512;
+    integer addr_run;
+    integer fp_w;
+    integer id;
+    begin
+        fp_w = $fopen("..//data_out.txt", "w");
+        for(addr_run = 0; addr_run<130368+4096; addr_run = addr_run + 64) begin
+            addr = addr_run/8;
+            bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
+            row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
+            col = addr [COL_BITS - 1 : 0];        
+            mem_model_x8.memRank[0].memModel[0].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 0 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[1].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 64 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[2].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 128 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[3].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 192 +: 64 ] = data;   
+            mem_model_x8.memRank[0].memModel[4].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 256 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[5].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 320 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[6].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 384 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[7].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 448 +: 64 ] = data;            
+                    
+            $display("PPP: %x", data);
+            $fwrite(fp_w, "%x : %x\n", addr_run, data512);
+        end
+        $fclose(fp_w);
+    end
+endtask  
+
    
 endmodule

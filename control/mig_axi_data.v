@@ -71,7 +71,9 @@ module mig_axi_data #(
    
    input cmd_type,
 
-   output idle
+   output idle,
+   output read_idle,
+   output write_idle
 
   );
  localparam shift_dlen  = clogb2(C_AXI_DATA_WIDTH/8 - 1);
@@ -85,7 +87,7 @@ reg [SINGLE_LEN - 1:0] wr_cmd_left;
 reg [SINGLE_LEN - 1:0] rd_data_left;
 reg [SINGLE_LEN - 1:0] wr_data_left;
 
-assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle &(b_count == wr_transe_count);
+
 reg [7:0] wr_transe_count;
 //////////////////////	 
 //Write Address Channel
@@ -296,6 +298,10 @@ always @(posedge clk) begin
         b_count <= b_count + 1;
     end
 end
+
+assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle &(b_count == wr_transe_count);
+assign write_idle = wr_data_idle & wr_cmd_idle &(b_count == wr_transe_count);
+assign read_idle = rd_data_idle & rd_cmd_idle;
 
 xip_fifo_256_16 x256x32(
   .clk(clk),
