@@ -28,8 +28,6 @@ module Winograd_matrix_mul_raw_8to9
 )
 (
 	input clk,
-	input clk_en,
-	input rst_n,
   input [IN_BIT*4-1:0]data,
   output [OUT_BIT*4-1:0]result
 );
@@ -40,24 +38,13 @@ module Winograd_matrix_mul_raw_8to9
   wire signed [IN_BIT-1:0] data_wire_array [4-1:0];
   reg signed [OUT_BIT-1:0] result_wire_array [4-1:0];
 
-  always @(posedge clk&clk_en)
-  begin
-  	if(rst_n)
+  always @(posedge clk)
   	begin
     	result_wire_array[0] <= data_wire_array[0] - data_wire_array[2];
     	result_wire_array[1] <= data_wire_array[1] + data_wire_array[2];
     	result_wire_array[2] <= data_wire_array[2] - data_wire_array[1];
     	result_wire_array[3] <= data_wire_array[1] - data_wire_array[3];
     end
-    else
-    begin
-    	result_wire_array[0] <= {OUT_BIT{1'b0}};
-    	result_wire_array[1] <= {OUT_BIT{1'b0}};
-    	result_wire_array[2] <= {OUT_BIT{1'b0}};
-    	result_wire_array[3] <= {OUT_BIT{1'b0}};
-    end
-  end
-  
   
   generate
     genvar i;

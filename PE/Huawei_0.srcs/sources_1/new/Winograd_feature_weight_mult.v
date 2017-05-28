@@ -29,8 +29,7 @@ module Winograd_feature_weight_mult
 )
 (
 	input clk,
-	input in_valid,
-	input rst_n,
+//	input rst_n,
 	input [WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE-1:0]weight,
 	output [RESULT_BIT*RESULT_SIZE*RESULT_SIZE-1:0]result
 );
@@ -55,35 +54,22 @@ module Winograd_feature_weight_mult
 
 	
 	always@(posedge clk)
-	begin
-		if(!rst_n)
-		begin
-			lvl1_reg[0]<={(WEIGHT_BIT+2){1'b0}};lvl1_reg[1]<={(WEIGHT_BIT+2){1'b0}};
-			lvl1_reg[2]<={(WEIGHT_BIT+2){1'b0}};lvl1_reg[3]<={(WEIGHT_BIT+2){1'b0}};
-			lvl1_reg[4]<={(WEIGHT_BIT+2){1'b0}};lvl1_reg[5]<={(WEIGHT_BIT+2){1'b0}};
-			lvl1_reg[6]<={(WEIGHT_BIT+2){1'b0}};lvl1_reg[7]<={(WEIGHT_BIT+2){1'b0}};
-			lvl1_reg[8]<={(WEIGHT_BIT+2){1'b0}};lvl1_reg[9]<={(WEIGHT_BIT+2){1'b0}};
-			lvl1_reg[10]<={(WEIGHT_BIT+2){1'b0}};lvl1_reg[11]<={(WEIGHT_BIT+2){1'b0}};
-			lvl1_reg[12]<={(WEIGHT_BIT+2){1'b0}};lvl1_reg[13]<={(WEIGHT_BIT+2){1'b0}};
-		end
-		else if(in_valid)
-		begin
-			lvl1_reg[0]<=weight_wire[WEIGHT_SIZE*0+0]+weight_wire[WEIGHT_SIZE*0+1]+weight_wire[WEIGHT_SIZE*0+2];
-			lvl1_reg[1]<=weight_wire[WEIGHT_SIZE*0+0]-weight_wire[WEIGHT_SIZE*0+1]+weight_wire[WEIGHT_SIZE*0+2];
-			lvl1_reg[2]<=weight_wire[WEIGHT_SIZE*2+0]+weight_wire[WEIGHT_SIZE*2+1]+weight_wire[WEIGHT_SIZE*2+2];
-			lvl1_reg[3]<=weight_wire[WEIGHT_SIZE*2+0]-weight_wire[WEIGHT_SIZE*2+1]+weight_wire[WEIGHT_SIZE*2+2];
-			lvl1_reg[4]<=weight_wire[WEIGHT_SIZE*0+0]+weight_wire[WEIGHT_SIZE*1+0]+weight_wire[WEIGHT_SIZE*2+0];
-			lvl1_reg[5]<=weight_wire[WEIGHT_SIZE*0+0]-weight_wire[WEIGHT_SIZE*1+0]+weight_wire[WEIGHT_SIZE*2+0];
-			lvl1_reg[6]<=weight_wire[WEIGHT_SIZE*0+2]+weight_wire[WEIGHT_SIZE*1+2]+weight_wire[WEIGHT_SIZE*2+2];
-			lvl1_reg[7]<=weight_wire[WEIGHT_SIZE*0+2]-weight_wire[WEIGHT_SIZE*1+2]+weight_wire[WEIGHT_SIZE*2+2];
-			lvl1_reg[8]<=weight_wire[WEIGHT_SIZE*1+0]+weight_wire[WEIGHT_SIZE*1+1]+weight_wire[WEIGHT_SIZE*1+2];
-			lvl1_reg[9]<=weight_wire[WEIGHT_SIZE*1+0]-weight_wire[WEIGHT_SIZE*1+1]+weight_wire[WEIGHT_SIZE*1+2];
-			lvl1_reg[10]<={{2{weight_wire[0+WEIGHT_SIZE*0][WEIGHT_BIT-1]}},weight_wire[0+WEIGHT_SIZE*0]};
-			lvl1_reg[11]<={{2{weight_wire[2+WEIGHT_SIZE*0][WEIGHT_BIT-1]}},weight_wire[2+WEIGHT_SIZE*0]};
-			lvl1_reg[12]<={{2{weight_wire[0+WEIGHT_SIZE*2][WEIGHT_BIT-1]}},weight_wire[0+WEIGHT_SIZE*2]};
-			lvl1_reg[13]<={{2{weight_wire[2+WEIGHT_SIZE*2][WEIGHT_BIT-1]}},weight_wire[2+WEIGHT_SIZE*2]};
-		end
-	end
+    begin
+        lvl1_reg[0]<=weight_wire[WEIGHT_SIZE*0+0]+weight_wire[WEIGHT_SIZE*0+1]+weight_wire[WEIGHT_SIZE*0+2];
+        lvl1_reg[1]<=weight_wire[WEIGHT_SIZE*0+0]-weight_wire[WEIGHT_SIZE*0+1]+weight_wire[WEIGHT_SIZE*0+2];
+        lvl1_reg[2]<=weight_wire[WEIGHT_SIZE*2+0]+weight_wire[WEIGHT_SIZE*2+1]+weight_wire[WEIGHT_SIZE*2+2];
+        lvl1_reg[3]<=weight_wire[WEIGHT_SIZE*2+0]-weight_wire[WEIGHT_SIZE*2+1]+weight_wire[WEIGHT_SIZE*2+2];
+        lvl1_reg[4]<=weight_wire[WEIGHT_SIZE*0+0]+weight_wire[WEIGHT_SIZE*1+0]+weight_wire[WEIGHT_SIZE*2+0];
+        lvl1_reg[5]<=weight_wire[WEIGHT_SIZE*0+0]-weight_wire[WEIGHT_SIZE*1+0]+weight_wire[WEIGHT_SIZE*2+0];
+        lvl1_reg[6]<=weight_wire[WEIGHT_SIZE*0+2]+weight_wire[WEIGHT_SIZE*1+2]+weight_wire[WEIGHT_SIZE*2+2];
+        lvl1_reg[7]<=weight_wire[WEIGHT_SIZE*0+2]-weight_wire[WEIGHT_SIZE*1+2]+weight_wire[WEIGHT_SIZE*2+2];
+        lvl1_reg[8]<=weight_wire[WEIGHT_SIZE*1+0]+weight_wire[WEIGHT_SIZE*1+1]+weight_wire[WEIGHT_SIZE*1+2];
+        lvl1_reg[9]<=weight_wire[WEIGHT_SIZE*1+0]-weight_wire[WEIGHT_SIZE*1+1]+weight_wire[WEIGHT_SIZE*1+2];
+        lvl1_reg[10]<={{2{weight_wire[0+WEIGHT_SIZE*0][WEIGHT_BIT-1]}},weight_wire[0+WEIGHT_SIZE*0]};
+        lvl1_reg[11]<={{2{weight_wire[2+WEIGHT_SIZE*0][WEIGHT_BIT-1]}},weight_wire[2+WEIGHT_SIZE*0]};
+        lvl1_reg[12]<={{2{weight_wire[0+WEIGHT_SIZE*2][WEIGHT_BIT-1]}},weight_wire[0+WEIGHT_SIZE*2]};
+        lvl1_reg[13]<={{2{weight_wire[2+WEIGHT_SIZE*2][WEIGHT_BIT-1]}},weight_wire[2+WEIGHT_SIZE*2]};
+    end
 	
 	always@(posedge clk)
 	begin

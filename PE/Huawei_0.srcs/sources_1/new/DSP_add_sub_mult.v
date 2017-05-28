@@ -28,7 +28,6 @@ module DSP_add_sub_mult
 (
 	input clk,
 	input rst,
-	input clk_en,
 	input add_n,
 	input signed [AB_BIT-1:0] A,
 	input signed [AB_BIT-1:0] B,
@@ -40,12 +39,6 @@ module DSP_add_sub_mult
   reg signed  [AB_BIT+1+C_BIT-1:0] P_reg;
     
   always @(posedge clk)
-  begin
-  	if (rst)
-   		begin
-				add_reg <= 0;
-			end
-  	else if (clk_en)
   	begin
   		if(add_n)
 			begin
@@ -56,17 +49,11 @@ module DSP_add_sub_mult
 				add_reg <= A + B;
 			end
       end
-    end
   
-  always @(posedge clk) begin
-	if(rst) begin
-		P_reg   <= 0;
-	end
-	else
+  always @(posedge clk)
 	begin
 			P_reg   <= add_reg * C;
 	end
-  end
   
   
   assign P = P_reg;

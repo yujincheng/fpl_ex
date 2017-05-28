@@ -80,7 +80,7 @@ generate
         (
             .clk(clk),
             .in_valid(in_valid),
-            .rst_n(rst_n),
+//            .rst_n(rst_n),
             .feature(feature),
             .weight(weight[i*WEIGHT_BIT*MESH_N*WEIGHT_SIZE*WEIGHT_SIZE +: WEIGHT_BIT*MESH_N*WEIGHT_SIZE*WEIGHT_SIZE]),
             .inter_data(fromfifo_shift[6] ? inter_data : 0),

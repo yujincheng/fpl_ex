@@ -29,8 +29,6 @@ module Adder_tree_3_input
 )
 (
   input clk,
-  input [2:0] in_valid,
-  input [2:0] rst_n,
   input [IN_BIT*IN_NUM-1:0] input_data,
   input [BIAS_BIT-1:0] bias,
   input [OUT_BIT-1:0] inter_data,
@@ -58,17 +56,7 @@ module Adder_tree_3_input
   
   always @(posedge clk)
   begin
-    if(!rst_n[0])
-    begin
-      lvl1_reg[0]<={(IN_BIT+2){1'b0}};
-      lvl1_reg[1]<={(IN_BIT+2){1'b0}};
-      lvl1_reg[2]<={(IN_BIT+2){1'b0}};
-      lvl1_reg[3]<={(IN_BIT+2){1'b0}};
-      lvl1_reg[4]<={(IN_BIT+2){1'b0}};
-      lvl1_reg[5]<={(IN_BIT+2){1'b0}};
-    end
-    else if(in_valid[0])
-    begin
+    
 //      lvl1_reg[0]<=in_data[0]+in_data[1]+in_data[2];
 //      lvl1_reg[1]<=in_data[3]+in_data[4]+in_data[5];
 //      lvl1_reg[2]<=in_data[6]+in_data[7]+in_data[8];
@@ -83,35 +71,18 @@ module Adder_tree_3_input
       lvl1_reg[4]<=in_data[7];
       lvl1_reg[5]<= bias_wire;
       
-    end
   end
   
   always @(posedge clk)
   begin
-    if(!rst_n[1])
-    begin
-      lvl2_reg[0]<={(OUT_BIT){1'b0}};
-      lvl2_reg[1]<={(OUT_BIT){1'b0}};
-
-    end
-    else if(in_valid[1])
-    begin
       lvl2_reg[0]<=lvl1_reg[0]+lvl1_reg[1]+lvl1_reg[2];
       lvl2_reg[1]<=lvl1_reg[3]+lvl1_reg[4]+lvl1_reg[5];
     end
-  end
   
   always @(posedge clk)
   begin
-    if(!rst_n[2])
-    begin
-      output_reg<={(OUT_BIT){1'b0}};
-    end
-    else if(in_valid[2])
-    begin
       output_reg<=lvl2_reg[0]+lvl2_reg[1]+inter_data;
     end
-  end 
   
   assign output_data=output_reg;
   

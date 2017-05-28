@@ -32,19 +32,16 @@ module Adder_tree_mesh
 	input clk,
 	input in_valid,
 	input [BIAS_BIT-1:0] bias,
-	input rst_n,
 	input [IN_BIT*IN_NUM*MESH_SIZE*MESH_SIZE-1:0] input_data,
 	input [OUT_BIT*MESH_SIZE*MESH_SIZE-1:0] inter_data,
 	output out_valid,
 	output [OUT_BIT*MESH_SIZE*MESH_SIZE-1:0] output_data
 );
 	reg [2:0] in_valid_reg=3'b000;
-	reg [2:0] rst_n_reg=3'b000;
 	
 	always @(posedge clk)
 	begin
 		in_valid_reg<={in_valid_reg[1:0],in_valid};
-		rst_n_reg<={rst_n_reg[1:0],rst_n};
 	end
 	assign out_valid=in_valid_reg[2];
 	
@@ -72,8 +69,6 @@ module Adder_tree_mesh
 			(
 				.clk(clk),
 				.bias(bias),
-				.in_valid({in_valid_reg[1:0],in_valid}),
-				.rst_n({rst_n_reg[1:0],rst_n}),
 				.input_data(adder_input),
 				.inter_data(adder_inter),
 				.output_data(adder_output)

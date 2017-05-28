@@ -31,8 +31,6 @@ module Winograd_outside_3input_lut
 )
 (
 	input clk,
-	input [1:0] clk_en,
-	input rst_n,
   input [IN_BIT*MESH_Y*MESH_Y-1:0]data,
   output [OUT_BIT*MESH_X*MESH_X-1:0]result
 );
@@ -59,21 +57,8 @@ module Winograd_outside_3input_lut
 		
 	endgenerate
 	  
-  always @(posedge clk_en[0]&clk)
+  always @(posedge clk)
   begin
-  	if(~rst_n)
-  	begin
-  		temp_sum[0]<=0;
-  		temp_sum[1]<=0;
-  		temp_sum[2]<=0;
-  		temp_sum[3]<=0;
-  		temp_sum[4]<=0;
-  		temp_sum[5]<=0;
-  		temp_sum[6]<=0;
-  		temp_sum[7]<=0;
-  	end
-  	else
-  	begin
   		temp_sum[0]<=data_wire_array[0*MESH_Y+1]+data_wire_array[2*MESH_Y+1]+data_wire_array[1*MESH_Y+1];
   		temp_sum[1]<=data_wire_array[1*MESH_Y+1]-data_wire_array[2*MESH_Y+1]-data_wire_array[3*MESH_Y+1];
   		temp_sum[2]<=data_wire_array[1*MESH_Y+2]+data_wire_array[0*MESH_Y+2]+data_wire_array[2*MESH_Y+2];
@@ -83,7 +68,6 @@ module Winograd_outside_3input_lut
   		temp_sum[6]<=data_wire_array[1*MESH_Y+0]-data_wire_array[2*MESH_Y+0]-data_wire_array[3*MESH_Y+0];
   		temp_sum[7]<=data_wire_array[1*MESH_Y+3]-data_wire_array[2*MESH_Y+3]-data_wire_array[3*MESH_Y+3];
   	end
-  end
   wire signed [MID_BIT+1:0] temp_sum_wire [0:3];
   assign temp_sum_wire[0]=temp_sum[0]+temp_sum[4]+temp_sum[2];
   assign temp_sum_wire[1]=temp_sum[0]-temp_sum[5]-temp_sum[2];

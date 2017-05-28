@@ -35,8 +35,7 @@ module Winograd_mesh
 )
 (
 	input clk,
-	input [4:0]in_valid,
-	input rst_n,
+//	input rst_n,
 	input [DATA_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] feature,
 	input [WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE-1:0] weight,
 	output [RESULT_BIT*RESULT_SIZE*RESULT_SIZE-1:0] result
@@ -49,8 +48,7 @@ module Winograd_mesh
 	weight_mult
 	(
 		.clk(clk),
-		.in_valid(in_valid[0]),
-		.rst_n(rst_n),
+//		.rst_n(rst_n),
 		.weight(weight),
 		.result(weight_result)
 	);
@@ -67,8 +65,7 @@ module Winograd_mesh
 	feature_matrix_mult
 	(
 		.clk(clk),
-		.clk_en(in_valid[0]),
-		.rst_n(rst_n),
+//		.rst_n(rst_n),
 	  .data(feature),
 	  .result(feature_result)
 	);
@@ -84,8 +81,7 @@ module Winograd_mesh
 	elt_mult
 	(
 		.clk(clk),
-		.clk_en(in_valid[1]),
-		.rst_n(rst_n),
+//		.rst_n(rst_n),
 		.in_data_0(feature_result),
 		.in_data_1(weight_result),
 	  .out_data(element_result)
@@ -101,8 +97,7 @@ module Winograd_mesh
 	result_matrix_mult
 	(
 		.clk(clk),
-	 	.clk_en(in_valid[4:3]),
-		.rst_n(rst_n),
+//		.rst_n(rst_n),
 	  .data(element_result),
 		.result(result)
 	); 

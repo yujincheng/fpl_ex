@@ -35,7 +35,6 @@ module Winograd_PE
 (
 	input clk,
 	input in_valid,
-	input rst_n,
 	input acum,
 	input bias_valid,
 	input [DATA_BIT*MESH_N*FEATURE_SIZE*FEATURE_SIZE-1:0]feature,
@@ -46,7 +45,7 @@ module Winograd_PE
 	output [OUT_BIT*RESULT_SIZE*RESULT_SIZE-1:0] result
 );
   
-  reg[4:0] in_valid_reg=0;
+  reg[4:0] in_valid_reg;
   reg[BIAS_BIT-1:0] bias_reg[4:0];
   always @(posedge clk)
   begin
@@ -71,8 +70,6 @@ module Winograd_PE
 	  	mesh
 	  	(
 		  	.clk(clk),
-		  	.in_valid({in_valid_reg[3:0],in_valid}),
-		    .rst_n(rst_n),
 		    .feature(feature[DATA_BIT*FEATURE_SIZE*FEATURE_SIZE*(i+1)-1:DATA_BIT*FEATURE_SIZE*FEATURE_SIZE*i]),
 		    .weight(weight[WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE*(i+1)-1:WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE*i]),
 		    .result(adder_tree_in[MESH_OUT_BIT*RESULT_SIZE*RESULT_SIZE*(i+1)-1:MESH_OUT_BIT*RESULT_SIZE*RESULT_SIZE*i])
@@ -92,7 +89,6 @@ module Winograd_PE
   (
   	.clk(clk),
 	  .in_valid(in_valid_reg[4]),
-	  .rst_n(rst_n),
 	  .bias(bias_reg[4]),
 	  .out_valid(out_valid),
 	  .input_data(adder_tree_in),
