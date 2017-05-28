@@ -45,8 +45,10 @@ module Winograd_PE
 	output [OUT_BIT*RESULT_SIZE*RESULT_SIZE-1:0] result
 );
   
-  reg[4:0] in_valid_reg;
+  reg[7:0] in_valid_reg;
   reg[BIAS_BIT-1:0] bias_reg[4:0];
+  
+  
   always @(posedge clk)
   begin
   	bias_reg[0]<=(bias_valid?bias:{BIAS_BIT{1'b0}});
@@ -54,8 +56,12 @@ module Winograd_PE
   	bias_reg[2]<=bias_reg[1];
   	bias_reg[3]<=bias_reg[2];
   	bias_reg[4]<=bias_reg[3];
- 		in_valid_reg<={in_valid_reg[3:0],in_valid};
+ 		in_valid_reg<={in_valid_reg[6:0],in_valid};
   end
+  
+  
+    assign out_valid = in_valid_reg[7];
+  
   wire [MESH_OUT_BIT*MESH_N*RESULT_SIZE*RESULT_SIZE-1:0] adder_tree_in;
 	generate
 		genvar i;
@@ -88,9 +94,7 @@ module Winograd_PE
   adder_mesh
   (
   	.clk(clk),
-	  .in_valid(in_valid_reg[4]),
 	  .bias(bias_reg[4]),
-	  .out_valid(out_valid),
 	  .input_data(adder_tree_in),
 	  .inter_data(inter_data),
 	  .output_data(result)
