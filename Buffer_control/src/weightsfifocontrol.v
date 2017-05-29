@@ -110,7 +110,7 @@ always @ (posedge clk) begin
 					cto9 <= 0;
 					count_addr <= 0;
 					count_buffer <= 0;
-					wb_addr_reg <= 0;
+					wb_addr_reg <= wb_addr_reg + 1;
 				end
 				else if(count_addr == (weight_num_reg-1) && cto9 == 9) begin
 					count_addr <= 0;
