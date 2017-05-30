@@ -41,8 +41,8 @@ module Winograd_outside_3input_lut
 
   wire signed [IN_BIT-1:0] data_wire_array [0:MESH_Y*MESH_Y-1];
  
-  reg signed [MID_BIT-1:0] temp_sum[0:TEMP_NUM-1];
-  reg signed [OUT_BIT-1:0] result_reg[0:MESH_X*MESH_X-1];
+  (*keep = "true"*)reg signed [MID_BIT-1:0] temp_sum[0:TEMP_NUM-1];
+  (*keep = "true"*)reg signed [OUT_BIT-1:0] result_reg[0:MESH_X*MESH_X-1];
   
 	generate
 	genvar i;
@@ -59,26 +59,26 @@ module Winograd_outside_3input_lut
 	  
   always @(posedge clk)
   begin
-  		temp_sum[0]<=data_wire_array[0*MESH_Y+1]+data_wire_array[2*MESH_Y+1]+data_wire_array[1*MESH_Y+1];
-  		temp_sum[1]<=data_wire_array[1*MESH_Y+1]-data_wire_array[2*MESH_Y+1]-data_wire_array[3*MESH_Y+1];
-  		temp_sum[2]<=data_wire_array[1*MESH_Y+2]+data_wire_array[0*MESH_Y+2]+data_wire_array[2*MESH_Y+2];
-  		temp_sum[3]<=data_wire_array[1*MESH_Y+2]-data_wire_array[2*MESH_Y+2]-data_wire_array[3*MESH_Y+2];
-  		temp_sum[4]<=data_wire_array[0*MESH_Y+0]+data_wire_array[1*MESH_Y+0]+data_wire_array[2*MESH_Y+0];
-  		temp_sum[5]<=data_wire_array[0*MESH_Y+3]+data_wire_array[1*MESH_Y+3]+data_wire_array[2*MESH_Y+3];
-  		temp_sum[6]<=data_wire_array[1*MESH_Y+0]-data_wire_array[2*MESH_Y+0]-data_wire_array[3*MESH_Y+0];
-  		temp_sum[7]<=data_wire_array[1*MESH_Y+3]-data_wire_array[2*MESH_Y+3]-data_wire_array[3*MESH_Y+3];
+  		(*dont_touch = "yes"*)temp_sum[0]<=data_wire_array[0*MESH_Y+1]+data_wire_array[2*MESH_Y+1]+data_wire_array[1*MESH_Y+1];
+  		(*dont_touch = "yes"*)temp_sum[1]<=data_wire_array[1*MESH_Y+1]-data_wire_array[2*MESH_Y+1]-data_wire_array[3*MESH_Y+1];
+  		(*dont_touch = "yes"*)temp_sum[2]<=data_wire_array[1*MESH_Y+2]+data_wire_array[0*MESH_Y+2]+data_wire_array[2*MESH_Y+2];
+  		(*dont_touch = "yes"*)temp_sum[3]<=data_wire_array[1*MESH_Y+2]-data_wire_array[2*MESH_Y+2]-data_wire_array[3*MESH_Y+2];
+  		(*dont_touch = "yes"*)temp_sum[4]<=data_wire_array[0*MESH_Y+0]+data_wire_array[1*MESH_Y+0]+data_wire_array[2*MESH_Y+0];
+  		(*dont_touch = "yes"*)temp_sum[5]<=data_wire_array[0*MESH_Y+3]+data_wire_array[1*MESH_Y+3]+data_wire_array[2*MESH_Y+3];
+  		(*dont_touch = "yes"*)temp_sum[6]<=data_wire_array[1*MESH_Y+0]-data_wire_array[2*MESH_Y+0]-data_wire_array[3*MESH_Y+0];
+  		(*dont_touch = "yes"*)temp_sum[7]<=data_wire_array[1*MESH_Y+3]-data_wire_array[2*MESH_Y+3]-data_wire_array[3*MESH_Y+3];
   	end
-  wire signed [MID_BIT+1:0] temp_sum_wire [0:3];
-  assign temp_sum_wire[0]=temp_sum[0]+temp_sum[4]+temp_sum[2];
-  assign temp_sum_wire[1]=temp_sum[0]-temp_sum[5]-temp_sum[2];
-  assign temp_sum_wire[2]=temp_sum[1]+temp_sum[6]+temp_sum[3];
-  assign temp_sum_wire[3]=temp_sum[1]-temp_sum[7]-temp_sum[3];
+  (*keep = "true"*)wire signed [MID_BIT+1:0] temp_sum_wire [0:3];
+  (*dont_touch = "yes"*)assign temp_sum_wire[0]=temp_sum[0]+temp_sum[4]+temp_sum[2];
+  (*dont_touch = "yes"*)assign temp_sum_wire[1]=temp_sum[0]-temp_sum[5]-temp_sum[2];
+  (*dont_touch = "yes"*)assign temp_sum_wire[2]=temp_sum[1]+temp_sum[6]+temp_sum[3];
+  (*dont_touch = "yes"*)assign temp_sum_wire[3]=temp_sum[1]-temp_sum[7]-temp_sum[3];
   always @(posedge clk)	
   begin
-  	result_reg[0]<=temp_sum_wire[0][OUT_BIT+1:2];
-  	result_reg[1]<=temp_sum_wire[1][OUT_BIT+1:2];
-  	result_reg[2]<=temp_sum_wire[2][OUT_BIT+1:2];
-  	result_reg[3]<=temp_sum_wire[3][OUT_BIT+1:2];
+  (*dont_touch = "yes"*)	result_reg[0]<=temp_sum_wire[0][OUT_BIT+1:2];
+  (*dont_touch = "yes"*)	result_reg[1]<=temp_sum_wire[1][OUT_BIT+1:2];
+  (*dont_touch = "yes"*)	result_reg[2]<=temp_sum_wire[2][OUT_BIT+1:2];
+  (*dont_touch = "yes"*)	result_reg[3]<=temp_sum_wire[3][OUT_BIT+1:2];
   end
   
 

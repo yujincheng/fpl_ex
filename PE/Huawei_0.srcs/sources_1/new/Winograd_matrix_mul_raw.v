@@ -35,15 +35,15 @@ module Winograd_matrix_mul_raw_8to9
   //    0, 1,-1, 1;      0, 1, 1, 0;
   //   -1, 1, 1, 0;      0,-1, 1, 0;
   //    0, 0, 0,-1]      0, 1, 0,-1]
-  wire signed [IN_BIT-1:0] data_wire_array [4-1:0];
-  reg signed [OUT_BIT-1:0] result_wire_array [4-1:0];
+  (*keep = "true"*)wire signed [IN_BIT-1:0] data_wire_array [4-1:0];
+  (*keep = "true"*)reg signed [OUT_BIT-1:0] result_wire_array [4-1:0];
 
   always @(posedge clk)
   	begin
-    	result_wire_array[0] <= data_wire_array[0] - data_wire_array[2];
-    	result_wire_array[1] <= data_wire_array[1] + data_wire_array[2];
-    	result_wire_array[2] <= data_wire_array[2] - data_wire_array[1];
-    	result_wire_array[3] <= data_wire_array[1] - data_wire_array[3];
+    	(*dont_touch = "yes"*)result_wire_array[0] <= data_wire_array[0] - data_wire_array[2];
+    	(*dont_touch = "yes"*)result_wire_array[1] <= data_wire_array[1] + data_wire_array[2];
+    	(*dont_touch = "yes"*)result_wire_array[2] <= data_wire_array[2] - data_wire_array[1];
+    	(*dont_touch = "yes"*)result_wire_array[3] <= data_wire_array[1] - data_wire_array[3];
     end
   
   generate

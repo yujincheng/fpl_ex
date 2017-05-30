@@ -32,11 +32,11 @@ module DSP_add_sub_mult
 	input signed [AB_BIT-1:0] A,
 	input signed [AB_BIT-1:0] B,
 	input signed [C_BIT-1:0] C,
-	output signed [AB_BIT+1+C_BIT-1:0] P
+	(*keep = "true"*)output signed [AB_BIT+C_BIT:0] P
 );
     
-	reg signed [AB_BIT:0]   add_reg;
-  reg signed  [AB_BIT+1+C_BIT-1:0] P_reg;
+ reg signed [AB_BIT:0]   add_reg;
+ reg signed  [AB_BIT+1+C_BIT-1:0] P_reg;
     
   always @(posedge clk)
   	begin

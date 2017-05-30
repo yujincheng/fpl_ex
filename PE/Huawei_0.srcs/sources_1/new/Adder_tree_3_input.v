@@ -37,7 +37,7 @@ module Adder_tree_3_input
 );
 
   
-  wire signed [IN_BIT-1:0] in_data [0:15];
+  wire signed [IN_BIT-1:0] in_data [0:IN_NUM-1];
   generate
   genvar i;
   for(i=0;i<IN_NUM;i=i+1)
@@ -50,9 +50,9 @@ module Adder_tree_3_input
   assign inter=inter_data;
   assign bias_wire=bias;
   
-  reg signed [IN_BIT+2-1:0] lvl1_reg [0:5];
-  reg signed [OUT_BIT-1:0] lvl2_reg [0:1];
-  reg signed [OUT_BIT-1:0] output_reg;
+   (*keep = "true"*)reg signed [IN_BIT+2-1:0] lvl1_reg [0:5];
+   (*keep = "true"*)reg signed [OUT_BIT-1:0] lvl2_reg [0:1];
+   (*keep = "true"*)reg signed [OUT_BIT-1:0] output_reg;
   
   always @(posedge clk)
   begin
@@ -64,24 +64,24 @@ module Adder_tree_3_input
 //      lvl1_reg[4]<=in_data[12]+in_data[13]+in_data[14];
 //      lvl1_reg[5]<=in_data[15]+bias_wire;
       
-      lvl1_reg[0]<=in_data[0]+in_data[1];
-      lvl1_reg[1]<=in_data[3]+in_data[2];
-      lvl1_reg[2]<=in_data[4]+in_data[5];
-      lvl1_reg[3]<=in_data[6];
-      lvl1_reg[4]<=in_data[7];
-      lvl1_reg[5]<= bias_wire;
+ (*dont_touch = "yes"*)     lvl1_reg[0]<=in_data[0]+in_data[1];
+ (*dont_touch = "yes"*)     lvl1_reg[1]<=in_data[3]+in_data[2];
+  (*dont_touch = "yes"*)    lvl1_reg[2]<=in_data[4]+in_data[5];
+  (*dont_touch = "yes"*)    lvl1_reg[3]<=in_data[6];
+  (*dont_touch = "yes"*)    lvl1_reg[4]<=in_data[7];
+  (*dont_touch = "yes"*)    lvl1_reg[5]<= bias_wire;
       
   end
   
   always @(posedge clk)
   begin
-      lvl2_reg[0]<=lvl1_reg[0]+lvl1_reg[1]+lvl1_reg[2];
-      lvl2_reg[1]<=lvl1_reg[3]+lvl1_reg[4]+lvl1_reg[5];
+   (*dont_touch = "yes"*)   lvl2_reg[0]<=lvl1_reg[0]+lvl1_reg[1]+lvl1_reg[2];
+  (*dont_touch = "yes"*)    lvl2_reg[1]<=lvl1_reg[3]+lvl1_reg[4]+lvl1_reg[5];
     end
   
   always @(posedge clk)
   begin
-      output_reg<=lvl2_reg[0]+lvl2_reg[1]+inter_data;
+  (*dont_touch = "yes"*)    output_reg<=lvl2_reg[0]+lvl2_reg[1]+inter_data;
     end
   
   assign output_data=output_reg;
