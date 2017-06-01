@@ -17,7 +17,7 @@ input wire [ADDR_LEN - 1:0]           wr_addr           ,
 input wire [BUFFER_NUM - 1:0]         wr_en                ,
 
 
-output wire [X_PE*X_MESH*8*9 - 1 : 0] ker_out              ,
+(*dont_touch = "yes"*)output wire [X_PE*X_MESH*8*9 - 1 : 0] ker_out              ,
 input wire [ADDR_LEN - 1:0]           st_rd_addr           ,
 output wire                           ker_en               ,
 input wire                            rd_conf              ,
@@ -44,9 +44,9 @@ generate
  for (i=0;i<X_PE;i = i+1) begin:ass   
        for (j =0;j<X_MESH;j=j+1) begin:assh
 			for (k =0;k < 9;k=k+1) begin:asshh
-				assign ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8] = ker_out_show[i][j][k];
+				(*dont_touch = "yes"*)assign ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8] = ker_out_show[i][j][k];
 			end
-			assign doutb_show[i][j] = doutb[j*8 + i*8*X_MESH +: 8];
+			(*dont_touch = "yes"*)assign doutb_show[i][j] = doutb[j*8 + i*8*X_MESH +: 8];
        end
  end
 endgenerate
@@ -72,7 +72,8 @@ always@ (posedge clk) begin:always1
 		for (i=0;i<X_MESH;i = i+1) begin:ass   
 			for (j =0;j<X_PE;j=j+1) begin:assh
 				for (k =0;k<9;k=k+1) begin:assd
-					ker_out_show_1[i][j][k] <= 0;
+					(*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
+					(*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
 				end
 			end
 		end	
