@@ -69,20 +69,36 @@ generate
     for (i=0;i<X_PE;i = i+1) begin:ass32  
        for (j =0;j<X_MESH;j=j+1) begin:assh
 			for (k =0;k < 9;k=k+1) begin:asshh
-				always @ (posedge clk) begin
-				    if(!rst_n) begin
-				        (*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
-				        (*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
-				    end
-				    else if(!rd_conf && cto9 <= 9 && working) begin
-				        if(k == 8)ker_out_show_1[i][j][k] <= doutb_show[i][j];
-				        else ker_out_show_1[i][j][k] <= ker_out_show_1[i][j][k+1];
-				        if(cto9 == 9) begin
-				            if(k == 8) ker_out_show[i][j][8] <= doutb_show[i][j];
-				            else ker_out_show[i][j][k] <= ker_out_show_1[i][j][k+1];
-				        end
-				    end
+			
+				if (k == 8) begin: keq8
+					always @ (posedge clk) begin
+						if(!rst_n) begin
+							(*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
+							(*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
+						end
+						else if(!rd_conf &&  working) begin
+								ker_out_show_1[i][j][k] <= doutb_show[i][j];
+							if(cto9 == 9) begin
+								ker_out_show [i][j][k] <= doutb_show[i][j];
+							end
+						end
+					end
 				end
+				else begin: ken8
+					always @ (posedge clk) begin
+						if(!rst_n) begin
+							(*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
+							(*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
+						end
+						else if(!rd_conf &&  working) begin
+								ker_out_show_1[i][j][k] <= ker_out_show_1[i][j][k+1];
+							if(cto9 == 9) begin
+								ker_out_show[i][j][k] <= ker_out_show_1[i][j][k+1];
+							end
+						end
+					end
+				end
+				
 			end
        end
  end
@@ -101,7 +117,7 @@ always@ (posedge clk) begin:always2
 		working <= 1;
 		valid_addr <= st_rd_addr;
 	end
-	else if(cto9 <= 9 && working) begin
+	else if(working) begin
 		cto9 <= cto9 + 1;
 		valid_addr <= valid_addr + 1;
 		if(cto9 == 9) begin
