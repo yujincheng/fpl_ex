@@ -39,6 +39,10 @@ wire [BUFFER_NUM - 1:0] wea;
 wire [DATAWIDTH - 1:0] dina;
 wire [ADDRWIDTH - 1:0] addra;
 
+reg [3:0] cto9;
+reg working;
+
+
 genvar i,j,k;
 generate
  for (i=0;i<X_PE;i = i+1) begin:ass   
@@ -61,22 +65,36 @@ generate
 		assign dina[i*DDR_DATA_LEN +: DDR_DATA_LEN] = data_wr; //4 here is 256/DATA_LEN 
  end
 endgenerate
+generate
+    for (i=0;i<X_PE;i = i+1) begin:ass32  
+       for (j =0;j<X_MESH;j=j+1) begin:assh
+			for (k =0;k < 9;k=k+1) begin:asshh
+				always @ (posedge clk) begin
+				    if(!rst_n) begin
+				        (*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
+				        (*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
+				    end
+				    else if(!rd_conf && cto9 <= 9 && working) begin
+				        if(k == 8)ker_out_show_1[i][j][k] <= doutb_show[i][j];
+				        else ker_out_show_1[i][j][k] <= ker_out_show_1[i][j][k+1];
+				        if(cto9 == 9) begin
+				            if(k == 8) ker_out_show[i][j][8] <= doutb_show[i][j];
+				            else ker_out_show[i][j][k] <= ker_out_show_1[i][j][k+1];
+				        end
+				    end
+				end
+			end
+       end
+ end
 
-reg [3:0] cto9;
-reg working;
-always@ (posedge clk) begin:always1
-	integer i,j,k;
+endgenerate
+
+
+
+always@ (posedge clk) begin:always2
 	if(!rst_n) begin
 		cto9 <= 0;
 		working <= 0;
-		for (i=0;i<X_MESH;i = i+1) begin:ass   
-			for (j =0;j<X_PE;j=j+1) begin:assh
-				for (k =0;k<9;k=k+1) begin:assd
-					(*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
-					(*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
-				end
-			end
-		end	
 	end
 	else if(rd_conf) begin
 		cto9 <= 0;
@@ -84,26 +102,10 @@ always@ (posedge clk) begin:always1
 		valid_addr <= st_rd_addr;
 	end
 	else if(cto9 <= 9 && working) begin
-		for (i=0;i<X_MESH;i = i+1) begin:ass1
-			for (j =0;j<X_PE;j=j+1) begin:assh
-				ker_out_show_1[i][j][8] <= doutb_show[i][j];
-				for (k =1;k<9;k=k+1) begin:assd
-					ker_out_show_1[i][j][k-1] <= ker_out_show_1[i][j][k];
-				end
-			end
-		end	
 		cto9 <= cto9 + 1;
 		valid_addr <= valid_addr + 1;
 		if(cto9 == 9) begin
 			working <= 0;
-			for (i=0;i<X_MESH;i = i+1) begin:ass2
-				for (j =0;j<X_PE;j=j+1) begin:assh
-					ker_out_show[i][j][8] <= doutb_show[i][j];
-					for (k =1;k<9;k=k+1) begin:assd
-						ker_out_show[i][j][k-1] <= ker_out_show_1[i][j][k];
-					end
-				end
-			end	
 		end
 	end	
 end
