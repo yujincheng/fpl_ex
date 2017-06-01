@@ -67,7 +67,7 @@ generate
 	wire [OUT_BIT*RESULT_SIZE*RESULT_SIZE - 1:0] inter_data;
 	wire full;
 	wire empty;
-        Winograd_PE #(
+        (*DONT_TOUCH = "yes"*)Winograd_PE #(
 		.FEATURE_SIZE(FEATURE_SIZE),
 		.WEIGHT_SIZE(WEIGHT_SIZE), 
 		.RESULT_SIZE(RESULT_SIZE), 
@@ -90,7 +90,7 @@ generate
 			.out_valid(out_valid_in)
         );
 		
-		Pool_block
+		(*DONT_TOUCH = "yes"*)Pool_block
 		#(
 			.IN_BIT(24),
 			.IN_SIZE(2),

@@ -93,39 +93,39 @@ input wire inst_empty,
   output                              axi_rready  // Read Response ready
 );
 
-wire [DDR_DATA_LEN - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
-wire [ADDR_LEN_WB - 1:0]                               wfc_wr_addr ;
-wire [X_PE*2 - 1:0]                                               wfc_wea      ;
+(*keep = "ture"*)wire [DDR_DATA_LEN - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
+(*keep = "ture"*)wire [ADDR_LEN_WB - 1:0]                               wfc_wr_addr ;
+(*keep = "ture"*)wire [X_PE*2 - 1:0]                                               wfc_wea      ;
 wire                                                wb_wr_ready   ;
-wire [X_PE*X_MESH*8*9 - 1 : 0]                      wb_ker_out    ;
+(*keep = "ture"*)wire [X_PE*X_MESH*8*9 - 1 : 0]                      wb_ker_out    ;
 wire [ADDR_LEN_WB - 1:0]                                wb_st_rd_addr ;
 wire                                                wb_ker_en     ;
 wire                                                 wb_rd_conf    ;
 wire                                                wb_rd_ready   ;
 
 
-wire [32*X_MAC*X_MESH-1:0]                                dwire;
-wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
+(*keep = "ture"*) wire [32*X_MAC*X_MESH-1:0]                                dwire;
 
-wire [32*X_MAC*X_MESH-1:0]                                doutb;
+
+(*keep = "ture"*)wire [32*X_MAC*X_MESH-1:0]                                doutb;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addrb;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                ilc_addrb;
 
 
 
-wire  [X_MAC*X_MESH-1:0]                              w2c_wea;
-wire [32*X_MAC*X_MESH-1:0] 							w2c_dina;
-wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
+(*keep = "ture"*)wire  [X_MAC*X_MESH-1:0]                              w2c_wea;
+(*keep = "ture"*)wire [32*X_MAC*X_MESH-1:0] 							w2c_dina;
+(*keep = "ture"*)wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
 
-(*keep = "true"*)wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
-(*keep = "true"*)wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
+wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
+wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
 
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dwc_BP_addr;
 
-(*keep = "true"*)wire  [X_MAC*X_MESH-1:0]                              wea;
-wire [32*X_MAC*X_MESH-1:0] 							dina;
-wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
+(*keep = "ture"*)wire  [X_MAC*X_MESH-1:0]                              wea;
+(*keep = "ture"*)wire [32*X_MAC*X_MESH-1:0] 							dina;
+(*keep = "ture"*)wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
 
 
 
@@ -148,9 +148,9 @@ wire [COM_DATALEN*4*X_PE - 1:0] 							result_wire_unpool;
 wire [COM_DATALEN*X_PE - 1:0] 							result_wire_pool;
 wire result_valid;
 wire result_valid_pool;
-wire [20*X_PE - 1:0]						bb_bias;
-wire [ADDR_LEN_BB - 1:0]										bb_addr;
-wire [5 - 1:0]										bb_shift;
+(*dont_touch = "yes"*)wire [20*X_PE - 1:0]						bb_bias;
+(*dont_touch = "yes"*)wire [ADDR_LEN_BB - 1:0]										bb_addr;
+(*dont_touch = "yes"*)wire [5 - 1:0]										bb_shift;
 
 wire [SINGLE_LEN - 1:0  ]     bfc_bias_num; // 
 wire [SINGLE_LEN - 1:0  ]     bfc_bias_ddr_byte; 
@@ -205,7 +205,7 @@ wire [SINGLE_LEN - 1:0]   ddr_len_data;
 wire                      ddr_conf_data;
 wire                      ddr_fifo_empty_data;
 wire                      ddr_fifo_req_data;
-(*keep = "true"*)wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_data;
+wire   [DDR_DATA_LEN - 1:0]     ddr_fifo_data_data;
 
 
 wire   [DDR_ADDR_LEN - 1:0]   ddr_st_addr_out_mux;
@@ -236,6 +236,7 @@ wire [DDR_ADDR_LEN - 1:0] mig_ddr_st_addr;
 //wire[8 - 1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][8:0];
 //wire [COM_DATALEN-1:0] 							result_wire_unpool_show[X_MESH-1:0][2-1:0][2-1:0];
 //wire [COM_DATALEN-1:0] 							result_wire_pool_show[X_MESH-1:0];
+//wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
 
 //genvar i,j,k;
 //generate
@@ -657,7 +658,7 @@ WeightBuffer #(
 );
 
 
-Winograd_PE_CORE#(
+(*DONT_TOUCH = "yes"*)Winograd_PE_CORE#(
 
 .X_PE(X_PE),
 .MESH_N(X_MESH)

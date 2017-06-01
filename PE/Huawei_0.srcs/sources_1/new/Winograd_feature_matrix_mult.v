@@ -57,7 +57,7 @@ module Winograd_feature_matrix_mult
     begin:mul_raw
     
     
-    	Winograd_matrix_mul_raw_8to9
+    	(*DONT_TOUCH = "yes"*)Winograd_matrix_mul_raw_8to9
     	#(
 	      .IN_BIT(IN_BIT),
 	      .OUT_BIT(OUT_BIT)

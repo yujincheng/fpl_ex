@@ -67,7 +67,7 @@ module Winograd_PE
 		genvar i;
 		for(i=0;i<MESH_N;i=i+1)
 			begin:mesh_list
-			Winograd_mesh#(
+			(*dont_touch = "yes"*)Winograd_mesh#(
 	    	.FEATURE_SIZE(FEATURE_SIZE),
 	    	.RESULT_SIZE(RESULT_SIZE),
 	    	.DATA_BIT(DATA_BIT),
@@ -84,7 +84,7 @@ module Winograd_PE
   endgenerate
   
    
-  Adder_tree_mesh
+  (*dont_touch = "yes"*)Adder_tree_mesh
   #(
   	.IN_BIT(MESH_OUT_BIT),
   	.MESH_SIZE(RESULT_SIZE),

@@ -36,12 +36,12 @@ module Winograd_mesh
 (
 	input clk,
 //	input rst_n,
-	input [DATA_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] feature,
-	input [WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE-1:0] weight,
-	output [RESULT_BIT*RESULT_SIZE*RESULT_SIZE-1:0] result
+	(*dont_touch = "yes"*)input [DATA_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] feature,
+	(*dont_touch = "yes"*)input [WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE-1:0] weight,
+	(*dont_touch = "yes"*)output [RESULT_BIT*RESULT_SIZE*RESULT_SIZE-1:0] result
 );
 	wire [WEIGHT_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] weight_result;
-  Winograd_feature_weight_mult
+  (*DONT_TOUCH = "yes"*)Winograd_feature_weight_mult
 	#(
 		.WEIGHT_BIT(WEIGHT_BIT)
 	)
@@ -56,7 +56,7 @@ module Winograd_mesh
 
 	wire [FEATURE_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] feature_result;
 	
-	Winograd_feature_matrix_mult
+	(*DONT_TOUCH = "yes"*)Winograd_feature_matrix_mult
 	#(
 		.MESH_X(FEATURE_SIZE),
 		.MESH_Y(FEATURE_SIZE),
@@ -71,7 +71,7 @@ module Winograd_mesh
 	);
 	
 	wire [ELEMENT_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] element_result;
-	Element_multiply
+	(*DONT_TOUCH = "yes"*)Element_multiply
 	#(
 	  .MESH_X(FEATURE_SIZE),
 		.MESH_Y(FEATURE_SIZE),
@@ -88,7 +88,7 @@ module Winograd_mesh
 	 );
 	 
 	 
-	Winograd_outside_3input_lut
+	(*DONT_TOUCH = "yes"*)Winograd_outside_3input_lut
 	#(
 		.MESH_X(RESULT_SIZE),
 		.MESH_Y(FEATURE_SIZE),
