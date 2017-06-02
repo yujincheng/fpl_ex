@@ -88,19 +88,22 @@ generate
 endgenerate
 
 
-always @ (posedge clk) begin
+always @ (posedge clk) begin:ere
+	integer i;
+	integer j;
 if (!rst_n) begin
 	working <= 0;
 	control <= 0;
 	linelen_left <= 0;
 	regfromfifo <= 0;
 	regtofifo <= 0;
+	for (j =0;j<X_MAC;j=j+1) begin
+        st_addr_show[j] <= 0;
+    end
 end
-else begin: ere
-	integer i;
-	integer j;
+else begin
 	if(valid) begin
-		for (j =0;j<X_MAC;j=j+1) begin:assh
+		for (j =0;j<X_MAC;j=j+1) begin
 			st_addr_show[j] <= st_addr[j*ADDR_LEN +: ADDR_LEN];
 		end
 		working <= 1;
