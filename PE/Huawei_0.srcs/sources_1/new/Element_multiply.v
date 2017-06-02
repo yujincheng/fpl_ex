@@ -30,6 +30,7 @@ module Element_multiply
 )
 (
 	input clk,
+	input rst_n,
 	input [IN_BIT_0*MESH_X*MESH_Y-1:0] in_data_0,
 	input [IN_BIT_1*MESH_X*MESH_Y-1:0] in_data_1,
 	output [OUT_BIT*MESH_X*MESH_Y-1:0] out_data

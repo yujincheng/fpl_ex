@@ -30,6 +30,7 @@ module Adder_tree_mesh
 )
 (
 	input clk,
+	input rst_n,
 	input [BIAS_BIT-1:0] bias,
 	input [IN_BIT*IN_NUM*MESH_SIZE*MESH_SIZE-1:0] input_data,
 	input [OUT_BIT*MESH_SIZE*MESH_SIZE-1:0] inter_data,
@@ -51,7 +52,7 @@ module Adder_tree_mesh
 			end
 			assign adder_inter=inter_data[OUT_BIT*(i+1)-1:OUT_BIT*i];
 			assign output_data[OUT_BIT*(i+1)-1:OUT_BIT*i]=adder_output;
-			Adder_tree_3_input
+			(*dont_touch = "yes"*) Adder_tree_3_input
 			#(
 				.IN_BIT(IN_BIT),
 				.IN_NUM(IN_NUM),
@@ -61,6 +62,7 @@ module Adder_tree_mesh
 			adder
 			(
 				.clk(clk),
+				.rst_n(rst_n),
 				.bias(bias),
 				.input_data(adder_input),
 				.inter_data(adder_inter),

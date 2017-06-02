@@ -29,7 +29,7 @@ module Winograd_feature_matrix_mult
 )
 (
 	input clk,
-//	input rst_n,
+	input rst_n,
   input [IN_BIT*MESH_Y*MESH_Y-1:0]data,
   output [OUT_BIT*MESH_X*MESH_X-1:0]result
 );
@@ -39,8 +39,8 @@ module Winograd_feature_matrix_mult
   //   -1, 1, 1, 0;      0,-1, 1, 0;
   //    0, 0, 0,-1]      0, 1, 0,-1]
   
-  wire [IN_BIT*MESH_Y-1:0] data_wire_array [MESH_Y-1:0];
-  wire [OUT_BIT*MESH_X-1:0] result_wire_array [MESH_X-1:0];
+  (*keep = "true"*)wire [IN_BIT*MESH_Y-1:0] data_wire_array [MESH_Y-1:0];
+  (*keep = "true"*)wire [OUT_BIT*MESH_X-1:0] result_wire_array [MESH_X-1:0];
 
   generate
     genvar i;
@@ -65,7 +65,7 @@ module Winograd_feature_matrix_mult
 	      wino_mul_raw
 	    (
 	    	.clk(clk),
-//	    	.rst_n(rst_n),
+	    	.rst_n(rst_n),
 	      .data(data_wire_array[i]),
 	      .result(result_wire_array[i])
 	    );

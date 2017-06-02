@@ -28,6 +28,7 @@ module Winograd_matrix_mul_raw_8to9
 )
 (
 	input clk,
+	input rst_n,
   input [IN_BIT*4-1:0]data,
   output [OUT_BIT*4-1:0]result
 );
@@ -38,13 +39,21 @@ module Winograd_matrix_mul_raw_8to9
   (*keep = "true"*)wire signed [IN_BIT-1:0] data_wire_array [4-1:0];
   (*keep = "true"*)reg signed [OUT_BIT-1:0] result_wire_array [4-1:0];
 
-  always @(posedge clk)
+  always @(posedge clk) begin
+    if(!rst_n) begin
+        (*dont_touch = "yes"*)result_wire_array[0] <= 0;
+        (*dont_touch = "yes"*)result_wire_array[1] <= 0;
+        (*dont_touch = "yes"*)result_wire_array[2] <= 0;
+        (*dont_touch = "yes"*)result_wire_array[3] <= 0;
+    
+    end
   	begin
     	(*dont_touch = "yes"*)result_wire_array[0] <= data_wire_array[0] - data_wire_array[2];
     	(*dont_touch = "yes"*)result_wire_array[1] <= data_wire_array[1] + data_wire_array[2];
     	(*dont_touch = "yes"*)result_wire_array[2] <= data_wire_array[2] - data_wire_array[1];
     	(*dont_touch = "yes"*)result_wire_array[3] <= data_wire_array[1] - data_wire_array[3];
     end
+  end
   
   generate
     genvar i;

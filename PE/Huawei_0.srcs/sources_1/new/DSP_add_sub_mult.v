@@ -27,7 +27,7 @@ module DSP_add_sub_mult
 )
 (
 	input clk,
-	input rst,
+	//input rst,
 	input add_n,
 	input signed [AB_BIT-1:0] A,
 	input signed [AB_BIT-1:0] B,

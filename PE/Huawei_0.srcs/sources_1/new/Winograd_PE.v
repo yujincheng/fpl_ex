@@ -34,6 +34,7 @@ module Winograd_PE
 )
 (
 	input clk,
+	input rst_n,
 	input in_valid,
 	input acum,
 	input bias_valid,
@@ -76,6 +77,7 @@ module Winograd_PE
 	  	mesh
 	  	(
 		  	.clk(clk),
+		  	.rst_n(rst_n),
 		    .feature(feature[DATA_BIT*FEATURE_SIZE*FEATURE_SIZE*(i+1)-1:DATA_BIT*FEATURE_SIZE*FEATURE_SIZE*i]),
 		    .weight(weight[WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE*(i+1)-1:WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE*i]),
 		    .result(adder_tree_in[MESH_OUT_BIT*RESULT_SIZE*RESULT_SIZE*(i+1)-1:MESH_OUT_BIT*RESULT_SIZE*RESULT_SIZE*i])
@@ -93,7 +95,8 @@ module Winograd_PE
   )
   adder_mesh
   (
-  	.clk(clk),
+  	.clk(clk), 
+  	.rst_n(rst_n),
 	  .bias(bias_reg[4]),
 	  .input_data(adder_tree_in),
 	  .inter_data(inter_data),
