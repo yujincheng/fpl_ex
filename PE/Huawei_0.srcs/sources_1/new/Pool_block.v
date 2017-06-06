@@ -45,8 +45,8 @@ module Pool_block
 	assign pool_wire[0]=((in_data_wire_array[0*IN_SIZE+0]>in_data_wire_array[0*IN_SIZE+1])?in_data_wire_array[0*IN_SIZE+0]:in_data_wire_array[0*IN_SIZE+1]);
 	assign pool_wire[1]=((in_data_wire_array[1*IN_SIZE+0]>in_data_wire_array[1*IN_SIZE+1])?in_data_wire_array[1*IN_SIZE+0]:in_data_wire_array[1*IN_SIZE+1]);
 	
+	genvar i;
 	generate
-		genvar i;
 		for(i=0;i<IN_SIZE*IN_SIZE;i=i+1)
 		begin:in_wire
 			assign in_data_wire_array[i]=in_data[IN_BIT*(i+1)-1:IN_BIT*i];

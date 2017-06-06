@@ -39,8 +39,8 @@ module Adder_tree_mesh
 );
 
 	
-	generate
 	genvar i,j;
+	generate
 		for(i=0;i<MESH_SIZE*MESH_SIZE;i=i+1)
 		begin:adder_mesh
 			wire [IN_BIT*IN_NUM-1:0] adder_input;
@@ -52,7 +52,7 @@ module Adder_tree_mesh
 			end
 			assign adder_inter=inter_data[OUT_BIT*(i+1)-1:OUT_BIT*i];
 			assign output_data[OUT_BIT*(i+1)-1:OUT_BIT*i]=adder_output;
-			(*dont_touch = "yes"*) Adder_tree_3_input
+			Adder_tree_3_input
 			#(
 				.IN_BIT(IN_BIT),
 				.IN_NUM(IN_NUM),

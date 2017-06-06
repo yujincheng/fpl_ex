@@ -55,8 +55,8 @@ module PE_tb_1
     wire [WEIGHT_BIT*MESH_N-1:0]weight_wire_in;
     wire [IN_BIT*MESH_N*MESH_X*MESH_Y-1:0]data_wire_in;
     
-    generate
     genvar gen_id;
+    generate
     for(gen_id=0;gen_id<MESH_N;gen_id=gen_id+1)
     begin:weight_line
         assign weight_wire_in[(1+gen_id)*WEIGHT_BIT-1:gen_id*WEIGHT_BIT]=weight_reg_in[gen_id];

@@ -40,8 +40,9 @@ module Winograd_weight_tb
 	reg [2:0] G_matrix [0:3][0:2];
 	wire [RESULT_BIT*RESULT_SIZE*RESULT_SIZE-1:0]result;
 	wire [WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE-1:0]weight_wire;
-	generate
+	
 	genvar i;
+	generate
 	for(i=0;i<WEIGHT_SIZE*WEIGHT_SIZE;i=i+1)
 	begin:weight_wire_array
 		assign weight_wire[WEIGHT_BIT*(i+1)-1:WEIGHT_BIT*i]=weight[i];

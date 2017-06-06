@@ -39,11 +39,11 @@ module Winograd_feature_matrix_mult
   //   -1, 1, 1, 0;      0,-1, 1, 0;
   //    0, 0, 0,-1]      0, 1, 0,-1]
   
-  (*keep = "true"*)wire [IN_BIT*MESH_Y-1:0] data_wire_array [MESH_Y-1:0];
-  (*keep = "true"*)wire [OUT_BIT*MESH_X-1:0] result_wire_array [MESH_X-1:0];
+  wire [IN_BIT*MESH_Y-1:0] data_wire_array [MESH_Y-1:0];
+  wire [OUT_BIT*MESH_X-1:0] result_wire_array [MESH_X-1:0];
 
+  genvar i;
   generate
-    genvar i;
     for(i=0;i<MESH_Y;i=i+1)
     begin:data_wire
       assign data_wire_array[i]=data[IN_BIT*MESH_Y*(i+1)-1:IN_BIT*MESH_Y*i];
@@ -57,7 +57,7 @@ module Winograd_feature_matrix_mult
     begin:mul_raw
     
     
-    	(*DONT_TOUCH = "yes"*)Winograd_matrix_mul_raw_8to9
+    Winograd_matrix_mul_raw_8to9
     	#(
 	      .IN_BIT(IN_BIT),
 	      .OUT_BIT(OUT_BIT)

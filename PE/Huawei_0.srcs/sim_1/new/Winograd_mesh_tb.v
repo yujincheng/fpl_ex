@@ -48,8 +48,8 @@ module Winograd_mesh_tb #(
 	  $readmemh ("D:/jiantao/Winograd/result.txt",result_tb_reg_array);
 	end
 	
-	generate
 	genvar x,y;
+	generate
 	for(x=0;x<FEATURE_SIZE*FEATURE_SIZE;x=x+1)
 	begin:feature
 			assign weight_wire[WEIGHT_BIT*(x+1)-1:WEIGHT_BIT*x]=weight_reg_array[x];

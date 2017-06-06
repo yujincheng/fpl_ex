@@ -54,8 +54,9 @@ begin
     end
 end
 
+
+genvar i;
 generate
-    genvar i;
     for(i=0;i<4;i=i+1)
     begin:inter_
         assign data_out_array[i]=data_out[(i+1)*OUT_BIT-1:i*OUT_BIT];

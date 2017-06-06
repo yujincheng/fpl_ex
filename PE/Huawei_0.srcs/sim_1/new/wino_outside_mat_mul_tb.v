@@ -67,8 +67,8 @@ begin
       end      
 end
 
+genvar xx,yy;
 generate
-    genvar xx,yy;
     for(xx=0;xx<MESH_X;xx=xx+1)
     begin:data_out_x
 			for(yy=0;yy<MESH_X;yy=yy+1)

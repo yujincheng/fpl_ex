@@ -39,8 +39,8 @@ module Element_multiply
  	wire signed [IN_BIT_1-1:0] in_data_1_wire [0:MESH_X*MESH_Y-1];
  	wire signed [OUT_BIT-1:0] out_data_wire [0:MESH_X*MESH_Y-1];
  	
+    genvar x,y;
 	generate
-		genvar x,y;
 		for(x=0;x<MESH_X*MESH_Y;x=x+1)
 		begin:wires
 			assign in_data_0_wire[x]=in_data_0[IN_BIT_0*(x+1)-1:IN_BIT_0*x];

@@ -64,11 +64,11 @@ module Winograd_PE
     assign out_valid = in_valid_reg[7];
   
   wire [MESH_OUT_BIT*MESH_N*RESULT_SIZE*RESULT_SIZE-1:0] adder_tree_in;
+	genvar i;
 	generate
-		genvar i;
 		for(i=0;i<MESH_N;i=i+1)
 			begin:mesh_list
-			(*dont_touch = "yes"*)Winograd_mesh#(
+	Winograd_mesh#(
 	    	.FEATURE_SIZE(FEATURE_SIZE),
 	    	.RESULT_SIZE(RESULT_SIZE),
 	    	.DATA_BIT(DATA_BIT),
@@ -86,7 +86,7 @@ module Winograd_PE
   endgenerate
   
    
-  (*dont_touch = "yes"*)Adder_tree_mesh
+ Adder_tree_mesh
   #(
   	.IN_BIT(MESH_OUT_BIT),
   	.MESH_SIZE(RESULT_SIZE),
