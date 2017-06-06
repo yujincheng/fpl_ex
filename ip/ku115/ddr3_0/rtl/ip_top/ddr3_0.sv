@@ -68,8 +68,8 @@
 //*****************************************************************************
 
 `timescale 1ns/1ps
-(* CORE_GENERATION_INFO = "DDR3_SDRAM, DDR3_SDRAM,{x_ipProduct=Vivado 2016.1.0,x_ipVendor=xilinx.com,x_ipLibrary=ip,x_ipName=DDR3_SDRAM,x_ipVersion=1.1, Controller_Type = DDR3_SDRAM, Time_Period = 1250, Input_Clock_Period = 10000, Memory_Type = SODIMMs, Memory_Part = MT8KTF51264HZ-1G9, Ecc = false, Cas_Latency = 11, Cas_Write_Latency = 8, DQ_Width = 64, Chip_Select = true, Data_Mask = true, MEM_ADDR_ORDER = BANK_ROW_COLUMN,  Is_AXI_Enabled = true , Slot_cofiguration =  Single ,IS_FASTER_SPEED_RAM = No, Is_custom_part = false, Memory_Voltage = 1.5V, Phy_Only = Complete_Memory_Controller, Debug_Signal = Disable}" *)
-(* X_CORE_INFO = "ddr3_v1_3_1,Vivado 2016.4" *)
+(* CORE_GENERATION_INFO = "DDR3_SDRAM, DDR3_SDRAM,{x_ipProduct=Vivado 2017.1.0,x_ipVendor=xilinx.com,x_ipLibrary=ip,x_ipName=DDR3_SDRAM,x_ipVersion=1.4, Controller_Type = DDR3_SDRAM, Time_Period = 1250, Input_Clock_Period = 10000, Memory_Type = SODIMMs, Memory_Part = MT8KTF51264HZ-1G9, Ecc = false, Cas_Latency = 11, Cas_Write_Latency = 8, DQ_Width = 64, Chip_Select = true, Data_Mask = true, MEM_ADDR_ORDER = BANK_ROW_COLUMN,  Is_AXI_Enabled = true , Slot_cofiguration =  Single ,IS_FASTER_SPEED_RAM = No, Is_custom_part = false, Memory_Voltage = 1.5V, Phy_Only = Complete_Memory_Controller, Debug_Signal = Disable, Burst_Length = 8, System_Clock = Differential, AXI_Selection = true, AXI_Data_Width = 256,  AXI_ArbitrationScheme = RD_PRI_REG, AXI_Narrow_Burst = false, Simulation_Mode = BFM, Debug_Mode = Disable, Example_TG = SIMPLE_TG, Self_Refresh = false, Save_Restore = false, MicroBlaze_ECC = false,  Specify_MandD = false, CLKBOUT_MULT = 10, DIVCLK_DIVIDE = 1, CLKOUT0_DIVIDE = 5 }" *)
+(* X_CORE_INFO = "ddr3_v1_4_0,Vivado 2017.1" *)
  module ddr3_0
  (
     input                 sys_rst,

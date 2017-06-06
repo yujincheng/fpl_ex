@@ -58,7 +58,7 @@
 // \   \   \/     Version            : 1.0
 //  \   \         Application        : MIG
 //  /   /         Filename           : ddr3_0_phy.sv
-// /___/   /\     Date Last Modified : $Date: 2016/09/16 $
+// /___/   /\     Date Last Modified : $Date: 2017/02/08 $
 // \   \  /  \    Date Created       : Thu Apr 18 2013
 //  \___\/\___\
 //
@@ -104,6 +104,8 @@ module ddr3_0_phy (
   inout [63:0] ddr3_dq,
   inout [7:0] ddr3_dqs_p,
   inout [7:0] ddr3_dqs_n,
+  input  [7:0]                                 mcal_CK_t,
+  input  [7:0]                                 mcal_CK_c,
   input  [7 : 0]                                  mcal_ACT_n,
   input  [7:0]                                    mcal_CAS_n,
   input  [7:0]                                    mcal_RAS_n,
@@ -214,6 +216,8 @@ ddr3_0_phy_ddr3
     .ddr3_dq                    (ddr3_dq),
     .ddr3_dqs_p                 (ddr3_dqs_p),
     .ddr3_dqs_n                 (ddr3_dqs_n),
+    .mcal_CK_t                  (mcal_CK_t),
+    .mcal_CK_c                  (mcal_CK_c),
 
     .mcal_ACT_n                 (mcal_ACT_n),
     .mcal_RAS_n                 (mcal_RAS_n),

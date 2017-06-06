@@ -48,7 +48,7 @@
 
 
 // IP VLNV: xilinx.com:ip:microblaze_mcs:3.0
-// IP Revision: 3
+// IP Revision: 4
 
 `timescale 1ns/1ps
 

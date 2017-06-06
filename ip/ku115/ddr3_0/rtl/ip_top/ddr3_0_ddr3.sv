@@ -83,6 +83,10 @@
     `ifndef CALIB_SIM
        `define SIMULATION
      `endif
+`elsif _vcp
+    `ifndef CALIB_SIM
+       `define SIMULATION
+     `endif
 `elsif XILINX_SIMULATOR
     `ifndef CALIB_SIM
        `define SIMULATION
@@ -92,9 +96,9 @@
 (*
 
   X_MIG_OLYMPUS = 1,  
-  X_ULTRASCALE_IO_FLOW = "xilinx.com:ip:ddr3_phy:1.3",
+  X_ULTRASCALE_IO_FLOW = "xilinx.com:ip:ddr3_phy:1.4",
   LIVE_DESIGN = 0,
-  MEM_CORE_VER = "xilinx.com:ip:mem:1.3",
+  MEM_CORE_VER = "xilinx.com:ip:mem:1.4",
   PhyIP_CUSTOM_PART_ATTRIBUTES = "NONE",
   ControllerType = "ddr3_sdram",
   PhyIP_TimePeriod = 1250,
@@ -111,6 +115,7 @@
   PhyIP_Slot = "Single",
   PhyIP_DataMask = "true",
   PhyIP_MemoryVoltage = "1.5V",
+  PhyIP_PARTIAL_RECONFIG_FLOW_MIG = "false",
   PhyIP_CLKFBOUT_MULT = "10",
   PhyIP_DIVCLK_DIVIDE = "1",
   PhyIP_CLKOUT0_DIVIDE = "5",
@@ -121,7 +126,9 @@
   PhyIP_VrefVoltage = "0.75",
   PhyIP_IS_FROM_PHY = "1",
   PhyIP_CA_MIRROR = "0",
-  
+  PhyIP_SELF_REFRESH = "false",
+  PhyIP_SAVE_RESTORE = "false",
+ 
   PhyIP_Internal_Vref = "true",
   PhyIP_System_Clock = "Differential",
   PhyIP_Simulation_Mode = "BFM",
@@ -531,7 +538,7 @@ module ddr3_0_ddr3 #
   assign c0_ddr3_ui_clk_sync_rst = div_clk_rst_r1;
 
 
-  ddr3_v1_3_1_infrastructure #
+  ddr3_v1_4_0_infrastructure #
     (
      .CLKIN_PERIOD_MMCM   (CLKIN_PERIOD_MMCM),
      .CLKFBOUT_MULT_MMCM  (CLKFBOUT_MULT_MMCM),
@@ -832,7 +839,7 @@ ddr3_0_ddr3_mem_intfc #
    .dbg_phy2clb_phy_rdy_upp   (),
    .cal_r0_status             ()
      );
-ddr3_v1_3_1_axi #
+ddr3_v1_4_0_axi #
   (
    .C_ECC                         (ECC),
    .C_S_AXI_ID_WIDTH              (C_S_AXI_ID_WIDTH),

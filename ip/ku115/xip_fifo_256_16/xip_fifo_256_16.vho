@@ -47,7 +47,7 @@
 -- DO NOT MODIFY THIS FILE.
 
 -- IP VLNV: xilinx.com:ip:fifo_generator:13.1
--- IP Revision: 3
+-- IP Revision: 4
 
 -- The following code must appear in the VHDL architecture header.
 
@@ -63,6 +63,7 @@ COMPONENT xip_fifo_256_16
     full : OUT STD_LOGIC;
     almost_full : OUT STD_LOGIC;
     empty : OUT STD_LOGIC;
+    prog_full : OUT STD_LOGIC;
     prog_empty : OUT STD_LOGIC;
     wr_rst_busy : OUT STD_LOGIC;
     rd_rst_busy : OUT STD_LOGIC
@@ -85,6 +86,7 @@ your_instance_name : xip_fifo_256_16
     full => full,
     almost_full => almost_full,
     empty => empty,
+    prog_full => prog_full,
     prog_empty => prog_empty,
     wr_rst_busy => wr_rst_busy,
     rd_rst_busy => rd_rst_busy

@@ -16,7 +16,7 @@ input [MAX_LINE_LEN - 1:0] linelen,
 input linealign,
 input wire ispad,
 output wire [ADDRWIDTH - 1:0] addrb,
-output reg [MUXCONTROL - 1:0] control_out,
+(* dont_touch = "yes" *) output reg [MUXCONTROL - 1:0] control_out,
 output wire ready,
 
 input wire valid,
@@ -57,7 +57,8 @@ wire [DATAWIDTH-1:0] doutb;
 wire [ADDR_LEN-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
 
 reg out_valid_1;//
-reg  [MUXCONTROL - 1:0] control;
+reg out_valid_2;//
+(* dont_touch = "yes" *)reg  [MUXCONTROL - 1:0] control;
 reg working;
 reg [MAX_LINE_LEN - 1:0] linelen_left;
 
@@ -66,11 +67,13 @@ always@(posedge clk)begin
 	if(!rst_n) begin
 		control_out <= 0;
 		out_valid <= 0;
+        out_valid_2 <= 0;
 		out_valid_1 <= 0;
 	end
 	else begin
 		control_out <= control;
-		out_valid <= out_valid_1;
+		out_valid <= out_valid_2;
+		out_valid_2 <= out_valid_1;
 		out_valid_1 <= working;
 	end
 end
@@ -169,8 +172,9 @@ else begin
 				st_addr_show[j] <= st_addr_show[j] + 1;
 			end
 		end
-		
-		
+		default: begin
+		  control <= 0;		  
+		end		
 		endcase
 		if (linelen_left >= 2) linelen_left <= linelen_left - 2;
 		else if (linelen_left == 1) linelen_left <= 0;
@@ -180,7 +184,7 @@ end
 end
 
 assign ready = working;
-assign idle_soon = (!working || linelen_left < 16);
+assign idle_soon = (!working || linelen_left < 14);
 assign pe_fromfifo = regfromfifo & out_valid;
 assign pe_tofifo = regtofifo & out_valid;
 

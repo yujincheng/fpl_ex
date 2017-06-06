@@ -46,8 +46,8 @@
 // 
 // DO NOT MODIFY THIS FILE.
 
-// IP VLNV: xilinx.com:ip:ddr3:1.3
-// IP Revision: 1
+// IP VLNV: xilinx.com:ip:ddr3:1.4
+// IP Revision: 0
 
 // The following must be inserted into your Verilog file for this
 // core to be instantiated. Change the instance name and port connections

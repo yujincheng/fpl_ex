@@ -47,14 +47,14 @@
 -- DO NOT MODIFY THIS FILE.
 
 -- IP VLNV: xilinx.com:ip:microblaze:10.0
--- IP Revision: 1
+-- IP Revision: 2
 
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 
-LIBRARY microblaze_v10_0_1;
-USE microblaze_v10_0_1.MicroBlaze;
+LIBRARY microblaze_v10_0_2;
+USE microblaze_v10_0_2.MicroBlaze;
 
 ENTITY bd_8b4f_microblaze_I_0 IS
   PORT (
@@ -127,6 +127,7 @@ ARCHITECTURE bd_8b4f_microblaze_I_0_arch OF bd_8b4f_microblaze_I_0 IS
       C_NUM_SYNC_FF_CLK_IRQ : INTEGER;
       C_NUM_SYNC_FF_CLK_DEBUG : INTEGER;
       C_NUM_SYNC_FF_DBG_CLK : INTEGER;
+      C_NUM_SYNC_FF_DBG_TRACE_CLK : INTEGER;
       C_FAULT_TOLERANT : INTEGER;
       C_ECC_USE_CE_EXCEPTION : INTEGER;
       C_LOCKSTEP_SLAVE : INTEGER;
@@ -136,6 +137,7 @@ ARCHITECTURE bd_8b4f_microblaze_I_0_arch OF bd_8b4f_microblaze_I_0 IS
       C_DATA_SIZE : INTEGER;
       C_INSTR_SIZE : INTEGER;
       C_IADDR_SIZE : INTEGER;
+      C_PIADDR_SIZE : INTEGER;
       C_DADDR_SIZE : INTEGER;
       C_INSTANCE : STRING;
       C_AVOID_PRIMITIVES : INTEGER;
@@ -290,6 +292,8 @@ ARCHITECTURE bd_8b4f_microblaze_I_0_arch OF bd_8b4f_microblaze_I_0 IS
       Scan_Reset : IN STD_LOGIC;
       Scan_Reset_Sel : IN STD_LOGIC;
       RAM_Static : IN STD_LOGIC_VECTOR(1023 DOWNTO 0);
+      RAM_To : IN STD_LOGIC_VECTOR(16383 DOWNTO 0);
+      RAM_From : OUT STD_LOGIC_VECTOR(16383 DOWNTO 0);
       Interrupt : IN STD_LOGIC;
       Interrupt_Address : IN STD_LOGIC_VECTOR(0 TO 31);
       Interrupt_Ack : OUT STD_LOGIC_VECTOR(0 TO 1);
@@ -789,6 +793,7 @@ BEGIN
       C_NUM_SYNC_FF_CLK_IRQ => 1,
       C_NUM_SYNC_FF_CLK_DEBUG => 2,
       C_NUM_SYNC_FF_DBG_CLK => 1,
+      C_NUM_SYNC_FF_DBG_TRACE_CLK => 2,
       C_FAULT_TOLERANT => 0,
       C_ECC_USE_CE_EXCEPTION => 0,
       C_LOCKSTEP_SLAVE => 0,
@@ -798,6 +803,7 @@ BEGIN
       C_DATA_SIZE => 32,
       C_INSTR_SIZE => 32,
       C_IADDR_SIZE => 32,
+      C_PIADDR_SIZE => 32,
       C_DADDR_SIZE => 32,
       C_INSTANCE => "bd_8b4f_microblaze_I_0",
       C_AVOID_PRIMITIVES => 0,
@@ -952,6 +958,7 @@ BEGIN
       Scan_Reset => '0',
       Scan_Reset_Sel => '0',
       RAM_Static => STD_LOGIC_VECTOR(TO_UNSIGNED(0, 1024)),
+      RAM_To => STD_LOGIC_VECTOR(TO_UNSIGNED(0, 16384)),
       Interrupt => Interrupt,
       Interrupt_Address => Interrupt_Address,
       Interrupt_Ack => Interrupt_Ack,

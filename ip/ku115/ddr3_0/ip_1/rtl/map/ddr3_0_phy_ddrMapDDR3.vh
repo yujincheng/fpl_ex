@@ -341,7 +341,7 @@
         mcal_DQSOut,
         8'bx,
         mcal_BA[7:0],
-        8'b01010101 
+        mcal_CK_t[7:0] 
     } 
 )
 ,.clb2phy_wr_dq7 (
@@ -356,7 +356,7 @@
         8'bx,
         8'bx,
         mcal_BA[15:8],
-        8'bx 
+        mcal_CK_c[7:0] 
     } 
 )
 ,.clb2phy_wr_dq8 (

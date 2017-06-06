@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri May 26 23:29:12 2017" VIVADOVERSION="2016.4">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Jun  6 19:07:04 2017" VIVADOVERSION="2017.1">
 
   <SYSTEMINFO ARCH="kintexu" DEVICE="xcku060" NAME="bd_8b4f" PACKAGE="ffva1517" SPEEDGRADE="-1"/>
 
@@ -135,7 +135,7 @@
             <CONNECTION INSTANCE="rst_0" PORT="bus_struct_reset"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="LMB_Rst" SIGIS="undef"/>
+        <PORT DIR="O" NAME="LMB_Rst" SIGIS="rst"/>
         <PORT DIR="I" LEFT="0" NAME="M_ABus" RIGHT="31" SIGIS="undef" SIGNAME="dlmb_M_ABus">
           <CONNECTIONS>
             <CONNECTION INSTANCE="microblaze_I" PORT="Data_Addr"/>
@@ -495,12 +495,12 @@
             <CONNECTION INSTANCE="dlmb" PORT="Sl_CE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="BRAM_Rst_A" SIGIS="undef" SIGNAME="dlmb_cntlr_BRAM_Rst_A">
+        <PORT DIR="O" NAME="BRAM_Rst_A" SIGIS="rst" SIGNAME="dlmb_cntlr_BRAM_Rst_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="lmb_bram_I" PORT="rsta"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="BRAM_Clk_A" SIGIS="undef" SIGNAME="dlmb_cntlr_BRAM_Clk_A">
+        <PORT DIR="O" NAME="BRAM_Clk_A" SIGIS="clk" SIGNAME="dlmb_cntlr_BRAM_Clk_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="lmb_bram_I" PORT="clka"/>
           </CONNECTIONS>
@@ -591,7 +591,7 @@
             <CONNECTION INSTANCE="rst_0" PORT="bus_struct_reset"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="LMB_Rst" SIGIS="undef"/>
+        <PORT DIR="O" NAME="LMB_Rst" SIGIS="rst"/>
         <PORT DIR="I" LEFT="0" NAME="M_ABus" RIGHT="31" SIGIS="undef" SIGNAME="ilmb_M_ABus">
           <CONNECTIONS>
             <CONNECTION INSTANCE="microblaze_I" PORT="Instr_Addr"/>
@@ -884,12 +884,12 @@
             <CONNECTION INSTANCE="ilmb" PORT="Sl_CE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="BRAM_Rst_A" SIGIS="undef" SIGNAME="ilmb_cntlr_BRAM_Rst_A">
+        <PORT DIR="O" NAME="BRAM_Rst_A" SIGIS="rst" SIGNAME="ilmb_cntlr_BRAM_Rst_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="lmb_bram_I" PORT="rstb"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="BRAM_Clk_A" SIGIS="undef" SIGNAME="ilmb_cntlr_BRAM_Clk_A">
+        <PORT DIR="O" NAME="BRAM_Clk_A" SIGIS="clk" SIGNAME="ilmb_cntlr_BRAM_Clk_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="lmb_bram_I" PORT="clkb"/>
           </CONNECTIONS>
@@ -957,9 +957,9 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE FULLNAME="/iomodule_0" HWVERSION="3.0" INSTANCE="iomodule_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="iomodule" VLNV="xilinx.com:ip:iomodule:3.0">
+    <MODULE FULLNAME="/iomodule_0" HWVERSION="3.1" INSTANCE="iomodule_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="iomodule" VLNV="xilinx.com:ip:iomodule:3.1">
       <DOCUMENTS>
-        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=iomodule;v=v3_0;d=pg111-iomodule.pdf"/>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=iomodule;v=v3_1;d=pg111-iomodule.pdf"/>
       </DOCUMENTS>
       <ADDRESSBLOCKS>
         <ADDRESSBLOCK ACCESS="read-write" INTERFACE="SLMB" NAME="Reg" RANGE="4096" USAGE="register">
@@ -2706,6 +2706,8 @@
         <PARAMETER NAME="C_INSTANCE" VALUE="iomodule"/>
         <PARAMETER NAME="C_USE_CONFIG_RESET" VALUE="0"/>
         <PARAMETER NAME="C_AVOID_PRIMITIVES" VALUE="0"/>
+        <PARAMETER NAME="C_TMR" VALUE="0"/>
+        <PARAMETER NAME="C_USE_TMR_DISABLE" VALUE="0"/>
         <PARAMETER NAME="C_MASK" VALUE="0x00000000C0000000"/>
         <PARAMETER NAME="C_IO_MASK" VALUE="0x00000000C0000000"/>
         <PARAMETER NAME="C_LMB_AWIDTH" VALUE="32"/>
@@ -3060,12 +3062,12 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" NAME="clka" SIGIS="undef" SIGNAME="dlmb_cntlr_BRAM_Clk_A">
+        <PORT DIR="I" NAME="clka" SIGIS="clk" SIGNAME="dlmb_cntlr_BRAM_Clk_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="dlmb_cntlr" PORT="BRAM_Clk_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="rsta" SIGIS="undef" SIGNAME="dlmb_cntlr_BRAM_Rst_A">
+        <PORT DIR="I" NAME="rsta" SIGIS="rst" SIGNAME="dlmb_cntlr_BRAM_Rst_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="dlmb_cntlr" PORT="BRAM_Rst_A"/>
           </CONNECTIONS>
@@ -3095,12 +3097,12 @@
             <CONNECTION INSTANCE="dlmb_cntlr" PORT="BRAM_Din_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="clkb" SIGIS="undef" SIGNAME="ilmb_cntlr_BRAM_Clk_A">
+        <PORT DIR="I" NAME="clkb" SIGIS="clk" SIGNAME="ilmb_cntlr_BRAM_Clk_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ilmb_cntlr" PORT="BRAM_Clk_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="rstb" SIGIS="undef" SIGNAME="ilmb_cntlr_BRAM_Rst_A">
+        <PORT DIR="I" NAME="rstb" SIGIS="rst" SIGNAME="ilmb_cntlr_BRAM_Rst_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ilmb_cntlr" PORT="BRAM_Rst_A"/>
           </CONNECTIONS>
@@ -3168,7 +3170,7 @@
     </MODULE>
     <MODULE FULLNAME="/microblaze_I" HWVERSION="10.0" INSTANCE="microblaze_I" IPTYPE="PROCESSOR" IS_ENABLE="1" MODCLASS="PROCESSOR" MODTYPE="microblaze" PROCTYPE="microblaze" VLNV="xilinx.com:ip:microblaze:10.0">
       <DOCUMENTS>
-        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/rdoc?v=2016.3;d=ug984-vivado-microblaze-ref.pdf"/>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/rdoc?v=2017.1;d=ug984-vivado-microblaze-ref.pdf"/>
       </DOCUMENTS>
       <PARAMETERS>
         <PARAMETER NAME="C_SCO" VALUE="0"/>
@@ -3178,6 +3180,7 @@
         <PARAMETER NAME="C_NUM_SYNC_FF_CLK_IRQ" VALUE="1"/>
         <PARAMETER NAME="C_NUM_SYNC_FF_CLK_DEBUG" VALUE="2"/>
         <PARAMETER NAME="C_NUM_SYNC_FF_DBG_CLK" VALUE="1"/>
+        <PARAMETER NAME="C_NUM_SYNC_FF_DBG_TRACE_CLK" VALUE="2"/>
         <PARAMETER NAME="C_FAULT_TOLERANT" VALUE="0"/>
         <PARAMETER NAME="C_ECC_USE_CE_EXCEPTION" VALUE="0"/>
         <PARAMETER NAME="C_LOCKSTEP_SLAVE" VALUE="0"/>
@@ -3186,6 +3189,7 @@
         <PARAMETER NAME="C_DATA_SIZE" VALUE="32"/>
         <PARAMETER NAME="C_INSTR_SIZE" VALUE="32"/>
         <PARAMETER NAME="C_IADDR_SIZE" VALUE="32"/>
+        <PARAMETER NAME="C_PIADDR_SIZE" VALUE="32"/>
         <PARAMETER NAME="C_DADDR_SIZE" VALUE="32"/>
         <PARAMETER NAME="C_INSTANCE" VALUE="bd_8b4f_microblaze_I_0"/>
         <PARAMETER NAME="C_AVOID_PRIMITIVES" VALUE="0"/>
@@ -3784,12 +3788,12 @@
             <CONNECTION INSTANCE="dlmb" PORT="Sl_CE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="BRAM_Rst_A" SIGIS="undef" SIGNAME="second_dlmb_cntlr_BRAM_Rst_A">
+        <PORT DIR="O" NAME="BRAM_Rst_A" SIGIS="rst" SIGNAME="second_dlmb_cntlr_BRAM_Rst_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="second_lmb_bram_I" PORT="rsta"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="BRAM_Clk_A" SIGIS="undef" SIGNAME="second_dlmb_cntlr_BRAM_Clk_A">
+        <PORT DIR="O" NAME="BRAM_Clk_A" SIGIS="clk" SIGNAME="second_dlmb_cntlr_BRAM_Clk_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="second_lmb_bram_I" PORT="clka"/>
           </CONNECTIONS>
@@ -3957,12 +3961,12 @@
             <CONNECTION INSTANCE="ilmb" PORT="Sl_CE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="BRAM_Rst_A" SIGIS="undef" SIGNAME="second_ilmb_cntlr_BRAM_Rst_A">
+        <PORT DIR="O" NAME="BRAM_Rst_A" SIGIS="rst" SIGNAME="second_ilmb_cntlr_BRAM_Rst_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="second_lmb_bram_I" PORT="rstb"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="BRAM_Clk_A" SIGIS="undef" SIGNAME="second_ilmb_cntlr_BRAM_Clk_A">
+        <PORT DIR="O" NAME="BRAM_Clk_A" SIGIS="clk" SIGNAME="second_ilmb_cntlr_BRAM_Clk_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="second_lmb_bram_I" PORT="clkb"/>
           </CONNECTIONS>
@@ -4181,12 +4185,12 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" NAME="clka" SIGIS="undef" SIGNAME="second_dlmb_cntlr_BRAM_Clk_A">
+        <PORT DIR="I" NAME="clka" SIGIS="clk" SIGNAME="second_dlmb_cntlr_BRAM_Clk_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="second_dlmb_cntlr" PORT="BRAM_Clk_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="rsta" SIGIS="undef" SIGNAME="second_dlmb_cntlr_BRAM_Rst_A">
+        <PORT DIR="I" NAME="rsta" SIGIS="rst" SIGNAME="second_dlmb_cntlr_BRAM_Rst_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="second_dlmb_cntlr" PORT="BRAM_Rst_A"/>
           </CONNECTIONS>
@@ -4216,12 +4220,12 @@
             <CONNECTION INSTANCE="second_dlmb_cntlr" PORT="BRAM_Din_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="clkb" SIGIS="undef" SIGNAME="second_ilmb_cntlr_BRAM_Clk_A">
+        <PORT DIR="I" NAME="clkb" SIGIS="clk" SIGNAME="second_ilmb_cntlr_BRAM_Clk_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="second_ilmb_cntlr" PORT="BRAM_Clk_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="rstb" SIGIS="undef" SIGNAME="second_ilmb_cntlr_BRAM_Rst_A">
+        <PORT DIR="I" NAME="rstb" SIGIS="rst" SIGNAME="second_ilmb_cntlr_BRAM_Rst_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="second_ilmb_cntlr" PORT="BRAM_Rst_A"/>
           </CONNECTIONS>

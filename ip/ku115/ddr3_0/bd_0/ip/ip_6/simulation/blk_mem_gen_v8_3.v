@@ -47,7 +47,7 @@
 --
  *****************************************************************************
  *
- * Filename: blk_mem_gen_v8_3_5.v
+ * Filename: blk_mem_gen_v8_3_6.v
  *
  * Description:
  *   This file is the Verilog behvarial model for the
@@ -1557,10 +1557,10 @@ module blk_mem_axi_regs_fwd_v8_3
 // Output Register Stage module
 //
 // This module builds the output register stages of the memory. This module is 
-// instantiated in the main memory module (blk_mem_gen_v8_3_5) which is
+// instantiated in the main memory module (blk_mem_gen_v8_3_6) which is
 // declared/implemented further down in this file.
 //*****************************************************************************
-module blk_mem_gen_v8_3_5_output_stage
+module blk_mem_gen_v8_3_6_output_stage
   #(parameter C_FAMILY              = "virtex7",
     parameter C_XDEVICEFAMILY       = "virtex7",
     parameter C_RST_TYPE            = "SYNC",
@@ -1856,7 +1856,7 @@ module blk_mem_gen_v8_3_5_output_stage
   endgenerate
 endmodule
 
-module blk_mem_gen_v8_3_5_softecc_output_reg_stage
+module blk_mem_gen_v8_3_6_softecc_output_reg_stage
   #(parameter C_DATA_WIDTH          = 32,
     parameter C_ADDRB_WIDTH         = 10,
     parameter C_HAS_SOFTECC_OUTPUT_REGS_B= 0,
@@ -1948,8 +1948,8 @@ endmodule
 //
 // This module is the top-level behavioral model and this implements the RAM 
 //*****************************************************************************
-module blk_mem_gen_v8_3_5_mem_module
-  #(parameter C_CORENAME                = "blk_mem_gen_v8_3_5",
+module blk_mem_gen_v8_3_6_mem_module
+  #(parameter C_CORENAME                = "blk_mem_gen_v8_3_6",
     parameter C_FAMILY                  = "virtex7",
     parameter C_XDEVICEFAMILY           = "virtex7",
     parameter C_MEM_TYPE                = 2,
@@ -2164,9 +2164,9 @@ module blk_mem_gen_v8_3_5_mem_module
   //////////////////////////////////////////////////////////////////////////
 
 
-// Note: C_CORENAME parameter is hard-coded to "blk_mem_gen_v8_3_5" and it is
+// Note: C_CORENAME parameter is hard-coded to "blk_mem_gen_v8_3_6" and it is
 // only used by this module to print warning messages. It is neither passed 
-// down from blk_mem_gen_v8_3_5_xst.v nor present in the instantiation template
+// down from blk_mem_gen_v8_3_6_xst.v nor present in the instantiation template
 // coregen generates
   
   //***************************************************************************
@@ -2283,7 +2283,7 @@ module blk_mem_gen_v8_3_5_mem_module
   integer write_addr_a_width, read_addr_a_width;
   integer write_addr_b_width, read_addr_b_width;
 
-    localparam C_FAMILY_LOCALPARAM =      (C_FAMILY=="zynquplus"?"virtex7":(C_FAMILY=="kintexuplus"?"virtex7":(C_FAMILY=="virtexuplus"?"virtex7":(C_FAMILY=="virtexu"?"virtex7":(C_FAMILY=="kintexu" ? "virtex7":(C_FAMILY=="virtex7" ? "virtex7" : (C_FAMILY=="virtex7l" ? "virtex7" : (C_FAMILY=="qvirtex7" ? "virtex7" : (C_FAMILY=="qvirtex7l" ? "virtex7" : (C_FAMILY=="kintex7" ? "virtex7" : (C_FAMILY=="kintex7l" ? "virtex7" : (C_FAMILY=="qkintex7" ? "virtex7" : (C_FAMILY=="qkintex7l" ? "virtex7" : (C_FAMILY=="artix7" ? "virtex7" : (C_FAMILY=="artix7l" ? "virtex7" : (C_FAMILY=="qartix7" ? "virtex7" : (C_FAMILY=="qartix7l" ? "virtex7" : (C_FAMILY=="aartix7" ? "virtex7" : (C_FAMILY=="zynq" ? "virtex7" : (C_FAMILY=="azynq" ? "virtex7" : (C_FAMILY=="qzynq" ? "virtex7" : C_FAMILY)))))))))))))))))))));
+    localparam C_FAMILY_LOCALPARAM =      (C_FAMILY=="virtexuplushbm"?"virtex7":(C_FAMILY=="zynquplusrfsoc"?"virtex7":(C_FAMILY=="zynquplus"?"virtex7":(C_FAMILY=="kintexuplus"?"virtex7":(C_FAMILY=="virtexuplus"?"virtex7":(C_FAMILY=="virtexu"?"virtex7":(C_FAMILY=="kintexu" ? "virtex7":(C_FAMILY=="virtex7" ? "virtex7" : (C_FAMILY=="virtex7l" ? "virtex7" : (C_FAMILY=="qvirtex7" ? "virtex7" : (C_FAMILY=="qvirtex7l" ? "virtex7" : (C_FAMILY=="kintex7" ? "virtex7" : (C_FAMILY=="kintex7l" ? "virtex7" : (C_FAMILY=="qkintex7" ? "virtex7" : (C_FAMILY=="qkintex7l" ? "virtex7" : (C_FAMILY=="artix7" ? "virtex7" : (C_FAMILY=="artix7l" ? "virtex7" : (C_FAMILY=="qartix7" ? "virtex7" : (C_FAMILY=="qartix7l" ? "virtex7" : (C_FAMILY=="aartix7" ? "virtex7" : (C_FAMILY=="zynq" ? "virtex7" : (C_FAMILY=="azynq" ? "virtex7" : (C_FAMILY=="qzynq" ? "virtex7" : C_FAMILY)))))))))))))))))))))));
 
   // Internal configuration parameters
   //---------------------------------------------
@@ -3176,7 +3176,7 @@ module blk_mem_gen_v8_3_5_mem_module
   
   assign rsta_outp_stage = RSTA & (~SLEEP);
 
-  blk_mem_gen_v8_3_5_output_stage
+  blk_mem_gen_v8_3_6_output_stage
     #(.C_FAMILY                 (C_FAMILY),
       .C_XDEVICEFAMILY          (C_XDEVICEFAMILY),
       .C_RST_TYPE               ("SYNC"),
@@ -3213,7 +3213,7 @@ module blk_mem_gen_v8_3_5_mem_module
   assign rstb_outp_stage = RSTB & (~SLEEP);
 
   // Port B 
-  blk_mem_gen_v8_3_5_output_stage
+  blk_mem_gen_v8_3_6_output_stage
     #(.C_FAMILY                 (C_FAMILY),
       .C_XDEVICEFAMILY          (C_XDEVICEFAMILY),
       .C_RST_TYPE               ("SYNC"),
@@ -3250,7 +3250,7 @@ module blk_mem_gen_v8_3_5_mem_module
   //***************************************************************
   //  Instantiate the Input and Output register stages
   //***************************************************************
-blk_mem_gen_v8_3_5_softecc_output_reg_stage
+blk_mem_gen_v8_3_6_softecc_output_reg_stage
     #(.C_DATA_WIDTH                 (C_READ_WIDTH_B),
       .C_ADDRB_WIDTH                (C_ADDRB_WIDTH),
       .C_HAS_SOFTECC_OUTPUT_REGS_B  (C_HAS_SOFTECC_OUTPUT_REGS_B),
@@ -3409,8 +3409,8 @@ endmodule
 // This module is the top-level behavioral model and this implements the memory 
 // module and the input registers
 //*****************************************************************************
-module blk_mem_gen_v8_3_5
-  #(parameter C_CORENAME                = "blk_mem_gen_v8_3_5",
+module blk_mem_gen_v8_3_6
+  #(parameter C_CORENAME                = "blk_mem_gen_v8_3_6",
     parameter C_FAMILY                  = "virtex7",
     parameter C_XDEVICEFAMILY           = "virtex7",
     parameter C_ELABORATION_DIR         = "",
@@ -4090,7 +4090,7 @@ module blk_mem_gen_v8_3_5
   endgenerate
 
   generate if ((C_INTERFACE_TYPE == 0) && (C_ENABLE_32BIT_ADDRESS == 0)) begin : native_mem_module
-blk_mem_gen_v8_3_5_mem_module
+blk_mem_gen_v8_3_6_mem_module
   #(.C_CORENAME                        (C_CORENAME),
     .C_FAMILY                          (C_FAMILY),
     .C_XDEVICEFAMILY                   (C_XDEVICEFAMILY),
@@ -4149,7 +4149,7 @@ blk_mem_gen_v8_3_5_mem_module
     .C_DISABLE_WARN_BHV_COLL           (C_DISABLE_WARN_BHV_COLL),
  .C_EN_ECC_PIPE                     (C_EN_ECC_PIPE),
     .C_DISABLE_WARN_BHV_RANGE          (C_DISABLE_WARN_BHV_RANGE))
-    blk_mem_gen_v8_3_5_inst
+    blk_mem_gen_v8_3_6_inst
    (.CLKA            (CLKA),
    .RSTA             (RSTA_I_SAFE),//(rsta_in),
    .ENA              (ENA_I_SAFE),//(ena_in),
@@ -4200,7 +4200,7 @@ blk_mem_gen_v8_3_5_mem_module
   // The following two constants determine this.
 
   localparam MEM_MAP_LOWER_BOUND_VAL_A      = (log2int(divroundup(C_WRITE_WIDTH_A,8)==0)) ? 0:(log2int(divroundup(C_WRITE_WIDTH_A,8)));
-  localparam MEM_MAP_LOWER_BOUND_VAL_B      = (log2int(divroundup(C_WRITE_WIDTH_A,8)==0)) ? 0:(log2int(divroundup(C_WRITE_WIDTH_A,8)));
+  localparam MEM_MAP_LOWER_BOUND_VAL_B      = (log2int(divroundup(C_WRITE_WIDTH_B,8)==0)) ? 0:(log2int(divroundup(C_WRITE_WIDTH_B,8)));
   localparam C_MEM_MAP_ADDRA_WIDTH_LSB = MEM_MAP_LOWER_BOUND_VAL_A;
   localparam C_MEM_MAP_ADDRB_WIDTH_LSB = MEM_MAP_LOWER_BOUND_VAL_B;
 
@@ -4212,7 +4212,7 @@ blk_mem_gen_v8_3_5_mem_module
   assign lsb_zero_i = 0;
   assign RDADDRECC  = {msb_zero_i,rdaddrecc_i,lsb_zero_i};
 
-blk_mem_gen_v8_3_5_mem_module
+blk_mem_gen_v8_3_6_mem_module
   #(.C_CORENAME                        (C_CORENAME),
     .C_FAMILY                          (C_FAMILY),
     .C_XDEVICEFAMILY                   (C_XDEVICEFAMILY),
@@ -4271,7 +4271,7 @@ blk_mem_gen_v8_3_5_mem_module
     .C_DISABLE_WARN_BHV_COLL           (C_DISABLE_WARN_BHV_COLL),
  .C_EN_ECC_PIPE                     (C_EN_ECC_PIPE),
     .C_DISABLE_WARN_BHV_RANGE          (C_DISABLE_WARN_BHV_RANGE))
-    blk_mem_gen_v8_3_5_inst
+    blk_mem_gen_v8_3_6_inst
    (.CLKA            (CLKA),
    .RSTA             (RSTA_I_SAFE),//(rsta_in),
    .ENA              (ENA_I_SAFE),//(ena_in),
@@ -4428,7 +4428,7 @@ assign s_axi_arlen_c = (C_AXI_TYPE == 1)?S_AXI_ARLEN:8'h0;
     .S_AXI_RD_EN                  (s_axi_rd_en_c)
   );
 
-blk_mem_gen_v8_3_5_mem_module
+blk_mem_gen_v8_3_6_mem_module
   #(.C_CORENAME                        (C_CORENAME),
     .C_FAMILY                          (C_FAMILY),
     .C_XDEVICEFAMILY                   (C_XDEVICEFAMILY),
@@ -4487,7 +4487,7 @@ blk_mem_gen_v8_3_5_mem_module
     .C_DISABLE_WARN_BHV_COLL           (C_DISABLE_WARN_BHV_COLL),
 	.C_EN_ECC_PIPE                     (0),
     .C_DISABLE_WARN_BHV_RANGE          (C_DISABLE_WARN_BHV_RANGE))
-    blk_mem_gen_v8_3_5_inst
+    blk_mem_gen_v8_3_6_inst
    (.CLKA            (S_ACLK),
    .RSTA             (s_aresetn_a_c),
    .ENA              (s_axi_wr_en_c),

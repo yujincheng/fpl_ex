@@ -1,8 +1,8 @@
-//Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
+//Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2016.4 (lin64) Build 1756540 Mon Jan 23 19:11:19 MST 2017
-//Date        : Fri May 26 23:29:12 2017
-//Host        : yujc-Z97-HD3 running 64-bit unknown
+//Tool Version: Vivado v.2017.1 (lin64) Build 1846317 Fri Apr 14 18:54:47 MDT 2017
+//Date        : Tue Jun  6 19:07:03 2017
+//Host        : yujc-Z97-HD3 running 64-bit Ubuntu 16.04.2 LTS
 //Command     : generate_target bd_8b4f_wrapper.bd
 //Design      : bd_8b4f_wrapper
 //Purpose     : IP block netlist

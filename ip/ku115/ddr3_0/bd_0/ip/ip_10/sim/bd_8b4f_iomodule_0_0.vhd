@@ -46,15 +46,15 @@
 -- 
 -- DO NOT MODIFY THIS FILE.
 
--- IP VLNV: xilinx.com:ip:iomodule:3.0
--- IP Revision: 6
+-- IP VLNV: xilinx.com:ip:iomodule:3.1
+-- IP Revision: 0
 
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 
-LIBRARY iomodule_v3_0_6;
-USE iomodule_v3_0_6.iomodule;
+LIBRARY iomodule_v3_1_0;
+USE iomodule_v3_1_0.iomodule;
 
 ENTITY bd_8b4f_iomodule_0_0 IS
   PORT (
@@ -92,6 +92,8 @@ ARCHITECTURE bd_8b4f_iomodule_0_0_arch OF bd_8b4f_iomodule_0_0 IS
       C_INSTANCE : STRING;
       C_USE_CONFIG_RESET : INTEGER;
       C_AVOID_PRIMITIVES : INTEGER;
+      C_TMR : INTEGER;
+      C_USE_TMR_DISABLE : INTEGER;
       C_HIGHADDR : STD_LOGIC_VECTOR;
       C_BASEADDR : STD_LOGIC_VECTOR;
       C_MASK : STD_LOGIC_VECTOR;
@@ -181,6 +183,11 @@ ARCHITECTURE bd_8b4f_iomodule_0_0_arch OF bd_8b4f_iomodule_0_0 IS
       Clk : IN STD_LOGIC;
       Rst : IN STD_LOGIC;
       Config_Reset : IN STD_LOGIC;
+      TMR_Rst : IN STD_LOGIC;
+      TMR_Disable : IN STD_LOGIC;
+      ToVote : OUT STD_LOGIC_VECTOR(1023 DOWNTO 0);
+      FromAVote : IN STD_LOGIC_VECTOR(1023 DOWNTO 0);
+      FromBVote : IN STD_LOGIC_VECTOR(1023 DOWNTO 0);
       IO_Addr_Strobe : OUT STD_LOGIC;
       IO_Read_Strobe : OUT STD_LOGIC;
       IO_Write_Strobe : OUT STD_LOGIC;
@@ -272,6 +279,8 @@ BEGIN
       C_INSTANCE => "iomodule",
       C_USE_CONFIG_RESET => 0,
       C_AVOID_PRIMITIVES => 0,
+      C_TMR => 0,
+      C_USE_TMR_DISABLE => 0,
       C_HIGHADDR => X"000000008000FFFF",
       C_BASEADDR => X"0000000080000000",
       C_MASK => X"00000000C0000000",
@@ -361,6 +370,10 @@ BEGIN
       Clk => Clk,
       Rst => Rst,
       Config_Reset => '0',
+      TMR_Rst => '0',
+      TMR_Disable => '0',
+      FromAVote => STD_LOGIC_VECTOR(TO_UNSIGNED(0, 1024)),
+      FromBVote => STD_LOGIC_VECTOR(TO_UNSIGNED(0, 1024)),
       IO_Addr_Strobe => IO_Addr_Strobe,
       IO_Read_Strobe => IO_Read_Strobe,
       IO_Write_Strobe => IO_Write_Strobe,

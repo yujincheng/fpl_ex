@@ -269,6 +269,7 @@ set_false_path -hold -to [get_pins */*/*/*/*/*.u_xiphy_control/xiphy_control/RIU
 
 set_property SLEW FAST  [get_ports {c0_ddr3_addr[*] c0_ddr3_ba[*] c0_ddr3_cke[*] c0_ddr3_ck_p[*] c0_ddr3_ck_n[*] c0_ddr3_cas_n c0_ddr3_odt[*] c0_ddr3_ras_n c0_ddr3_we_n c0_ddr3_dq[*] c0_ddr3_dqs_p[*] c0_ddr3_dqs_n[*]}]
 set_property SLEW SLOW  [get_ports {c0_ddr3_reset_n}]
+set_property DATA_RATE SDR  [get_ports {c0_ddr3_reset_n}]
 set_property IBUF_LOW_PWR FALSE  [get_ports {c0_ddr3_dq[*] c0_ddr3_dqs_p[*] c0_ddr3_dqs_n[*]}]
 set_property ODT RTT_40  [get_ports {c0_ddr3_dq[*] c0_ddr3_dqs_p[*] c0_ddr3_dqs_n[*]}]
 set_property SLEW FAST  [get_ports {c0_ddr3_cs_n[*]}]
@@ -277,7 +278,6 @@ set_property SLEW FAST  [get_ports {c0_ddr3_dm[*]}]
 set_property DATA_RATE DDR  [get_ports {c0_ddr3_dm[*]}]
 set_property DATA_RATE SDR  [get_ports {c0_ddr3_addr[*] c0_ddr3_ba[*] c0_ddr3_cke[*] c0_ddr3_cas_n c0_ddr3_odt[*] c0_ddr3_ras_n c0_ddr3_we_n }]
 set_property DATA_RATE DDR  [get_ports {c0_ddr3_dq[*] c0_ddr3_dqs_p[*] c0_ddr3_dqs_n[*] c0_ddr3_ck_p[*] c0_ddr3_ck_n[*]}]
-set_property DATA_RATE SDR  [get_ports {c0_ddr3_reset_n}]
 ## Multi-cycle path constraints for Fabric - RIU clock domain crossing signals
 set_max_delay 5.0 -datapath_only -from [get_pins */*/*/u_ddr_cal_addr_decode/io_ready_lvl_reg/C] -to [get_pins */u_io_ready_lvl_sync/SYNC[*].sync_reg_reg[0]/D]
 set_max_delay 5.0 -datapath_only -from [get_pins */*/*/u_ddr_cal_addr_decode/io_read_data_reg[*]/C] -to [get_pins */u_io_read_data_sync/SYNC[*].sync_reg_reg[0]/D]
