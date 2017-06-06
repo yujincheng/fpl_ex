@@ -93,29 +93,29 @@ input wire inst_empty,
   output                              axi_rready  // Read Response ready
 );
 
-(*keep = "ture"*)wire [DDR_DATA_LEN - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
-(*keep = "ture"*)wire [ADDR_LEN_WB - 1:0]                               wfc_wr_addr ;
-(*keep = "ture"*)wire [X_PE*2 - 1:0]                                               wfc_wea      ;
+wire [DDR_DATA_LEN - 1:0]                               wfc_wr_data    ; //8 here is 512/DATA_LEN
+wire [ADDR_LEN_WB - 1:0]                               wfc_wr_addr ;
+wire [X_PE*2 - 1:0]                                               wfc_wea      ;
 wire                                                wb_wr_ready   ;
-(*keep = "ture"*)wire [X_PE*X_MESH*8*9 - 1 : 0]                      wb_ker_out    ;
+wire [X_PE*X_MESH*8*9 - 1 : 0]                      wb_ker_out    ;
 wire [ADDR_LEN_WB - 1:0]                                wb_st_rd_addr ;
 wire                                                wb_ker_en     ;
 wire                                                 wb_rd_conf    ;
 wire                                                wb_rd_ready   ;
 
 
-(*keep = "ture"*) wire [32*X_MAC*X_MESH-1:0]                                dwire;
+wire [32*X_MAC*X_MESH-1:0]                                dwire;
 
 
-(*keep = "ture"*)wire [32*X_MAC*X_MESH-1:0]                                doutb;
+wire [32*X_MAC*X_MESH-1:0]                                doutb;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addrb;
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                ilc_addrb;
 
 
 
-(*keep = "ture"*)wire  [X_MAC*X_MESH-1:0]                              w2c_wea;
-(*keep = "ture"*)wire [32*X_MAC*X_MESH-1:0] 							w2c_dina;
-(*keep = "ture"*)wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
+wire  [X_MAC*X_MESH-1:0]                              w2c_wea;
+wire [32*X_MAC*X_MESH-1:0] 							w2c_dina;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                w2c_addra;
 
 wire  [X_MAC*X_MESH-1:0]                              dfc_BP_wea;
 wire [32*X_MAC*X_MESH-1:0] 							dfc_BP_dina;
@@ -123,16 +123,16 @@ wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
 
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dwc_BP_addr;
 
-(*keep = "ture"*)wire  [X_MAC*X_MESH-1:0]                              wea;
-(*keep = "ture"*)wire [32*X_MAC*X_MESH-1:0] 							dina;
-(*keep = "ture"*)wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
+wire  [X_MAC*X_MESH-1:0]                              wea;
+wire [32*X_MAC*X_MESH-1:0] 							dina;
+wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
 
 
 
 
 
 
-wire [4 - 1:0]                             control;
+(* dont_touch = "yes" *) wire [4 - 1:0]                             control;
 wire [3:0]                                           bsr_iszero;
 wire 											ilc_ispad;
 wire [MAX_LINE_LEN - 1 : 0]										ilc_linelen;
@@ -148,9 +148,9 @@ wire [COM_DATALEN*4*X_PE - 1:0] 							result_wire_unpool;
 wire [COM_DATALEN*X_PE - 1:0] 							result_wire_pool;
 wire result_valid;
 wire result_valid_pool;
-(*dont_touch = "yes"*)wire [20*X_PE - 1:0]						bb_bias;
-(*dont_touch = "yes"*)wire [ADDR_LEN_BB - 1:0]										bb_addr;
-(*dont_touch = "yes"*)wire [5 - 1:0]										bb_shift;
+wire [20*X_PE - 1:0]						bb_bias;
+wire [ADDR_LEN_BB - 1:0]										bb_addr;
+wire [5 - 1:0]										bb_shift;
 
 wire [SINGLE_LEN - 1:0  ]     bfc_bias_num; // 
 wire [SINGLE_LEN - 1:0  ]     bfc_bias_ddr_byte; 
@@ -226,55 +226,55 @@ wire  ddr_conf_dwrite;
 wire  [SINGLE_LEN - 1:0]     mig_ddr_len;
 wire [DDR_ADDR_LEN - 1:0] mig_ddr_st_addr;
 
-///////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 
-wire [32-1:0] dina_show[X_MESH-1:0][X_MAC-1:0  ];
-wire [32-1:0] doutb_show[X_MESH-1:0][X_MAC-1:0];
-wire wea_show[X_MESH-1:0][X_MAC-1:0                  ];
-wire [ADDR_LEN_BP-1:0] addra_show[X_MESH-1:0][X_MAC-1:0 ];
-wire [ADDR_LEN_BP-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
-wire[8 - 1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][8:0];
-wire [COM_DATALEN-1:0] 							result_wire_unpool_show[X_MESH-1:0][2-1:0][2-1:0];
-wire [COM_DATALEN-1:0] 							result_wire_pool_show[X_MESH-1:0];
-wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
+//wire [32-1:0] dina_show[X_MESH-1:0][X_MAC-1:0  ];
+//wire [32-1:0] doutb_show[X_MESH-1:0][X_MAC-1:0];
+//wire wea_show[X_MESH-1:0][X_MAC-1:0                  ];
+//wire [ADDR_LEN_BP-1:0] addra_show[X_MESH-1:0][X_MAC-1:0 ];
+//wire [ADDR_LEN_BP-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
+//wire[8 - 1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][8:0];
+//wire [COM_DATALEN-1:0] 							result_wire_unpool_show[X_MESH-1:0][2-1:0][2-1:0];
+//wire [COM_DATALEN-1:0] 							result_wire_pool_show[X_MESH-1:0];
+//wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
 
-genvar i,j,k;
-generate
- for (i=0;i<X_MESH;i = i+1) begin:ass   
-       for (j =0;j<X_MAC;j=j+1) begin:assh
-            assign doutb_show[i][j] = doutb[j*32+i*32*X_MAC +: 32] ;
-            assign dina_show[i][j] = dina[j*32+i*32*X_MAC +: 32] ;
-            assign wea_show[i][j] = w2c_wea[j+i*X_MAC];
-            assign addrb_show[i][j] = addrb[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
-            assign addra_show[i][j] = addra[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
-            assign dwire_show[i][j] = dwire[j*32+i*32*X_MAC +: 32] ;
-       end
- end
-endgenerate 
+//genvar i,j,k;
+//generate
+// for (i=0;i<X_MESH;i = i+1) begin:ass   
+//       for (j =0;j<X_MAC;j=j+1) begin:assh
+//            assign doutb_show[i][j] = doutb[j*32+i*32*X_MAC +: 32] ;
+//            assign dina_show[i][j] = dina[j*32+i*32*X_MAC +: 32] ;
+//            assign wea_show[i][j] = w2c_wea[j+i*X_MAC];
+//            assign addrb_show[i][j] = addrb[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
+//            assign addra_show[i][j] = addra[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
+//            assign dwire_show[i][j] = dwire[j*32+i*32*X_MAC +: 32] ;
+//       end
+// end
+//endgenerate 
 
-generate
- for (i=0;i< X_PE;i = i+1) begin:ass1   
-       for (j =0;j< X_MESH;j=j+1) begin:assh
-			for (k =0;k < 9;k=k+1) begin:asshh
-				assign ker_out_show[i][j][k] = wb_ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8];
-			end
-       end
- end
-endgenerate
+//generate
+// for (i=0;i< X_PE;i = i+1) begin:ass1   
+//       for (j =0;j< X_MESH;j=j+1) begin:assh
+//			for (k =0;k < 9;k=k+1) begin:asshh
+//				assign ker_out_show[i][j][k] = wb_ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8];
+//			end
+//       end
+// end
+//endgenerate
 
-generate
-for (i=0;i<X_MESH;i = i+1) begin:ass2   
-        assign result_wire_pool_show[i] = result_wire_pool[i*COM_DATALEN +: COM_DATALEN];		
-       for (j =0;j<2;j =j+1) begin:assh
-		for (k =0;k<2;k = k+1) begin:assh3
-            assign result_wire_unpool_show[i][j][k] = result_wire_unpool[k*COM_DATALEN + j*COM_DATALEN*2 +i*COM_DATALEN*4 +: COM_DATALEN];			
-		end
-       end
-end
-endgenerate
+//generate
+//for (i=0;i<X_MESH;i = i+1) begin:ass2   
+//        assign result_wire_pool_show[i] = result_wire_pool[i*COM_DATALEN +: COM_DATALEN];		
+//       for (j =0;j<2;j =j+1) begin:assh
+//		for (k =0;k<2;k = k+1) begin:assh3
+//            assign result_wire_unpool_show[i][j][k] = result_wire_unpool[k*COM_DATALEN + j*COM_DATALEN*2 +i*COM_DATALEN*4 +: COM_DATALEN];			
+//		end
+//       end
+//end
+//endgenerate
 
 
-/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 
 wire id_w2c;
 wire id_wb;
@@ -523,7 +523,7 @@ assign addrb = (!dwc_idle) ? dwc_BP_addr : ilc_addrb;
 assign mig_ddr_len = (!dwc_idle) ? ddr_len_dwrite : ddr_len_mux;
 assign mig_ddr_st_addr = (!dwc_idle) ? dwc_ddr_st_addr : ddr_st_addr_out_mux;
 
-(*DONT_TOUCH = "yes"*)muxddr mddr(
+muxddr mddr(
 .clk(clk),
 .rst_n(rst_n),
 .switch(switch),
@@ -658,7 +658,7 @@ WeightBuffer #(
 );
 
 
-(*DONT_TOUCH = "yes"*)Winograd_PE_CORE#(
+Winograd_PE_CORE#(
 
 .X_PE(X_PE),
 .MESH_N(X_MESH)
