@@ -47,7 +47,7 @@ module Winograd_matrix_mul_raw_8to9
         result_wire_array[3] <= 0;
     
     end
-  	begin
+    else begin
     	result_wire_array[0] <= data_wire_array[0] - data_wire_array[2];
     	result_wire_array[1] <= data_wire_array[1] + data_wire_array[2];
     	result_wire_array[2] <= data_wire_array[2] - data_wire_array[1];
