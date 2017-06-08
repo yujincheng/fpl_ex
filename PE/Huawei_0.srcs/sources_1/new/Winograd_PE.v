@@ -47,7 +47,7 @@ module Winograd_PE
 );
   
   reg[7:0] in_valid_reg;
-  reg[BIAS_BIT-1:0] bias_reg[4:0];
+  reg[BIAS_BIT-1:0] bias_reg[6:0];
   
   
   always @(posedge clk)
@@ -57,6 +57,8 @@ module Winograd_PE
   	bias_reg[2]<=bias_reg[1];
   	bias_reg[3]<=bias_reg[2];
   	bias_reg[4]<=bias_reg[3];
+            bias_reg[5]<=bias_reg[4];
+                  bias_reg[6]<=bias_reg[5];
  		in_valid_reg<={in_valid_reg[6:0],in_valid};
   end
   

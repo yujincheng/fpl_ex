@@ -226,55 +226,55 @@ wire  ddr_conf_dwrite;
 wire  [SINGLE_LEN - 1:0]     mig_ddr_len;
 wire [DDR_ADDR_LEN - 1:0] mig_ddr_st_addr;
 
-/////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 
-//wire [32-1:0] dina_show[X_MESH-1:0][X_MAC-1:0  ];
-//wire [32-1:0] doutb_show[X_MESH-1:0][X_MAC-1:0];
-//wire wea_show[X_MESH-1:0][X_MAC-1:0                  ];
-//wire [ADDR_LEN_BP-1:0] addra_show[X_MESH-1:0][X_MAC-1:0 ];
-//wire [ADDR_LEN_BP-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
-//wire[8 - 1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][8:0];
-//wire [COM_DATALEN-1:0] 							result_wire_unpool_show[X_MESH-1:0][2-1:0][2-1:0];
-//wire [COM_DATALEN-1:0] 							result_wire_pool_show[X_MESH-1:0];
-//wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
+wire [32-1:0] dina_show[X_MESH-1:0][X_MAC-1:0  ];
+wire [32-1:0] doutb_show[X_MESH-1:0][X_MAC-1:0];
+wire wea_show[X_MESH-1:0][X_MAC-1:0                  ];
+wire [ADDR_LEN_BP-1:0] addra_show[X_MESH-1:0][X_MAC-1:0 ];
+wire [ADDR_LEN_BP-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
+wire[8 - 1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][8:0];
+wire [COM_DATALEN-1:0] 							result_wire_unpool_show[X_MESH-1:0][2-1:0][2-1:0];
+wire [COM_DATALEN-1:0] 							result_wire_pool_show[X_MESH-1:0];
+wire [32-1:0] dwire_show[X_MESH-1:0][X_MAC-1:0];
 
-//genvar i,j,k;
-//generate
-// for (i=0;i<X_MESH;i = i+1) begin:ass   
-//       for (j =0;j<X_MAC;j=j+1) begin:assh
-//            assign doutb_show[i][j] = doutb[j*32+i*32*X_MAC +: 32] ;
-//            assign dina_show[i][j] = dina[j*32+i*32*X_MAC +: 32] ;
-//            assign wea_show[i][j] = w2c_wea[j+i*X_MAC];
-//            assign addrb_show[i][j] = addrb[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
-//            assign addra_show[i][j] = addra[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
-//            assign dwire_show[i][j] = dwire[j*32+i*32*X_MAC +: 32] ;
-//       end
-// end
-//endgenerate 
+genvar i,j,k;
+generate
+ for (i=0;i<X_MESH;i = i+1) begin:ass   
+       for (j =0;j<X_MAC;j=j+1) begin:assh
+            assign doutb_show[i][j] = doutb[j*32+i*32*X_MAC +: 32] ;
+            assign dina_show[i][j] = dina[j*32+i*32*X_MAC +: 32] ;
+            assign wea_show[i][j] = w2c_wea[j+i*X_MAC];
+            assign addrb_show[i][j] = addrb[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
+            assign addra_show[i][j] = addra[j*ADDR_LEN_BP+i*ADDR_LEN_BP*X_MAC +: ADDR_LEN_BP] ;
+            assign dwire_show[i][j] = dwire[j*32+i*32*X_MAC +: 32] ;
+       end
+ end
+endgenerate 
 
-//generate
-// for (i=0;i< X_PE;i = i+1) begin:ass1   
-//       for (j =0;j< X_MESH;j=j+1) begin:assh
-//			for (k =0;k < 9;k=k+1) begin:asshh
-//				assign ker_out_show[i][j][k] = wb_ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8];
-//			end
-//       end
-// end
-//endgenerate
+generate
+ for (i=0;i< X_PE;i = i+1) begin:ass1   
+       for (j =0;j< X_MESH;j=j+1) begin:assh
+			for (k =0;k < 9;k=k+1) begin:asshh
+				assign ker_out_show[i][j][k] = wb_ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8];
+			end
+       end
+ end
+endgenerate
 
-//generate
-//for (i=0;i<X_MESH;i = i+1) begin:ass2   
-//        assign result_wire_pool_show[i] = result_wire_pool[i*COM_DATALEN +: COM_DATALEN];		
-//       for (j =0;j<2;j =j+1) begin:assh
-//		for (k =0;k<2;k = k+1) begin:assh3
-//            assign result_wire_unpool_show[i][j][k] = result_wire_unpool[k*COM_DATALEN + j*COM_DATALEN*2 +i*COM_DATALEN*4 +: COM_DATALEN];			
-//		end
-//       end
-//end
-//endgenerate
+generate
+for (i=0;i<X_MESH;i = i+1) begin:ass2   
+        assign result_wire_pool_show[i] = result_wire_pool[i*COM_DATALEN +: COM_DATALEN];		
+       for (j =0;j<2;j =j+1) begin:assh
+		for (k =0;k<2;k = k+1) begin:assh3
+            assign result_wire_unpool_show[i][j][k] = result_wire_unpool[k*COM_DATALEN + j*COM_DATALEN*2 +i*COM_DATALEN*4 +: COM_DATALEN];			
+		end
+       end
+end
+endgenerate
 
 
-///////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 wire id_w2c;
 wire id_wb;
@@ -657,16 +657,13 @@ WeightBuffer #(
 .rst_n     (rst_n)
 );
 
-/////////////////////////////////////buf fix area
-reg [7:0] buffermux_reg[1:0];
-always@( posedge clk)begin
-if (wb_rd_conf)begin
-    buffermux_reg[0] <= bsr_buffermux;
-end
-end
+/////////////////////////////////////bug fix area
+reg [7:0] buffermux_reg;
+reg [3:0] bsr_iszero_reg;
 always@( posedge clk)begin
 if (indata_valid)begin
-    buffermux_reg[1] <= buffermux_reg[0];
+    buffermux_reg <= bsr_buffermux;
+    bsr_iszero_reg <= bsr_iszero;
 end
 end
 
@@ -716,8 +713,8 @@ buffer_shift_register#(
 	.din(doutb),
 	.dout(dwire),
 	.control(control),
-	.iszero(bsr_iszero),
-	.buffermux(buffermux_reg[1]),
+	.iszero(bsr_iszero_reg),
+	.buffermux(buffermux_reg),
 	.clk(clk)
 );
 
