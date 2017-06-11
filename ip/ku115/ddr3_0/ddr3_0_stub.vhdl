@@ -1,9 +1,10 @@
 -- Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2017.1 (lin64) Build 1846317 Fri Apr 14 18:54:47 MDT 2017
--- Date        : Tue Jun  6 19:13:05 2017
+-- Date        : Fri Jun  9 01:08:50 2017
 -- Host        : yujc-Z97-HD3 running 64-bit Ubuntu 16.04.2 LTS
--- Command     : write_vhdl -force -mode synth_stub /home/yujc/690t/fpl_ex/ip/ku115/ddr3_0/ddr3_0_stub.vhdl
+-- Command     : write_vhdl -force -mode synth_stub -rename_top ddr3_0 -prefix
+--               ddr3_0_ ddr3_0_stub.vhdl
 -- Design      : ddr3_0
 -- Purpose     : Stub declaration of top-level module interface
 -- Device      : xcku060-ffva1517-1-c

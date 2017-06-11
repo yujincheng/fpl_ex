@@ -1,7 +1,7 @@
 //Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2017.1 (lin64) Build 1846317 Fri Apr 14 18:54:47 MDT 2017
-//Date        : Tue Jun  6 19:07:03 2017
+//Date        : Fri Jun  9 01:17:30 2017
 //Host        : yujc-Z97-HD3 running 64-bit Ubuntu 16.04.2 LTS
 //Command     : generate_target bd_8b4f_wrapper.bd
 //Design      : bd_8b4f_wrapper

@@ -1,7 +1,7 @@
 // Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2017.1 (lin64) Build 1846317 Fri Apr 14 18:54:47 MDT 2017
-// Date        : Tue Jun  6 19:08:10 2017
+// Date        : Fri Jun  9 01:03:41 2017
 // Host        : yujc-Z97-HD3 running 64-bit Ubuntu 16.04.2 LTS
 // Command     : write_verilog -force -mode synth_stub /home/yujc/690t/fpl_ex/ip/ku115/xip_fifo_96_1k/xip_fifo_96_1k_stub.v
 // Design      : xip_fifo_96_1k
