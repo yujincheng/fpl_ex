@@ -36,9 +36,9 @@ module Winograd_mesh
 (
 	input clk,
 	input rst_n,
-	input [DATA_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] feature,
 	input [WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE-1:0] weight,
-	output [RESULT_BIT*RESULT_SIZE*RESULT_SIZE-1:0] result
+	output [RESULT_BIT*RESULT_SIZE*RESULT_SIZE-1:0] result,
+	input [FEATURE_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] feature_result
 );
   wire [WEIGHT_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] weight_result;
   Winograd_feature_weight_mult
@@ -54,21 +54,8 @@ module Winograd_mesh
 	);
 
 
-	wire [FEATURE_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] feature_result;
 	
-	Winograd_feature_matrix_mult
-	#(
-		.MESH_X(FEATURE_SIZE),
-		.MESH_Y(FEATURE_SIZE),
-  	.IN_BIT(DATA_BIT)
-	)
-	feature_matrix_mult
-	(
-		.clk(clk),
-		.rst_n(rst_n),
-	  .data(feature),
-	  .result(feature_result)
-	);
+	
 	
 	wire [ELEMENT_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] element_result;
 	Element_multiply

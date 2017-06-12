@@ -26,6 +26,7 @@ module Winograd_PE
 	parameter WEIGHT_SIZE =3,
   parameter RESULT_SIZE = 2,
   parameter DATA_BIT =8,
+  parameter FEATURE_RESULT_BIT=DATA_BIT+1,
   parameter MESH_N=16,
   parameter WEIGHT_BIT = 12,
   parameter BIAS_BIT = 20,
@@ -38,7 +39,7 @@ module Winograd_PE
 	input in_valid,
 	input acum,
 	input bias_valid,
-	input [DATA_BIT*MESH_N*FEATURE_SIZE*FEATURE_SIZE-1:0]feature,
+	input [FEATURE_RESULT_BIT*MESH_N*FEATURE_SIZE*FEATURE_SIZE-1:0]feature_result,
 	input [WEIGHT_BIT*MESH_N*WEIGHT_SIZE*WEIGHT_SIZE-1:0]weight,
 	input [OUT_BIT*RESULT_SIZE*RESULT_SIZE-1:0]inter_data,
 	input [BIAS_BIT-1:0] bias,
@@ -80,7 +81,7 @@ module Winograd_PE
 	  	(
 		  	.clk(clk),
 		  	.rst_n(rst_n),
-		    .feature(feature[DATA_BIT*FEATURE_SIZE*FEATURE_SIZE*(i+1)-1:DATA_BIT*FEATURE_SIZE*FEATURE_SIZE*i]),
+		    .feature_result(feature_result[FEATURE_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE*(i+1)-1:FEATURE_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE*i]),
 		    .weight(weight[WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE*(i+1)-1:WEIGHT_BIT*WEIGHT_SIZE*WEIGHT_SIZE*i]),
 		    .result(adder_tree_in[MESH_OUT_BIT*RESULT_SIZE*RESULT_SIZE*(i+1)-1:MESH_OUT_BIT*RESULT_SIZE*RESULT_SIZE*i])
 			);

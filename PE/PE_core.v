@@ -8,6 +8,7 @@ module Winograd_PE_CORE
   parameter DATA_BIT =8,
   parameter MESH_N=8,
   parameter WEIGHT_BIT = 8,
+  parameter FEATURE_RESULT_BIT = DATA_BIT + 1,
   parameter MESH_OUT_BIT =20,
   parameter OUT_BIT = 24,
   parameter BIAS_BIT = 20,
@@ -35,6 +36,7 @@ module Winograd_PE_CORE
 reg [10:0] in_valid_shift;
 reg [10:0] tofifo_shift;
 reg [10:0] fromfifo_shift;
+wire [MESH_N*FEATURE_RESULT_BIT*FEATURE_SIZE*FEATURE_SIZE-1:0] feature_result;
 
 always @ (posedge clk) begin:SFT
 integer i;
@@ -68,7 +70,7 @@ generate
         .rst_n(rst_n),
 		.in_valid(in_valid),
 		.poolop(poolop),
-		.feature(feature),
+		.feature_result(feature_result),
 		.weight(weight[i*WEIGHT_BIT*MESH_N*WEIGHT_SIZE*WEIGHT_SIZE +: WEIGHT_BIT*MESH_N*WEIGHT_SIZE*WEIGHT_SIZE]),
 		
 		.write_en(write_en),
@@ -85,6 +87,17 @@ generate
     end
 endgenerate
 
+
+feature_mesh#(
+    .DATA_BIT(DATA_BIT)
+)
+fmsh(
+    .clk(clk),
+    .rst_n(rst_n),
+    .feature(feature),
+    .feature_result(feature_result)
+);
+
 assign out_valid = out_valid_mash[0];
 
 endmodule
@@ -94,6 +107,7 @@ module PE_GEN_UNIT#(
   parameter WEIGHT_SIZE =3,
   parameter RESULT_SIZE = 2,
   parameter DATA_BIT =8,
+  parameter FEATURE_RESULT_BIT=DATA_BIT+1,
   parameter MESH_N=8,
   parameter WEIGHT_BIT = 8,
   parameter MESH_OUT_BIT =20,
@@ -106,7 +120,7 @@ module PE_GEN_UNIT#(
 	input rst_n,
 	input in_valid,
 	input poolop,
-	input [DATA_BIT*MESH_N*FEATURE_SIZE*FEATURE_SIZE-1:0]		feature,
+	input [FEATURE_RESULT_BIT*MESH_N*FEATURE_SIZE*FEATURE_SIZE-1:0]		feature_result,
 	input [WEIGHT_BIT*MESH_N*WEIGHT_SIZE*WEIGHT_SIZE-1:0]		weight,
 	// input [OUT_BIT*RESULT_SIZE*RESULT_SIZE*X_PE-1:0]inter_data,
 	
@@ -141,7 +155,7 @@ module PE_GEN_UNIT#(
             .clk(clk),
             .in_valid(in_valid),
             .rst_n(rst_n),
-            .feature(feature),
+            .feature_result(feature_result),
             .weight(weight),
             .inter_data(	read_en ? inter_data : 0),
 			.bias(bias),
