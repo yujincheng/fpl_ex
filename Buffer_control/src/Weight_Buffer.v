@@ -127,7 +127,7 @@ always@ (posedge clk) begin:always2
 end
 
 assign ker_en = (cto9 == 10);
-assign indata_valid = (cto9 == 7);
+assign indata_valid = (cto9 == 6);
 assign idle = (!working || ker_en); 
 
 WeightBufferPool#(

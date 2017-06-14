@@ -58,7 +58,9 @@ wire [ADDR_LEN-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
 
 reg out_valid_1;//
 reg out_valid_2;//
+reg out_valid_3;//
 (* dont_touch = "yes" *)reg  [MUXCONTROL - 1:0] control;
+reg  [MUXCONTROL - 1:0] control_reg1;
 reg working;
 reg [MAX_LINE_LEN - 1:0] linelen_left;
 
@@ -71,8 +73,11 @@ always@(posedge clk)begin
 		out_valid_1 <= 0;
 	end
 	else begin
-		control_out <= control;
-		out_valid <= out_valid_2;
+		control_out <= control_reg1;
+		control_reg1 <= control;
+		
+		out_valid <= out_valid_3;
+		out_valid_3 <= out_valid_2;
 		out_valid_2 <= out_valid_1;
 		out_valid_1 <= working;
 	end
@@ -183,9 +188,21 @@ else begin
 end
 end
 
+reg regfromfifo1[2:0];
+reg regtofifo1[2:0];
+always @ (posedge clk) begin
+    regfromfifo1[0] <= regfromfifo;
+    regtofifo1[0] <= regtofifo;
+    regfromfifo1[1] <= regfromfifo1[0];
+    regtofifo1[1] <= regtofifo1[0];
+    regfromfifo1[2] <= regfromfifo1[1];
+    regtofifo1[2] <= regtofifo1[1];
+
+end
+
 assign ready = working;
-assign idle_soon = (!working || linelen_left < 14);
-assign pe_fromfifo = regfromfifo & out_valid;
-assign pe_tofifo = regtofifo & out_valid;
+assign idle_soon = (!working || linelen_left < 10);
+assign pe_fromfifo = regfromfifo1[0] & out_valid;
+assign pe_tofifo = regtofifo1[0] & out_valid;
 
 endmodule

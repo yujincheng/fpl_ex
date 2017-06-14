@@ -26,7 +26,7 @@ generate
 			xip_dbram_32_512#(
 				.RAM_WIDTH(DATA_LEN),                
 				.RAM_DEPTH(RAM_DEPTH),               
-				.RAM_PERFORMANCE("LOW_LATENCY")
+				.RAM_PERFORMANCE("HIGH_PERFORMANCE")
 			
 			) bram_inst (
                 // port A
