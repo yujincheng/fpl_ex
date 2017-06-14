@@ -163,7 +163,7 @@ wire ddr_fifo_full;
 	  .clk(clk),
 	  .srst(~rst_n),
 	  .din(ddr_write_data),
-	  .wr_en(ddr_fifo_en_r1),
+	  .wr_en(ddr_fifo_en_r2),
 	  .rd_en(ddr_write_req),
 	  .dout(ddr_write_data_out),
 	  .prog_full(ddr_fifo_near_full),
