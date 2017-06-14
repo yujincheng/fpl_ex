@@ -71,16 +71,16 @@ end
 
 wire conf_r10 = conf_wait & indata_valid;
 
-reg [9:0] conf_vec;
+reg [13:0] conf_vec;
 always @(posedge clk) begin:DELAY
     integer i_d;    
-    for (i_d = 1;i_d <= 9;i_d = i_d + 1) begin
+    for (i_d = 1;i_d <= 13;i_d = i_d + 1) begin
         conf_vec[i_d] <= conf_vec[i_d - 1];
     end
     conf_vec[0] <= conf_r10;
 end
 
-wire conf = conf_vec[9];
+wire conf = conf_vec[11];
 
 always @(posedge clk) begin
     if (!rst_n) begin

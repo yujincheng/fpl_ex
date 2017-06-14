@@ -49,6 +49,7 @@ reg working;
 reg working_r1;
 reg[1:0] BP_num_reg;
 reg[1:0] BP_num_reg_r1;
+reg[1:0] BP_num_reg_r2;
 reg [SINGLE_LEN - 1:0] Line_width_reg;
 reg[1:0] count_line;
 reg [SINGLE_LEN - 1:0] count_in_line;
@@ -73,7 +74,7 @@ end
 endgenerate
 
 always @ * begin
-	case (BP_num_reg_r1)
+	case (BP_num_reg_r2)
 		2'd0: ddr_write_data = ddr_write_data_mac[0];
 		2'd1: ddr_write_data = ddr_write_data_mac[1];
 		2'd2: ddr_write_data = ddr_write_data_mac[2];
@@ -85,7 +86,10 @@ end
  
 always @ (posedge clk) begin
 	working_r1 <= working;
+	
 	BP_num_reg_r1 <= BP_num_reg;
+    BP_num_reg_r2 <= BP_num_reg_r1;
+	
 	ddr_fifo_en_r1 <= ddr_fifo_en;
 	ddr_fifo_en_r2 <= ddr_fifo_en_r1;
 end 
