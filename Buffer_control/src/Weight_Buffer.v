@@ -46,10 +46,9 @@ reg rd_conf_reg;
 reg working;
 reg read_en;
 
-
-reg [DDR_DATA_LEN - 1:0]           data_wr_r1              ;  //4 here is 256/DATA_LEN
-reg [ADDR_LEN - 1:0]           wr_addr_r1           ;
-reg [BUFFER_NUM - 1:0]         wr_en_r1                ;
+reg [BUFFER_NUM - 1:0] wea_r1;
+reg [DATAWIDTH - 1:0] dina_r1;
+reg [ADDRWIDTH - 1:0] addra_r1;
 
 
 always @ (posedge clk) begin
@@ -58,10 +57,10 @@ always @ (posedge clk) begin
     cto9_reg <= cto9;
     rd_conf_reg <= rd_conf;
     
-    wr_en_r1 <= wr_en;
-    wr_addr_r1 <= wr_addr;
-    data_wr_r1 <= data_wr;
-       
+    wea_r1 <= wea;
+    dina_r1 <= dina;
+    addra_r1 <= addra;
+    
 end
 
 
@@ -79,12 +78,12 @@ endgenerate
 generate
  for (i=0;i<BUFFER_NUM;i = i+1) begin:ass21
 		assign  addrb[i*ADDR_LEN +: ADDR_LEN] = addrb_show[i];
-		assign wea[i] = wr_en_r1[i];
-		assign addra[i*ADDR_LEN +: ADDR_LEN] = wr_addr_r1;
+		assign wea[i] = wr_en[i];
+		assign addra[i*ADDR_LEN +: ADDR_LEN] = wr_addr;
 		assign addrb_show[i] = valid_addr;
  end
  for (i=0;i<BUFFER_NUM/(DDR_DATA_LEN/DATA_LEN);i = i+1) begin: dina8
-		assign dina[i*DDR_DATA_LEN +: DDR_DATA_LEN] = data_wr_r1; //4 here is 256/DATA_LEN 
+		assign dina[i*DDR_DATA_LEN +: DDR_DATA_LEN] = data_wr; //4 here is 256/DATA_LEN 
  end
 endgenerate
 generate
@@ -159,9 +158,9 @@ WeightBufferPool#(
 .DATA_LEN   (DATA_LEN  ),
 .RAM_DEPTH  (RAM_DEPTH )
 ) wbp(
-.dina 	(dina ),
-.addra	(addra),
-.wea 	(wea ),
+.dina 	(dina_r1 ),
+.addra	(addra_r1),
+.wea 	(wea_r1 ),
 .doutb	(doutb),
 .addrb  (addrb),
 .clk		(clk)
