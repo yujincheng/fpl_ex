@@ -284,23 +284,14 @@ always @(posedge clk) begin
 	end 
 end
 
-reg [7:0] b_count;
-
 always @(posedge clk) begin
 	if (!rst_n || !init_cmptd) begin
 		axi_bready <= 1;
-		b_count <= 0;
-    end
-    else if (ddr_conf && (cmd_type == 1) ) begin
-        b_count <= 0;
-    end
-    if(axi_bvalid) begin
-        b_count <= b_count + 1;
-    end
+	end
 end
 
-assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle &(b_count == wr_transe_count);
-assign write_idle = wr_data_idle & wr_cmd_idle &(b_count == wr_transe_count);
+assign idle = rd_data_idle & rd_cmd_idle & wr_data_idle & wr_cmd_idle;
+assign write_idle = wr_data_idle & wr_cmd_idle;
 assign read_idle = rd_data_idle & rd_cmd_idle;
 
 xip_fifo_256_16 x256x32(

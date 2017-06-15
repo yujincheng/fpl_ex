@@ -123,9 +123,9 @@ wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dfc_BP_addra;
 
 wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                dwc_BP_addr;
 
-wire  [X_MAC*X_MESH-1:0]                              wea;
-wire [32*X_MAC*X_MESH-1:0] 							dina;
-wire [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
+reg  [X_MAC*X_MESH-1:0]                              wea;
+reg [32*X_MAC*X_MESH-1:0] 							dina;
+reg [X_MAC*X_MESH*ADDR_LEN_BP-1:0]                                addra;
 
 
 
@@ -515,9 +515,12 @@ BP_WRITE_CONTROL #(
 .idle(dwc_idle)
 
 );
-assign dina = (!dfc_idle) ? dfc_BP_dina : w2c_dina;
-assign addra = (!dfc_idle) ? dfc_BP_addra : w2c_addra;
-assign wea = (!dfc_idle) ? dfc_BP_wea : w2c_wea;
+
+always @ (posedge clk)begin
+    dina <= (!dfc_idle) ? dfc_BP_dina : w2c_dina;
+    addra <= (!dfc_idle) ? dfc_BP_addra : w2c_addra;
+    wea <= (!dfc_idle) ? dfc_BP_wea : w2c_wea;
+end
 
 assign addrb = (!dwc_idle) ? dwc_BP_addr : ilc_addrb;
 assign mig_ddr_len = (!dwc_idle) ? ddr_len_dwrite : ddr_len_mux;
