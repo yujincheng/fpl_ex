@@ -19,7 +19,7 @@ input wire [BUFFER_NUM - 1:0]         wr_en                ,
 
 (*dont_touch = "yes"*)output wire [X_PE*X_MESH*8*9 - 1 : 0] ker_out              ,
 input wire [ADDR_LEN - 1:0]           st_rd_addr           ,
-output wire                           ker_en               ,
+output reg                           ker_en               ,
 input wire                            rd_conf              ,
 output wire                            idle             ,
 output wire 							indata_valid,
@@ -28,6 +28,7 @@ input wire 							  rst_n
 
 );
 
+wire ker_en_wire;
 reg [8-1:0] ker_out_show[X_MESH-1:0][X_PE-1:0][9-1:0];
 reg [8-1:0] ker_out_show_1[X_MESH-1:0][X_PE-1:0][9-1:0];
 wire [DATAWIDTH - 1:0] doutb;
@@ -41,6 +42,12 @@ wire [ADDRWIDTH - 1:0] addra;
 
 reg [3:0] cto9;
 reg working;
+reg read_en;
+
+always @ (posedge clk) begin
+    read_en <= working;
+    ker_en <= ker_en_wire;
+end
 
 
 genvar i,j,k;
@@ -76,7 +83,7 @@ generate
 							(*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
 							(*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
 						end
-						else if(!rd_conf &&  working) begin
+						else if(!rd_conf &&  read_en) begin
 								ker_out_show_1[i][j][k] <= doutb_show[i][j];
 							if(cto9 == 9) begin
 								ker_out_show [i][j][k] <= doutb_show[i][j];
@@ -90,7 +97,7 @@ generate
 							(*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
 							(*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
 						end
-						else if(!rd_conf &&  working) begin
+						else if(!rd_conf &&  read_en) begin
 								ker_out_show_1[i][j][k] <= ker_out_show_1[i][j][k+1];
 							if(cto9 == 9) begin
 								ker_out_show[i][j][k] <= ker_out_show_1[i][j][k+1];
@@ -126,7 +133,7 @@ always@ (posedge clk) begin:always2
 	end	
 end
 
-assign ker_en = (cto9 == 10);
+assign ker_en_wire = (cto9 == 10);
 assign indata_valid = (cto9 == 6);
 assign idle = (!working || ker_en); 
 
@@ -178,7 +185,7 @@ generate
 			xip_dbram_32_512#(
 				.RAM_WIDTH(DATA_LEN),                
 				.RAM_DEPTH(RAM_DEPTH),               
-				.RAM_PERFORMANCE("LOW_LATENCY")
+				.RAM_PERFORMANCE("HIGH_PERFORMANCE")
 			
 			) bram_inst (
                 // port A

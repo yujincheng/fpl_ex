@@ -19,6 +19,18 @@ input wire [ADDRWIDTH-1:0] addrb,
 input clk
 );
 
+reg [DATAWIDTH-1:0] dina_reg;
+reg [ADDRWIDTH-1:0] addra_reg;
+reg [BUFFER_NUM-1:0] wea_reg;
+
+always @ (posedge clk) begin
+    dina_reg <= dina;
+    addra_reg <= addra;
+    wea_reg <= wea;
+
+end
+
+
 genvar port,kernel;
 generate
     for (port = 0; port < X_MESH; port = port + 1) begin: BUF_UNIT_1   
