@@ -46,11 +46,22 @@ reg rd_conf_reg;
 reg working;
 reg read_en;
 
+
+reg [DDR_DATA_LEN - 1:0]           data_wr_r1              ;  //4 here is 256/DATA_LEN
+reg [ADDR_LEN - 1:0]           wr_addr_r1           ;
+reg [BUFFER_NUM - 1:0]         wr_en_r1                ;
+
+
 always @ (posedge clk) begin
     read_en <= working;
     ker_en <= ker_en_wire;
     cto9_reg <= cto9;
     rd_conf_reg <= rd_conf;
+    
+    wr_en_r1 <= wr_en;
+    wr_addr_r1 <= wr_addr;
+    data_wr_r1 <= data_wr;
+       
 end
 
 
@@ -68,12 +79,12 @@ endgenerate
 generate
  for (i=0;i<BUFFER_NUM;i = i+1) begin:ass21
 		assign  addrb[i*ADDR_LEN +: ADDR_LEN] = addrb_show[i];
-		assign wea[i] = wr_en[i];
-		assign addra[i*ADDR_LEN +: ADDR_LEN] = wr_addr;
+		assign wea[i] = wr_en_r1[i];
+		assign addra[i*ADDR_LEN +: ADDR_LEN] = wr_addr_r1;
 		assign addrb_show[i] = valid_addr;
  end
  for (i=0;i<BUFFER_NUM/(DDR_DATA_LEN/DATA_LEN);i = i+1) begin: dina8
-		assign dina[i*DDR_DATA_LEN +: DDR_DATA_LEN] = data_wr; //4 here is 256/DATA_LEN 
+		assign dina[i*DDR_DATA_LEN +: DDR_DATA_LEN] = data_wr_r1; //4 here is 256/DATA_LEN 
  end
 endgenerate
 generate

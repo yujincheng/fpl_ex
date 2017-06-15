@@ -42,10 +42,10 @@ generate
 			
 			) bram_inst (
                 // port A
-                .addra  (addra[(kernel*ADDR_LEN+port*ADDR_LEN*X_MAC ) +: ADDR_LEN ]),
+                .addra  (addra_reg[(kernel*ADDR_LEN+port*ADDR_LEN*X_MAC ) +: ADDR_LEN ]),
                 .clka   (clk        ),
-                .dina   (dina[(kernel*DATA_LEN+port*DATA_LEN*X_MAC) +: DATA_LEN]),
-                .wea    (wea[(kernel+port*X_MAC)]),
+                .dina   (dina_reg[(kernel*DATA_LEN+port*DATA_LEN*X_MAC) +: DATA_LEN]),
+                .wea    (wea_reg[(kernel+port*X_MAC)]),
                 // port B
                 .addrb  (addrb[(kernel*ADDR_LEN+port*ADDR_LEN*X_MAC) +: ADDR_LEN]),
                 .doutb  (doutb[(kernel*DATA_LEN+port*DATA_LEN*X_MAC) +: DATA_LEN]),
