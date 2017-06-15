@@ -41,12 +41,16 @@ wire [DATAWIDTH - 1:0] dina;
 wire [ADDRWIDTH - 1:0] addra;
 
 reg [3:0] cto9;
+reg [3:0] cto9_reg;
+reg rd_conf_reg;
 reg working;
 reg read_en;
 
 always @ (posedge clk) begin
     read_en <= working;
     ker_en <= ker_en_wire;
+    cto9_reg <= cto9;
+    rd_conf_reg <= rd_conf;
 end
 
 
@@ -83,9 +87,9 @@ generate
 							(*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
 							(*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
 						end
-						else if(!rd_conf &&  read_en) begin
+						else if(!rd_conf_reg &&  read_en) begin
 								ker_out_show_1[i][j][k] <= doutb_show[i][j];
-							if(cto9 == 9) begin
+							if(cto9_reg == 9) begin
 								ker_out_show [i][j][k] <= doutb_show[i][j];
 							end
 						end
@@ -97,9 +101,9 @@ generate
 							(*dont_touch = "yes"*)ker_out_show_1[i][j][k] <= 0;
 							(*dont_touch = "yes"*)ker_out_show [i][j][k] <= 0;
 						end
-						else if(!rd_conf &&  read_en) begin
+						else if(!rd_conf_reg &&  read_en) begin
 								ker_out_show_1[i][j][k] <= ker_out_show_1[i][j][k+1];
-							if(cto9 == 9) begin
+							if(cto9_reg == 9) begin
 								ker_out_show[i][j][k] <= ker_out_show_1[i][j][k+1];
 							end
 						end
@@ -135,7 +139,7 @@ end
 
 assign ker_en_wire = (cto9 == 10);
 assign indata_valid = (cto9 == 6);
-assign idle = (!working || ker_en); 
+assign idle = (!working || ker_en_wire); 
 
 WeightBufferPool#(
 .X_PE       (X_PE      ),
