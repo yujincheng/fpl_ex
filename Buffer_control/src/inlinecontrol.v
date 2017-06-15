@@ -59,6 +59,7 @@ wire [ADDR_LEN-1:0] addrb_show[X_MESH-1:0][X_MAC-1:0];
 reg out_valid_1;//
 reg out_valid_2;//
 reg out_valid_3;//
+reg out_valid_4;//
 (* dont_touch = "yes" *)reg  [MUXCONTROL - 1:0] control;
 reg  [MUXCONTROL - 1:0] control_reg1;
 reg working;
@@ -71,12 +72,16 @@ always@(posedge clk)begin
 		out_valid <= 0;
         out_valid_2 <= 0;
 		out_valid_1 <= 0;
+        out_valid_3 <= 0;
+        out_valid_4 <= 0;
 	end
 	else begin
 		control_out <= control_reg1;
 		control_reg1 <= control;
 		
-		out_valid <= out_valid_3;
+		
+		out_valid <= out_valid_4;
+		out_valid_4 <= out_valid_3;
 		out_valid_3 <= out_valid_2;
 		out_valid_2 <= out_valid_1;
 		out_valid_1 <= working;

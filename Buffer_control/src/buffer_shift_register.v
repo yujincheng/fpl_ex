@@ -33,13 +33,26 @@ wire [DATA_LEN-1:0] dout_show[X_MESH-1:0][X_MAC-1:0];
 reg [DATA_LEN-1:0] dout_show_after[X_MESH-1:0][X_MAC-1:0];
 wire [DATA_LEN-1:0] din_show[X_MESH-1:0][X_MAC-1:0];
 
+reg [DATAWIDTH-1:0] din_r1;
+reg [MUXCONTROL - 1:0] control_r1;
+reg [X_MAC*2 - 1:0] buffermux_r1;
+reg [X_MAC - 1:0] iszero_r1;
+
+always @ (posedge clk) begin
+    din_r1 <= din;
+    control_r1 <= control;
+    buffermux_r1 <= buffermux;
+    iszero_r1 <= iszero;
+end
+
+
 genvar i,j;
 generate
  for (i=0;i<X_MESH;i = i+1) begin:ass   
        for (j =0;j<X_MAC;j=j+1) begin:aasda
 			assign dout_show[i][j]= reg_out[i][j][0 +: DATA_LEN];
             assign dout[j*DATA_LEN+i*DATA_LEN*X_MAC +: DATA_LEN] = dout_show_after[i][j];
-            assign din_show[i][j] = din[j*DATA_LEN+i*DATA_LEN*X_MAC +: DATA_LEN] ;
+            assign din_show[i][j] = din_r1[j*DATA_LEN+i*DATA_LEN*X_MAC +: DATA_LEN] ;
        end
  end
 endgenerate
@@ -49,7 +62,7 @@ always @ (posedge clk)begin:BLOCKNAME
     integer i,j;
 	 for (i=0;i<X_MESH;i = i+1) begin:ass   
 		   for (j =0;j<X_MAC;j=j+1) begin:assh
-				case (control)
+				case (control_r1)
 				ST_PAD_INIT_1 : begin
 					reg_out[i][j][0 +: 8] <= 8'd0;
 					reg_out[i][j][8 +: 32] <= din_show[i][j];
@@ -104,12 +117,12 @@ always @ (posedge clk)begin:BLOCKN1
 	integer i,j;
     for (i = 0; i < X_MESH; i = i + 1) begin: MUX_INIT_1   
         for (j = 0; j < X_MAC; j = j + 1) begin: MUX_INIT_2   
-            case (buffermux[j*2 +: 2])
-                2'b00: dout_show_after[i][j] <= (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][0];
-                2'b01: dout_show_after[i][j] <= (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][1];
-                2'b10: dout_show_after[i][j] <= (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][2];
-                2'b11: dout_show_after[i][j] <= (iszero[j]) ? {DATA_LEN{1'b0} }: dout_show[i][3];
-                default: dout_show_after[i][j] <= (iszero[j]) ? { DATA_LEN{1'b0} }: dout_show[i][j];
+            case (buffermux_r1[j*2 +: 2])
+                2'b00: dout_show_after[i][j] <= (iszero_r1[j]) ? {DATA_LEN{1'b0} }: dout_show[i][0];
+                2'b01: dout_show_after[i][j] <= (iszero_r1[j]) ? {DATA_LEN{1'b0} }: dout_show[i][1];
+                2'b10: dout_show_after[i][j] <= (iszero_r1[j]) ? {DATA_LEN{1'b0} }: dout_show[i][2];
+                2'b11: dout_show_after[i][j] <= (iszero_r1[j]) ? {DATA_LEN{1'b0} }: dout_show[i][3];
+                default: dout_show_after[i][j] <= (iszero_r1[j]) ? { DATA_LEN{1'b0} }: dout_show[i][j];
             endcase
         end
     end
