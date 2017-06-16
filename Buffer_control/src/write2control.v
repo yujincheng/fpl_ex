@@ -16,6 +16,9 @@ input wire[ADDR_LEN*X_MAC - 1:0] st_addr,
 input wire [MAX_LINE_LEN - 1:0] linelen,
 input wire [1:0] valid_mac,
 input wire pooled,
+input wire is_relu,
+input wire [4:0] shift_len,
+
 
 output wire [ADDRWIDTH-1:0] addra,
 output wire [DATAWIDTH-1:0] data_a,
@@ -27,10 +30,6 @@ input wire dvalid,
 
 input wire [4*COM_DATALEN*X_MESH - 1:0]  in_data_4,
 input wire [COM_DATALEN*X_MESH - 1:0]  in_data_1,
-input wire [4:0] shift_len,
-
-input wire is_relu,
-
 
 input wire conf_input,
 
@@ -38,6 +37,14 @@ input rst_n,
 input clk
 
 );
+
+ reg  [ADDR_LEN*X_MAC - 1:0] st_addr_reg;
+  reg [MAX_LINE_LEN - 1:0] linelen_reg;
+  reg [1:0] valid_mac_reg;
+  reg pooled_reg;
+reg is_relu_reg;
+reg [4:0] shift_len_reg;
+
 
 wire signed [8 - 1:0] in_data_4_split[X_MESH-1:0][2-1:0][2-1:0];
 wire signed [8 - 1:0] in_data_1_split[X_MESH-1:0];
@@ -53,9 +60,6 @@ reg [MAX_LINE_LEN - 1:0] linelen_left;
 reg [DATA_LEN-1:0] data_a_show[X_MESH-1:0][X_MAC-1:0];
 
 reg conf_wait;
-
-reg [ADDR_LEN*X_MAC - 1:0] st_addr_reg;
-reg [MAX_LINE_LEN - 1:0] linelen_reg;
 
 always @(posedge clk) begin
     if (!rst_n) begin
@@ -86,10 +90,16 @@ always @(posedge clk) begin
     if (!rst_n) begin
         linelen_reg <= 0;
         st_addr_reg <= 0;
+        valid_mac_reg <= 0;
+        pooled_reg <= 0;
+        shift_len_reg <= 0;
     end
     else if (conf_input) begin
         linelen_reg <= linelen;
         st_addr_reg <= st_addr;
+        pooled_reg <= pooled;
+        valid_mac_reg <= valid_mac;
+        shift_len_reg <= shift_len;
     end
 end
 
@@ -123,8 +133,8 @@ for (i=0;i<X_MESH;i = i+1) begin:ass2
        relu_shift rs(
 			.input_data(in_data_1[i*COM_DATALEN +: COM_DATALEN]),
 			.output_data(in_data_1_split[i]),
-			.is_relu(is_relu),
-			.shift_len(shift_len)
+			.is_relu(1),
+			.shift_len(shift_len_reg)
 		);	   
 	   for (j =0;j<2;j =j+1) begin:assh
 		for (k =0;k<2;k = k+1) begin:assh3
@@ -132,8 +142,8 @@ for (i=0;i<X_MESH;i = i+1) begin:ass2
 			relu_shift rs(
 			.input_data(in_data_4_split_before_shift[i][j][k]),
 			.output_data(in_data_4_split[i][j][k]),
-			.is_relu(is_relu),
-			.shift_len(shift_len)
+			.is_relu(1),
+			.shift_len(shift_len_reg)
 			);
             assign in_data_4_split_before_shift[i][j][k] = (in_data_4[k*COM_DATALEN + j*COM_DATALEN*2 +i*COM_DATALEN*4 +: COM_DATALEN]);			
 		end
@@ -155,7 +165,7 @@ integer j;
 				st_addr_show[j] <= st_addr_reg[j*ADDR_LEN +: ADDR_LEN] - 1;
 			end
 			working <= 1;
-			if(pooled) begin
+			if(pooled_reg) begin
 				control <= ST_1_BUF1;
 				linelen_left <= linelen_reg - 1;
 			end
@@ -241,7 +251,7 @@ integer j;
 				end
 			end
 			endcase
-			if(pooled) begin
+			if(pooled_reg) begin
 				if(linelen_left >= 1) linelen_left <= linelen_left - 1;
 				else working <= 0;
 			end
@@ -265,30 +275,30 @@ for (i=0;i<X_MESH;i = i+1) begin:assi
 			case (control)
 			ST_IDLE: data_a_show[i][j] <= 0;
 			ST_1_BUF1: begin
-				if(j == valid_mac) data_a_show[i][j][0 +: 8] <= in_data_1_split[i];
+				if(j == valid_mac_reg) data_a_show[i][j][0 +: 8] <= in_data_1_split[i];
 			end
 			ST_1_BUF2: begin
-				if(j == valid_mac) data_a_show[i][j][8 +: 8] <= in_data_1_split[i];
+				if(j == valid_mac_reg) data_a_show[i][j][8 +: 8] <= in_data_1_split[i];
 			end
 			ST_1_BUF3: begin
-				if(j == valid_mac) data_a_show[i][j][16 +: 8] <= in_data_1_split[i];
+				if(j == valid_mac_reg) data_a_show[i][j][16 +: 8] <= in_data_1_split[i];
 			end
 			ST_1_ENABLE: begin
-				if(j == valid_mac) data_a_show[i][j][24 +: 8] <= in_data_1_split[i];
+				if(j == valid_mac_reg) data_a_show[i][j][24 +: 8] <= in_data_1_split[i];
 			end
 			ST_1_END1: begin
-				if(j == valid_mac) data_a_show[i][j][0 +: 8] <= in_data_1_split[i];			
+				if(j == valid_mac_reg) data_a_show[i][j][0 +: 8] <= in_data_1_split[i];			
 			end
 			ST_1_END2: begin
-				if(j == valid_mac) data_a_show[i][j][8 +: 8] <= in_data_1_split[i];			
+				if(j == valid_mac_reg) data_a_show[i][j][8 +: 8] <= in_data_1_split[i];			
 			end
 			ST_1_END3: begin
-				if(j == valid_mac) data_a_show[i][j][16 +: 8] <= in_data_1_split[i];			
+				if(j == valid_mac_reg) data_a_show[i][j][16 +: 8] <= in_data_1_split[i];			
 			end
 			ST_4_BUF1: begin
-				if (valid_mac < 3)begin
-					if (j == valid_mac) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
-					else if(j == (valid_mac + 1)) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][1][1],in_data_4_split[i][1][0]};
+				if (valid_mac_reg < 3)begin
+					if (j == valid_mac_reg) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
+					else if(j == (valid_mac_reg + 1)) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][1][1],in_data_4_split[i][1][0]};
 				end
 				else begin
 					if (j == 3) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
@@ -296,9 +306,9 @@ for (i=0;i<X_MESH;i = i+1) begin:assi
 				end
 			end
 			ST_4_ENABLE: begin
-				if (valid_mac < 3)begin
-					if (j == valid_mac) data_a_show[i][j][16 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
-					else if(j == (valid_mac + 1)) data_a_show[i][j][16 +: 16] <= {in_data_4_split[i][1][1],in_data_4_split[i][1][0]};
+				if (valid_mac_reg < 3)begin
+					if (j == valid_mac_reg) data_a_show[i][j][16 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
+					else if(j == (valid_mac_reg + 1)) data_a_show[i][j][16 +: 16] <= {in_data_4_split[i][1][1],in_data_4_split[i][1][0]};
 				end
 				else begin
 					if (j == 3) data_a_show[i][j][16 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
@@ -306,9 +316,9 @@ for (i=0;i<X_MESH;i = i+1) begin:assi
 				end
 			end
 			ST_4_END1: begin
-				if (valid_mac < 3)begin
-					if (j == valid_mac) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
-					else if(j == (valid_mac + 1)) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][1][1],in_data_4_split[i][1][0]};
+				if (valid_mac_reg < 3)begin
+					if (j == valid_mac_reg) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
+					else if(j == (valid_mac_reg + 1)) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][1][1],in_data_4_split[i][1][0]};
 				end
 				else begin
 					if (j == 3) data_a_show[i][j][0 +: 16] <= {in_data_4_split[i][0][1],in_data_4_split[i][0][0]};
@@ -318,11 +328,11 @@ for (i=0;i<X_MESH;i = i+1) begin:assi
 			endcase
 		end
 		always @ (posedge clk) begin
-			if(valid_mac < 3) begin
-				if(( control== ST_1_END1 || control== ST_1_END2 || control== ST_1_END3 || control == ST_1_ENABLE) && j == valid_mac ) begin
+			if(valid_mac_reg < 3) begin
+				if(( control== ST_1_END1 || control== ST_1_END2 || control== ST_1_END3 || control == ST_1_ENABLE) && j == valid_mac_reg ) begin
 					wea_show[i][j] <= 1;
 				end
-				else if((control == ST_4_ENABLE || control == ST_4_END1) && (j == valid_mac || j == (valid_mac + 1))) begin
+				else if((control == ST_4_ENABLE || control == ST_4_END1) && (j == valid_mac_reg || j == (valid_mac_reg + 1))) begin
 					wea_show[i][j] <= 1;
 				end
 				else
