@@ -13,7 +13,7 @@ module Bias_FIFO_CONTROL#(
 	input wire rst_n,
 	input wire conf,
 	
-	input wire [SINGLE_LEN - 1:0] bias_num, // 需要一次读这么多个bias，bias=1代表所有bb中地址增加1个。在DDR中是连续 X_PE byte数
+	input wire [SINGLE_LEN - 1:0] bias_num, // 锟斤拷要一锟轿讹拷锟斤拷么锟斤拷锟絙ias锟斤拷bias=1锟斤拷锟斤拷锟斤拷锟斤拷bb锟叫碉拷址锟斤拷锟斤拷1锟斤拷锟斤拷锟斤拷DDR锟斤拷锟斤拷锟斤拷锟斤拷 X_PE byte锟斤拷
 	input wire [SINGLE_LEN - 1:0] bias_ddr_byte, // X_PE*bias
 	
 	input wire [DDR_ADDR_LEN - 1:0] ddr_st_addr,
@@ -76,7 +76,6 @@ always @ (posedge clk) begin
 	if(!rst_n) begin
 		bb_addr_reg <= 0;
 		count_addr <= 0;
-		count_buffer <= 0;
 		bb_data <= 0;
 		ddr_fifo_req <= 0;
 		cto1 <= 0;
@@ -89,7 +88,6 @@ always @ (posedge clk) begin
 		bb_addr_reg <= bb_st_addr;
 		count_addr <= 0;
 		bias_num_reg <= bias_num;
-		count_buffer <= 0;
 		ddr_fifo_req <= 0;
 		bb_data <= 0;
 		bb_wea <= 0;
@@ -101,11 +99,11 @@ always @ (posedge clk) begin
 				bb_data <= ddr_fifo_data;
 				bb_addr_reg <= bb_addr_reg + 1;
 				bb_wea <= 8'hff;
-				if(count_buffer < bias_num_reg-1) begin
-					count_buffer <= count_buffer + 1;
+				if(count_addr < bias_num_reg-1) begin
+					count_addr <= count_addr + 1;
 				end
 				else begin
-					count_buffer <= 0;
+					count_addr <= 0;
 					working <= 0;
 				end
 			end
