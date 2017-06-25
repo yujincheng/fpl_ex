@@ -362,7 +362,10 @@ generate
 endgenerate
 
 initial begin
-#72000000 mem_dump();
+//#72000000 mem_dump();
+
+forever #100000000 mem_dump();
+
 end
 
 
@@ -396,8 +399,35 @@ task mem_dump;
     integer fp_w;
     integer id;
     begin
-        fp_w = $fopen("..//data_out.txt", "w");
-        for(addr_run = 0; addr_run<130368+4096; addr_run = addr_run + 64) begin
+        fp_w = $fopen("..//data_out_more.txt", "w");
+        for(addr_run = 32'h00e6e400; addr_run< 32'h00ee0080 ; addr_run = addr_run + 64) begin
+            addr = addr_run/8;
+            bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
+            row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
+            col = addr [COL_BITS - 1 : 0];        
+            mem_model_x8.memRank[0].memModel[0].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 0 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[1].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 64 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[2].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 128 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[3].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 192 +: 64 ] = data;   
+            mem_model_x8.memRank[0].memModel[4].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 256 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[5].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 320 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[6].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 384 +: 64 ] = data;
+            mem_model_x8.memRank[0].memModel[7].u_ddr3_x8.memory_read(bank,row,col,data);
+            data512[ 448 +: 64 ] = data;            
+                    
+            $display("PPP: %x", data);
+            $fwrite(fp_w, "%x : %x\n", addr_run, data512);
+        end
+        $fclose(fp_w);
+        fp_w = $fopen("..//data_out_less.txt", "w");
+        for(addr_run = 32'h10940; addr_run< (32'h10940*2) ; addr_run = addr_run + 64) begin
             addr = addr_run/8;
             bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
             row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];

@@ -63,6 +63,7 @@ module topcontrol #(
 	input	wire inst_empty,                 
 	output  reg inst_req,
 	
+    input     wire idle_data,
 	input 	wire idle_data_soon,
 	input   wire idle_write_back,
 	
@@ -332,7 +333,7 @@ always @( posedge clk) begin
 					wfc_conf <= 0;
 					inst_req <= 0;
 				end
-				else if( ~((inst_dep_wf[2] && ~ idle_data_soon) ) )begin
+				else if( ~((inst_dep_wf[2] && ~ idle_data) ) )begin
 					wfc_conf <= 1;
 					switch <= 1;
 					mig_type <= 0;
@@ -357,7 +358,7 @@ always @( posedge clk) begin
 					bfc_conf <= 0;
 					inst_req <= 0;
 				end
-				else if( ~((inst_dep_bf[2] && ~ idle_data_soon) ) )begin
+				else if( ~((inst_dep_bf[2] && ~ idle_data) ) )begin
 					bfc_conf <= 1;
 					switch <= 2;
 					mig_type <= 0;
@@ -379,7 +380,7 @@ always @( posedge clk) begin
 					dfc_conf <= 0;
 					inst_req <= 0;
 				end
-				else if( ~((inst_dep_df[2] && ~ idle_data_soon) ) )begin
+				else if( ~((inst_dep_df[2] && ~ idle_data) ) )begin
 					dfc_conf <= 1;
 					switch <= 3;
 					mig_type <= 0;
@@ -402,7 +403,7 @@ always @( posedge clk) begin
 					dwc_conf <= 0;
 					inst_req <= 0;
 				end
-				else if( ~((inst_dep_dw[2] && ~ (idle_data_soon & idle_write_back)) ) )begin
+				else if( ~((inst_dep_dw[2] && ~ (idle_data & idle_write_back)) ) )begin
 					dwc_conf <= 1;
 					//switch <= 3;
 					mig_type <= 1;

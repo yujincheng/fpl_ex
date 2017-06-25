@@ -173,7 +173,7 @@ module PE_GEN_UNIT#(
 		pool_block
 		(
 			.clk(clk),
-			.op(poolop),
+			.op(1),
 			.in_valid(out_valid_in),
 			.out_valid(pool_valid),
 			.in_data(before_pool),

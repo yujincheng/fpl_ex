@@ -69,9 +69,9 @@ generate
  for (i=0;i<X_PE;i = i+1) begin:ass   
        for (j =0;j<X_MESH;j=j+1) begin:assh
 			for (k =0;k < 9;k=k+1) begin:asshh
-				(*dont_touch = "yes"*)assign ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8] = ker_out_show[i][j][k];
+				assign ker_out[k*8 +  j*72	+	i*72*X_MESH +: 8] = ker_out_show[i][j][k];
 			end
-			(*dont_touch = "yes"*)assign doutb_show[i][j] = doutb[j*8 + i*8*X_MESH +: 8];
+			assign doutb_show[i][j] = doutb[j*8 + i*8*X_MESH +: 8];
        end
  end
 endgenerate

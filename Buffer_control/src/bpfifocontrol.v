@@ -100,7 +100,7 @@ always @ (posedge clk) begin
 	end
 	else if (conf) begin
 		working_read <= 1;
-		(*keep = "ture"*)BP_addr_reg <= BP_st_addr;
+		BP_addr_reg <= BP_st_addr;
 		count_line <= 0;
 		Line_width_reg <= Line_width;
 		count_in_line <= 0;
@@ -110,7 +110,7 @@ always @ (posedge clk) begin
 		if(!ddr_fifo_empty) begin
 			ddr_fifo_req <= 1;
 			if(ddr_fifo_req) begin
-				(*keep = "ture"*)BP_data <= ddr_fifo_data;
+				BP_data <= ddr_fifo_data;
 				if(count_in_line == Line_width_reg-1 && count_line==1) begin
 					working_read <= 0;
 					count_in_line <= 0;

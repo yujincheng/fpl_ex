@@ -30,6 +30,8 @@ output wire pe_fromfifo,
 output reg out_valid,
 output wire idle_soon,
 
+output idle_data,
+
 input rst_n,
 input clk
 
@@ -209,5 +211,7 @@ assign ready = working;
 assign idle_soon = (!working || linelen_left < 10);
 assign pe_fromfifo = regfromfifo1[0] & out_valid;
 assign pe_tofifo = regtofifo1[0] & out_valid;
+
+assign idle_data = !working;
 
 endmodule
