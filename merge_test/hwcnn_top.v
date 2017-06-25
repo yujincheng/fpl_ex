@@ -312,7 +312,7 @@ topcontrol#(
 	.instruct(instruct),
 	.inst_empty(inst_empty),
 	.inst_req(inst_req),
-	.idle_data(idle_data),
+	.idle_data(id_wb && idle_data),
 	.idle_data_soon(id_wb && id_soon_ilc),
 	.idle_write_back(id_w2c),
 	.wb_st_rd_addr  (wb_st_rd_addr),

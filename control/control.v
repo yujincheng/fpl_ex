@@ -403,7 +403,7 @@ always @( posedge clk) begin
 					dwc_conf <= 0;
 					inst_req <= 0;
 				end
-				else if( ~((inst_dep_dw[2] && ~ (idle_data & idle_write_back)) ) )begin
+				else if( ~((inst_dep_dw[2] && ~ (idle_data &  & idle_write_back)) ) )begin
 					dwc_conf <= 1;
 					//switch <= 3;
 					mig_type <= 1;
