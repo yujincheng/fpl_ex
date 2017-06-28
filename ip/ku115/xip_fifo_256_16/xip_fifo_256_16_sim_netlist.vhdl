@@ -1,10 +1,10 @@
 -- Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2017.1 (lin64) Build 1846317 Fri Apr 14 18:54:47 MDT 2017
--- Date        : Fri Jun  9 01:04:15 2017
+-- Date        : Fri Jun  9 01:04:14 2017
 -- Host        : yujc-Z97-HD3 running 64-bit Ubuntu 16.04.2 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/yujc/690t/fpl_ex/ip/ku115/xip_fifo_256_16/xip_fifo_256_16_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim -rename_top xip_fifo_256_16 -prefix
+--               xip_fifo_256_16_ xip_fifo_256_16_sim_netlist.vhdl
 -- Design      : xip_fifo_256_16
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -21,8 +21,6 @@ entity xip_fifo_256_16_bram_fifo_rstlogic is
     srst : in STD_LOGIC;
     clk : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_bram_fifo_rstlogic : entity is "bram_fifo_rstlogic";
 end xip_fifo_256_16_bram_fifo_rstlogic;
 
 architecture STRUCTURE of xip_fifo_256_16_bram_fifo_rstlogic is
@@ -188,8 +186,6 @@ entity xip_fifo_256_16_dmem is
     SR : in STD_LOGIC_VECTOR ( 0 to 0 );
     E : in STD_LOGIC_VECTOR ( 0 to 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_dmem : entity is "dmem";
 end xip_fifo_256_16_dmem;
 
 architecture STRUCTURE of xip_fifo_256_16_dmem is
@@ -4161,8 +4157,6 @@ entity xip_fifo_256_16_rd_bin_cntr is
     srst_full_ff_i : in STD_LOGIC;
     clk : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_rd_bin_cntr : entity is "rd_bin_cntr";
 end xip_fifo_256_16_rd_bin_cntr;
 
 architecture STRUCTURE of xip_fifo_256_16_rd_bin_cntr is
@@ -4426,8 +4420,6 @@ entity xip_fifo_256_16_rd_fwft is
     \gcc0.gc1.gsym.count_d1_reg[0]\ : in STD_LOGIC_VECTOR ( 0 to 0 );
     \gcc0.gc1.gsym.count_d2_reg[0]\ : in STD_LOGIC_VECTOR ( 0 to 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_rd_fwft : entity is "rd_fwft";
 end xip_fifo_256_16_rd_fwft;
 
 architecture STRUCTURE of xip_fifo_256_16_rd_fwft is
@@ -4698,8 +4690,6 @@ entity xip_fifo_256_16_rd_pe_ss is
     prog_full : in STD_LOGIC;
     D : in STD_LOGIC_VECTOR ( 3 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_rd_pe_ss : entity is "rd_pe_ss";
 end xip_fifo_256_16_rd_pe_ss;
 
 architecture STRUCTURE of xip_fifo_256_16_rd_pe_ss is
@@ -4835,8 +4825,6 @@ entity xip_fifo_256_16_rd_status_flags_ss is
     ram_empty_fb_i_reg_0 : in STD_LOGIC;
     clk : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_rd_status_flags_ss : entity is "rd_status_flags_ss";
 end xip_fifo_256_16_rd_status_flags_ss;
 
 architecture STRUCTURE of xip_fifo_256_16_rd_status_flags_ss is
@@ -4902,8 +4890,6 @@ entity xip_fifo_256_16_wr_bin_cntr is
     srst_full_ff_i : in STD_LOGIC;
     clk : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_wr_bin_cntr : entity is "wr_bin_cntr";
 end xip_fifo_256_16_wr_bin_cntr;
 
 architecture STRUCTURE of xip_fifo_256_16_wr_bin_cntr is
@@ -5267,8 +5253,6 @@ entity xip_fifo_256_16_wr_pf_ss is
     clk : in STD_LOGIC;
     D : in STD_LOGIC_VECTOR ( 3 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_wr_pf_ss : entity is "wr_pf_ss";
 end xip_fifo_256_16_wr_pf_ss;
 
 architecture STRUCTURE of xip_fifo_256_16_wr_pf_ss is
@@ -5360,8 +5344,6 @@ entity xip_fifo_256_16_wr_status_flags_ss is
     ram_full_fb_i_reg_1 : in STD_LOGIC;
     wr_en : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_wr_status_flags_ss : entity is "wr_status_flags_ss";
 end xip_fifo_256_16_wr_status_flags_ss;
 
 architecture STRUCTURE of xip_fifo_256_16_wr_status_flags_ss is
@@ -5456,8 +5438,6 @@ entity xip_fifo_256_16_memory is
     E : in STD_LOGIC_VECTOR ( 0 to 0 );
     \gpregsm1.curr_fwft_state_reg[1]\ : in STD_LOGIC_VECTOR ( 0 to 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_memory : entity is "memory";
 end xip_fifo_256_16_memory;
 
 architecture STRUCTURE of xip_fifo_256_16_memory is
@@ -8322,8 +8302,6 @@ entity xip_fifo_256_16_rd_logic is
     \eqOp__2\ : in STD_LOGIC;
     prog_full : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_rd_logic : entity is "rd_logic";
 end xip_fifo_256_16_rd_logic;
 
 architecture STRUCTURE of xip_fifo_256_16_rd_logic is
@@ -8403,8 +8381,6 @@ entity xip_fifo_256_16_reset_blk_ramfifo is
     srst : in STD_LOGIC;
     clk : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_reset_blk_ramfifo : entity is "reset_blk_ramfifo";
 end xip_fifo_256_16_reset_blk_ramfifo;
 
 architecture STRUCTURE of xip_fifo_256_16_reset_blk_ramfifo is
@@ -8443,8 +8419,6 @@ entity xip_fifo_256_16_wr_logic is
     \gc0.count_reg[3]\ : in STD_LOGIC_VECTOR ( 3 downto 0 );
     D : in STD_LOGIC_VECTOR ( 2 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_wr_logic : entity is "wr_logic";
 end xip_fifo_256_16_wr_logic;
 
 architecture STRUCTURE of xip_fifo_256_16_wr_logic is
@@ -8521,8 +8495,6 @@ entity xip_fifo_256_16_fifo_generator_ramfifo is
     clk : in STD_LOGIC;
     din : in STD_LOGIC_VECTOR ( 255 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_fifo_generator_ramfifo : entity is "fifo_generator_ramfifo";
 end xip_fifo_256_16_fifo_generator_ramfifo;
 
 architecture STRUCTURE of xip_fifo_256_16_fifo_generator_ramfifo is
@@ -8641,8 +8613,6 @@ entity xip_fifo_256_16_fifo_generator_top is
     clk : in STD_LOGIC;
     din : in STD_LOGIC_VECTOR ( 255 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_fifo_generator_top : entity is "fifo_generator_top";
 end xip_fifo_256_16_fifo_generator_top;
 
 architecture STRUCTURE of xip_fifo_256_16_fifo_generator_top is
@@ -8682,8 +8652,6 @@ entity xip_fifo_256_16_fifo_generator_v13_1_4_synth is
     clk : in STD_LOGIC;
     din : in STD_LOGIC_VECTOR ( 255 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_fifo_generator_v13_1_4_synth : entity is "fifo_generator_v13_1_4_synth";
 end xip_fifo_256_16_fifo_generator_v13_1_4_synth;
 
 architecture STRUCTURE of xip_fifo_256_16_fifo_generator_v13_1_4_synth is
@@ -9346,8 +9314,6 @@ entity xip_fifo_256_16_fifo_generator_v13_1_4 is
   attribute C_WR_PNTR_WIDTH_WRCH of xip_fifo_256_16_fifo_generator_v13_1_4 : entity is 4;
   attribute C_WR_RESPONSE_LATENCY : integer;
   attribute C_WR_RESPONSE_LATENCY of xip_fifo_256_16_fifo_generator_v13_1_4 : entity is 1;
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of xip_fifo_256_16_fifo_generator_v13_1_4 : entity is "fifo_generator_v13_1_4";
 end xip_fifo_256_16_fifo_generator_v13_1_4;
 
 architecture STRUCTURE of xip_fifo_256_16_fifo_generator_v13_1_4 is

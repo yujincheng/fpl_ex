@@ -364,7 +364,7 @@ endgenerate
 initial begin
 //#72000000 mem_dump();
 
-forever #100000000 mem_dump();
+forever #500000000 mem_dump();
 
 end
 

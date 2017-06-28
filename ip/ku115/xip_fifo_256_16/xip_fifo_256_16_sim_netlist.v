@@ -1,10 +1,10 @@
 // Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2017.1 (lin64) Build 1846317 Fri Apr 14 18:54:47 MDT 2017
-// Date        : Fri Jun  9 01:04:15 2017
+// Date        : Fri Jun  9 01:04:14 2017
 // Host        : yujc-Z97-HD3 running 64-bit Ubuntu 16.04.2 LTS
-// Command     : write_verilog -force -mode funcsim
-//               /home/yujc/690t/fpl_ex/ip/ku115/xip_fifo_256_16/xip_fifo_256_16_sim_netlist.v
+// Command     : write_verilog -force -mode funcsim -rename_top xip_fifo_256_16 -prefix
+//               xip_fifo_256_16_ xip_fifo_256_16_sim_netlist.v
 // Design      : xip_fifo_256_16
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -610,7 +610,6 @@ module xip_fifo_256_16
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "bram_fifo_rstlogic" *) 
 module xip_fifo_256_16_bram_fifo_rstlogic
    (wr_rst_busy,
     SR,
@@ -719,7 +718,6 @@ module xip_fifo_256_16_bram_fifo_rstlogic
         .R(1'b0));
 endmodule
 
-(* ORIG_REF_NAME = "dmem" *) 
 module xip_fifo_256_16_dmem
    (\goreg_dm.dout_i_reg[255] ,
     clk,
@@ -3609,7 +3607,6 @@ module xip_fifo_256_16_dmem
         .R(SR));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_ramfifo" *) 
 module xip_fifo_256_16_fifo_generator_ramfifo
    (almost_full,
     wr_rst_busy,
@@ -3729,7 +3726,6 @@ module xip_fifo_256_16_fifo_generator_ramfifo
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_top" *) 
 module xip_fifo_256_16_fifo_generator_top
    (almost_full,
     wr_rst_busy,
@@ -3851,7 +3847,7 @@ endmodule
 (* C_WR_DEPTH_WRCH = "16" *) (* C_WR_FREQ = "1" *) (* C_WR_PNTR_WIDTH = "4" *) 
 (* C_WR_PNTR_WIDTH_AXIS = "10" *) (* C_WR_PNTR_WIDTH_RACH = "4" *) (* C_WR_PNTR_WIDTH_RDCH = "10" *) 
 (* C_WR_PNTR_WIDTH_WACH = "4" *) (* C_WR_PNTR_WIDTH_WDCH = "10" *) (* C_WR_PNTR_WIDTH_WRCH = "4" *) 
-(* C_WR_RESPONSE_LATENCY = "1" *) (* ORIG_REF_NAME = "fifo_generator_v13_1_4" *) 
+(* C_WR_RESPONSE_LATENCY = "1" *) 
 module xip_fifo_256_16_fifo_generator_v13_1_4
    (backup,
     backup_marker,
@@ -4856,7 +4852,6 @@ module xip_fifo_256_16_fifo_generator_v13_1_4
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_v13_1_4_synth" *) 
 module xip_fifo_256_16_fifo_generator_v13_1_4_synth
    (almost_full,
     wr_rst_busy,
@@ -4911,7 +4906,6 @@ module xip_fifo_256_16_fifo_generator_v13_1_4_synth
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "memory" *) 
 module xip_fifo_256_16_memory
    (dout,
     clk,
@@ -7002,7 +6996,6 @@ module xip_fifo_256_16_memory
         .R(SR));
 endmodule
 
-(* ORIG_REF_NAME = "rd_bin_cntr" *) 
 module xip_fifo_256_16_rd_bin_cntr
    (Q,
     D,
@@ -7215,7 +7208,6 @@ module xip_fifo_256_16_rd_bin_cntr
         .O(\greg.gpcry_sym.diff_pntr_pad[4]_i_2_n_0 ));
 endmodule
 
-(* ORIG_REF_NAME = "rd_fwft" *) 
 module xip_fifo_256_16_rd_fwft
    (empty,
     E,
@@ -7446,7 +7438,6 @@ module xip_fifo_256_16_rd_fwft
         .O(\greg.gpcry_sym.diff_pntr_pad_reg[1] ));
 endmodule
 
-(* ORIG_REF_NAME = "rd_logic" *) 
 module xip_fifo_256_16_rd_logic
    (out,
     empty,
@@ -7571,7 +7562,6 @@ module xip_fifo_256_16_rd_logic
         .wr_en(wr_en));
 endmodule
 
-(* ORIG_REF_NAME = "rd_pe_ss" *) 
 module xip_fifo_256_16_rd_pe_ss
    (prog_empty,
     \gpfs.prog_full_i_reg ,
@@ -7697,7 +7687,6 @@ module xip_fifo_256_16_rd_pe_ss
         .R(srst_full_ff_i));
 endmodule
 
-(* ORIG_REF_NAME = "rd_status_flags_ss" *) 
 module xip_fifo_256_16_rd_status_flags_ss
    (out,
     srst_full_ff_i,
@@ -7739,7 +7728,6 @@ module xip_fifo_256_16_rd_status_flags_ss
         .S(srst_full_ff_i));
 endmodule
 
-(* ORIG_REF_NAME = "reset_blk_ramfifo" *) 
 module xip_fifo_256_16_reset_blk_ramfifo
    (wr_rst_busy,
     SR,
@@ -7762,7 +7750,6 @@ module xip_fifo_256_16_reset_blk_ramfifo
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "wr_bin_cntr" *) 
 module xip_fifo_256_16_wr_bin_cntr
    (ram_full_i_reg,
     \gaf.gaf0.ram_afull_i_reg ,
@@ -8072,7 +8059,6 @@ module xip_fifo_256_16_wr_bin_cntr
         .O(ram_full_fb_i_i_3_n_0));
 endmodule
 
-(* ORIG_REF_NAME = "wr_logic" *) 
 module xip_fifo_256_16_wr_logic
    (out,
     full,
@@ -8173,7 +8159,6 @@ module xip_fifo_256_16_wr_logic
         .wr_en(wr_en));
 endmodule
 
-(* ORIG_REF_NAME = "wr_pf_ss" *) 
 module xip_fifo_256_16_wr_pf_ss
    (prog_full,
     eqOp__2,
@@ -8249,7 +8234,6 @@ module xip_fifo_256_16_wr_pf_ss
         .R(srst_full_ff_i));
 endmodule
 
-(* ORIG_REF_NAME = "wr_status_flags_ss" *) 
 module xip_fifo_256_16_wr_status_flags_ss
    (out,
     full,

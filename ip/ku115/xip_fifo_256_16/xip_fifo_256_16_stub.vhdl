@@ -1,10 +1,10 @@
 -- Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2017.1 (lin64) Build 1846317 Fri Apr 14 18:54:47 MDT 2017
--- Date        : Fri Jun  9 01:04:15 2017
+-- Date        : Fri Jun  9 01:04:14 2017
 -- Host        : yujc-Z97-HD3 running 64-bit Ubuntu 16.04.2 LTS
--- Command     : write_vhdl -force -mode synth_stub
---               /home/yujc/690t/fpl_ex/ip/ku115/xip_fifo_256_16/xip_fifo_256_16_stub.vhdl
+-- Command     : write_vhdl -force -mode synth_stub -rename_top xip_fifo_256_16 -prefix
+--               xip_fifo_256_16_ xip_fifo_256_16_stub.vhdl
 -- Design      : xip_fifo_256_16
 -- Purpose     : Stub declaration of top-level module interface
 -- Device      : xcku060-ffva1517-1-c
