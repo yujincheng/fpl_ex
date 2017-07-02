@@ -1,4 +1,4 @@
-module mig_axi_inst #(
+module mig_axi #(
    parameter C_AXI_ID_WIDTH           = 10,
    parameter C_AXI_ADDR_WIDTH         = 32, 
    parameter C_AXI_DATA_WIDTH         = 32,
@@ -73,7 +73,7 @@ module mig_axi_inst #(
    output idle
 
   );
- localparam shift_dlen  = clogb2(C_AXI_DATA_WIDTH/8);
+ localparam shift_dlen  = clogb2(C_AXI_DATA_WIDTH/8 - 1);
  localparam addr_step  = (C_AXI_DATA_WIDTH /16);
 reg rd_data_idle;
 reg rd_cmd_idle;
@@ -289,14 +289,14 @@ always @(posedge clk) begin
     end
 end
 
-xip_fifo_256_32 x256x32(
+xip_fifo_256_64 x256x64(
   .clk(clk),
   .srst(~rst_n),
   .din(axi_rdata),
   .wr_en(axi_rready && axi_rvalid),
   .rd_en(ddr_fifo_req),
   .dout(ddr_fifo_data),
-  .almost_full(fifo_near_full),
+  .prog_full(fifo_near_full),
   .prog_empty(ddr_fifo_near_empty),
   .full(fifo_full),
   .empty(ddr_fifo_empty)

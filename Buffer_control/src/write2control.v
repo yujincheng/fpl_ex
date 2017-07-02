@@ -369,7 +369,12 @@ parameter COM_DATALEN = 24
 	input wire is_relu
 );
 	wire signed [COM_DATALEN-1:0] input_data_shift;
-	assign input_data_shift = input_data >>> shift_len;
+	
+	wire [COM_DATALEN-1:0] round_flag_vec = input_data >>> (shift_len-1);
+	
+	wire round_flag = round_flag_vec[0];
+	
+	assign input_data_shift = round_flag ? (input_data >>> shift_len)+1 :(input_data >>> shift_len);
 	
 	always @* begin
 		if(input_data_shift > 127) output_data = 127;

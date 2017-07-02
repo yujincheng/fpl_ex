@@ -92,6 +92,8 @@ module instfifo_control#(
 		
 	reg working;
 	
+	assign idle = ~working;
+	
 	always @ (posedge clk) begin
 		if (!rst_n || !init_cmptd) begin
 			working <= 0;
@@ -187,7 +189,7 @@ module instfifo_control#(
   .axi_size(axi_size),
   ////////////////////////////////////////////////////////////
   .ddr_st_addr_out(inst_addr),
-  .ddr_len(ddr_len > 8?(8<<clogb2(C_AXI_DATA_WIDTH/8 )):(ddr_len<<clogb2(C_AXI_DATA_WIDTH/8 ))),
+  .ddr_len(ddr_len > 8?(8<<clogb2(C_AXI_DATA_WIDTH/8 - 1 )):(ddr_len<<clogb2(C_AXI_DATA_WIDTH/8 - 1 ))),
   .ddr_conf(axi_conf),
   
   .cmd_type(0),
