@@ -321,7 +321,7 @@ topcontrol#(
 	.bsr_buffermux  (bsr_buffermux),
 	.ilc_fromfifo   (ilc_fromfifo),
 	.ilc_tofifo     (ilc_tofifo),
-	.ilc_ispad      (1),
+	.ilc_ispad      (ilc_ispad),
 	.ilc_st_addr    (ilc_st_addr),
 	.ilc_linelen    (ilc_linelen),
 	.is_w2c_back   (is_w2c_back),
