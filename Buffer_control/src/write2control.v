@@ -376,7 +376,7 @@ parameter COM_DATALEN = 24
 	wire round_flag = round_flag_vec[0];
 	
 	assign input_data_shift = round_flag ? (input_data >>> shift_len)+1 :(input_data >>> shift_len);
-	assign input_data_shift_neg = input_data >>> 3;
+	assign input_data_shift_neg = input_data_shift >>> 3;
 	
 	
 	always @* begin
