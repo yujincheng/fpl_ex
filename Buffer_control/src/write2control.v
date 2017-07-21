@@ -92,12 +92,14 @@ always @(posedge clk) begin
         st_addr_reg <= 0;
         valid_mac_reg <= 0;
         pooled_reg <= 0;
+        is_relu_reg <= 0;
         shift_len_reg <= 0;
     end
     else if (conf_input) begin
         linelen_reg <= linelen;
         st_addr_reg <= st_addr;
         pooled_reg <= pooled;
+        is_relu_reg <= is_relu;
         valid_mac_reg <= valid_mac;
         shift_len_reg <= shift_len;
     end
@@ -133,7 +135,7 @@ for (i=0;i<X_MESH;i = i+1) begin:ass2
        relu_shift rs(
 			.input_data(in_data_1[i*COM_DATALEN +: COM_DATALEN]),
 			.output_data(in_data_1_split[i]),
-			.is_relu(1),
+			.is_relu(is_relu_reg),
 			.shift_len(shift_len_reg)
 		);	   
 	   for (j =0;j<2;j =j+1) begin:assh
@@ -142,7 +144,7 @@ for (i=0;i<X_MESH;i = i+1) begin:ass2
 			relu_shift rs(
 			.input_data(in_data_4_split_before_shift[i][j][k]),
 			.output_data(in_data_4_split[i][j][k]),
-			.is_relu(1),
+			.is_relu(is_relu_reg),
 			.shift_len(shift_len_reg)
 			);
             assign in_data_4_split_before_shift[i][j][k] = (in_data_4[k*COM_DATALEN + j*COM_DATALEN*2 +i*COM_DATALEN*4 +: COM_DATALEN]);			
