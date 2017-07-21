@@ -298,6 +298,7 @@ wire PEC_fromfifo;
 wire out_req;
 wire axi_ug_idle;
 wire idle_data;
+wire w2c_relu;
 
 topcontrol#(
 .ADDR_LEN_WB(ADDR_LEN_WB),
@@ -331,6 +332,7 @@ topcontrol#(
 	.w2c_shift_len (w2c_shift_len),
 	.w2c_valid_mac (w2c_valid_mac),
 	.w2c_conf       (w2c_conf),
+	.w2c_relu       (w2c_relu),
 	.pooled_type    (pooled_type),
 	.is_bb_add	(is_bb_add),
 	.bb_addr	(bb_addr),
@@ -767,6 +769,8 @@ write2control#(
 	.indata_valid(indata_valid),
 	.dvalid(result_valid_pool),
 	.valid_mac(w2c_valid_mac),
+	.is_relu(w2c_relu),
+	
 	.rst_n(rst_n),
 	.clk(clk)
 	);

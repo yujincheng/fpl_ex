@@ -28,7 +28,7 @@ module topcontrol #(
 	parameter ADDR_LEN_WB = 10,
 	parameter ADDR_LEN_BP = 13,
 	parameter ADDR_LEN_BB = 7,
-	parameter INST_LEN = 220,
+	parameter INST_LEN = 256,
 	parameter INST_ADDR_LEN = 16,
 	parameter MAX_LINE_LEN = 10,
 	parameter SINGLE_LEN  = 24,
@@ -91,6 +91,8 @@ module topcontrol #(
 	output reg 								is_bb_add,
 	output reg  [ADDR_LEN_BB - 1:0]						bb_addr,
 	output reg  [4:0]						bb_shift,
+	output reg                              w2c_relu,
+	
 	
 	input  wire                         bfc_idle,
 	output reg 							bfc_conf,
@@ -154,6 +156,7 @@ wire  [0:0                    ]  inst_is_bb_         ;
 wire  [INST_ADDR_LEN - 1:0    ]  inst_bias_addr      ;
 wire  [5:0                    ]  inst_bias_shift     ;
 wire  [3:0]                      inst_dep;
+wire  inst_relu;
 
 // load_bias
 wire  [SINGLE_LEN - 1:0]         inst_bfc_bias_num;
@@ -187,7 +190,7 @@ wire  [3:0]                      inst_dep_dw;
 
 
 
-assign {inst_dep,inst_bias_shift     ,inst_bias_addr      ,inst_is_bb_         ,inst_w2c_valid_mac  ,inst_w2c_shift_len  ,inst_wb_st_rd_addr  ,inst_pooled_type    ,inst_w2c_pooled     ,inst_w2c_linelen    ,inst_w2c_st_addr    ,inst_is_w2c_back    ,inst_ilc_tofifo     ,inst_ilc_fromfifo   ,inst_bsr_buffermux  ,inst_bsr_iszero     ,inst_ilc_linelen    ,inst_ilc_ispad      ,inst_ilc_st_addr,inst_type} = instruct;
+assign {inst_relu ,inst_dep,inst_bias_shift     ,inst_bias_addr      ,inst_is_bb_         ,inst_w2c_valid_mac  ,inst_w2c_shift_len  ,inst_wb_st_rd_addr  ,inst_pooled_type    ,inst_w2c_pooled     ,inst_w2c_linelen    ,inst_w2c_st_addr    ,inst_is_w2c_back    ,inst_ilc_tofifo     ,inst_ilc_fromfifo   ,inst_bsr_buffermux  ,inst_bsr_iszero     ,inst_ilc_linelen    ,inst_ilc_ispad      ,inst_ilc_st_addr,inst_type} = instruct;
 
 
 assign {inst_dep_bf,inst_bfc_bb_st_addr,inst_bfc_ddr_st_addr,inst_bfc_bias_ddr_byte,inst_bfc_bias_num,inst_type_t1} = instruct;
@@ -245,6 +248,7 @@ always @( posedge clk) begin
 		bb_shift           <= 0;
 		is_w2c_back        <= 0;
 		is_bb_add          <= 0;
+		w2c_relu <= 0;
 		
 		bfc_conf           <= 0;
 		bfc_bias_num       <= 0;
@@ -301,6 +305,7 @@ always @( posedge clk) begin
 						w2c_st_addr <= w2c_st_addr_tmp;
 						w2c_linelen <= inst_w2c_linelen;
 						w2c_pooled  <= inst_w2c_pooled;
+						w2c_relu <= inst_relu;
 						w2c_shift_len <= inst_w2c_shift_len;
 						w2c_valid_mac <= inst_w2c_valid_mac;
 						is_w2c_back <= 1;
