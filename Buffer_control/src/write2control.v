@@ -374,11 +374,13 @@ parameter COM_DATALEN = 24
 	wire signed [COM_DATALEN-1:0] input_data_shift_neg;
 	
 	wire [COM_DATALEN-1:0] round_flag_vec = input_data >>> (shift_len-1);
+	wire [COM_DATALEN-1:0] round_neg_flag_vec = input_data >>> (shift_len+2);
 	
 	wire round_flag = round_flag_vec[0];
+	wire round_neg_flag = round_neg_flag_vec[0];
 	
 	assign input_data_shift = round_flag ? (input_data >>> shift_len)+1 :(input_data >>> shift_len);
-	assign input_data_shift_neg = input_data_shift >>> 3;
+	assign input_data_shift_neg = round_neg_flag ? (input_data >>> (shift_len+3))+1 :(input_data >>> (shift_len+3));
 	
 	
 	always @* begin
