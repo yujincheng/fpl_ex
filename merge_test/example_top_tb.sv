@@ -101,8 +101,8 @@ module example_top_tb #
                                               // Must be <= APP_DATA_WIDTH.
                                               // # = 32, 64, 128, 256.
     parameter C_AXI_NBURST_SUPPORT   = 0,
-parameter INST_LEN = 220,
-parameter FILE_NAME = "..//test.txt",
+parameter INST_LEN = 221,
+parameter FILE_NAME = "D:/tsinghua/boshi1/nics/runable/ku115/sim_8x8/sim_8x8.sim/sim_1/test.txt",
   `ifdef SIMULATION_MODE
     parameter SIMULATION            = "TRUE" 
   `else
@@ -307,7 +307,6 @@ wire inst_empty;
 
 instfifo_file #(
 .INST_DEEPTH(400000),
-.INST_LEN(INST_LEN),
 .FILE_NAME(FILE_NAME)
 )
 instfifo
@@ -331,7 +330,6 @@ hwcnn_top #(
      .C_AXI_ID_WIDTH (C_AXI_ID_WIDTH),
      .C_AXI_ADDR_WIDTH (C_AXI_ADDR_WIDTH),
      .C_AXI_DATA_WIDTH (C_AXI_DATA_WIDTH),
-     .ADDR_LEN_BP(15),
      .X_PE(8),
      .X_MESH(8)
     // .C_AXI_NBURST_SUPPORT (C_AXI_NBURST_SUPPORT),

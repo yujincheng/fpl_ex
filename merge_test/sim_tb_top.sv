@@ -156,6 +156,8 @@ module sim_tb_top;
      sys_rst = 1'b1;
      #200;
      sys_rst = 1'b0;
+          u_example_top.instfifo.set_data();
+          $display("inst set data finish 2\n");
      #100;
   end
 
@@ -364,7 +366,7 @@ endgenerate
 initial begin
 //#72000000 mem_dump();
 
-forever #500000000 mem_dump();
+forever #100000000 mem_dump();
 
 end
 
@@ -400,7 +402,7 @@ task mem_dump;
     integer id;
     begin
         fp_w = $fopen("..//data_out_more.txt", "w");
-        for(addr_run = 32'h00e6e400; addr_run< 32'h00ee0080 ; addr_run = addr_run + 64) begin
+        for(addr_run = 32'h13aaf380; addr_run< 32'h13b03c80 ; addr_run = addr_run + 64) begin
             addr = addr_run/8;
             bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
             row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
@@ -422,37 +424,37 @@ task mem_dump;
             mem_model_x8.memRank[0].memModel[7].u_ddr3_x8.memory_read(bank,row,col,data);
             data512[ 448 +: 64 ] = data;            
                     
-            $display("PPP: %x", data);
+            //$display("PPP: %x", data);
             $fwrite(fp_w, "%x : %x\n", addr_run, data512);
         end
         $fclose(fp_w);
-        fp_w = $fopen("..//data_out_less.txt", "w");
-        for(addr_run = 32'h10940; addr_run< (32'h10940*2) ; addr_run = addr_run + 64) begin
-            addr = addr_run/8;
-            bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
-            row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
-            col = addr [COL_BITS - 1 : 0];        
-            mem_model_x8.memRank[0].memModel[0].u_ddr3_x8.memory_read(bank,row,col,data);
-            data512[ 0 +: 64 ] = data;
-            mem_model_x8.memRank[0].memModel[1].u_ddr3_x8.memory_read(bank,row,col,data);
-            data512[ 64 +: 64 ] = data;
-            mem_model_x8.memRank[0].memModel[2].u_ddr3_x8.memory_read(bank,row,col,data);
-            data512[ 128 +: 64 ] = data;
-            mem_model_x8.memRank[0].memModel[3].u_ddr3_x8.memory_read(bank,row,col,data);
-            data512[ 192 +: 64 ] = data;   
-            mem_model_x8.memRank[0].memModel[4].u_ddr3_x8.memory_read(bank,row,col,data);
-            data512[ 256 +: 64 ] = data;
-            mem_model_x8.memRank[0].memModel[5].u_ddr3_x8.memory_read(bank,row,col,data);
-            data512[ 320 +: 64 ] = data;
-            mem_model_x8.memRank[0].memModel[6].u_ddr3_x8.memory_read(bank,row,col,data);
-            data512[ 384 +: 64 ] = data;
-            mem_model_x8.memRank[0].memModel[7].u_ddr3_x8.memory_read(bank,row,col,data);
-            data512[ 448 +: 64 ] = data;            
+//        fp_w = $fopen("..//data_out_less.txt", "w");
+//        for(addr_run = 32'h10940; addr_run< (32'h10940*2) ; addr_run = addr_run + 64) begin
+//            addr = addr_run/8;
+//            bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
+//            row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
+//            col = addr [COL_BITS - 1 : 0];        
+//            mem_model_x8.memRank[0].memModel[0].u_ddr3_x8.memory_read(bank,row,col,data);
+//            data512[ 0 +: 64 ] = data;
+//            mem_model_x8.memRank[0].memModel[1].u_ddr3_x8.memory_read(bank,row,col,data);
+//            data512[ 64 +: 64 ] = data;
+//            mem_model_x8.memRank[0].memModel[2].u_ddr3_x8.memory_read(bank,row,col,data);
+//            data512[ 128 +: 64 ] = data;
+//            mem_model_x8.memRank[0].memModel[3].u_ddr3_x8.memory_read(bank,row,col,data);
+//            data512[ 192 +: 64 ] = data;   
+//            mem_model_x8.memRank[0].memModel[4].u_ddr3_x8.memory_read(bank,row,col,data);
+//            data512[ 256 +: 64 ] = data;
+//            mem_model_x8.memRank[0].memModel[5].u_ddr3_x8.memory_read(bank,row,col,data);
+//            data512[ 320 +: 64 ] = data;
+//            mem_model_x8.memRank[0].memModel[6].u_ddr3_x8.memory_read(bank,row,col,data);
+//            data512[ 384 +: 64 ] = data;
+//            mem_model_x8.memRank[0].memModel[7].u_ddr3_x8.memory_read(bank,row,col,data);
+//            data512[ 448 +: 64 ] = data;            
                     
-            $display("PPP: %x", data);
-            $fwrite(fp_w, "%x : %x\n", addr_run, data512);
-        end
-        $fclose(fp_w);
+//            $display("PPP: %x", data);
+//            $fwrite(fp_w, "%x : %x\n", addr_run, data512);
+//        end
+//        $fclose(fp_w);
     end
 endtask  
 

@@ -462,8 +462,8 @@ parameter id = 0
        
                        memory_write (bank, row, col, data64);  //id<=7
                        // Next 4 lines are for debug only
-                       $display ("MEMORY_WRITE: Bank = %h, Row = %h, Col = %h, Data = %h", bank, row, col, data64);
-                       data = 'hx; // This is to reset data to verify memory_read
+                       //$display ("MEMORY_WRITE: Bank = %h, Row = %h, Col = %h, Data = %h", bank, row, col, data64);
+                       //data = 'hx; // This is to reset data to verify memory_read
                        //memory_read(bank, row, col, data64);
                        //$display ("MEMORY_READ: Bank = %h, Row = %h, Col = %h, Data = %h", bank, row, col, data);
                    end

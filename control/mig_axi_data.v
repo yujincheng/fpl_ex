@@ -1,3 +1,5 @@
+`timescale 1ps/1ps
+
 module mig_axi_data #(
    parameter C_AXI_ID_WIDTH           = 4,
    parameter C_AXI_ADDR_WIDTH         = 64, 
