@@ -50,6 +50,13 @@ class Layerparam(object):
         self.padding = 0
         self.output_channel = 16
         self.split = 1
+        self.with_relu = 1
+
+        # fixed point 
+        self.shift_in = 0
+        self.shift_out = 0
+        self.shift_weight = 0
+        self.shift_bias = 0
 
     def set_param(self, ic, shape, pool, maxpooling, padding, oc, sp):
         self.input_channel = ic
@@ -59,6 +66,13 @@ class Layerparam(object):
         self.padding = padding
         self.output_channel = oc
         self.split = sp
+
+    def set_shift(self, sin, sout, sweight, sbias):
+        self.shift_in = sin
+        self.shift_out = sout
+        self.shift_weight = sweight
+        self.shift_bias = sbias
+        
 
     def ops(self):
         return self.shape[0] * self.shape[1] * KERNEL_SIZE * KERNEL_SIZE * \
@@ -178,11 +192,16 @@ class Bram(object):
         self.o_tail_ = len(data) / self.width
 
 
+# inst dw >
+# data write
+# compute
+# load bias
+# load weight
+
 class Inst(object):
     params_list = [
     	OrderedDict([ # compute
 	        ('inst_type',4),
-	        #('inst_depend',1), # whether need to wait the last inst
 	        ('ilc_st_addr', ADDR_LENGTH * 4),
 	        ('ilc_ispad',1),
 	        ('ilc_linelen',9), # include padding
@@ -200,21 +219,25 @@ class Inst(object):
 	        ('w2c_valid_mac',2),
 	        ('is_bb_',1),
 	        ('bias_addr', BIAS_ADDR_LENGTH),
-	        ('bias_shift',5)# shift left
+	        ('bias_shift',6), # shift left
+            ('inst_dep',4),
+            ('with_relu',1)
 	        ]),
-    	OrderedDict([ # load weight
+    	OrderedDict([ # load weig1t
     		('inst_type',4),
             ('wfc_weight_num', SINGLE_LEN),
             ('wfc_weight_ddr_byte', SINGLE_LEN),
             ('wfc_ddr_st_addr', DDR_ADDR_LEN),
-            ('wfc_wb_st_addr', ADDR_LEN_WB)
+            ('wfc_wb_st_addr', ADDR_LEN_WB),
+            ('inst_dep_wf',4)
             ]),
     	OrderedDict([ # load bias
     		('inst_type',4),
             ('bfc_bias_num', SINGLE_LEN),
             ('bfc_bias_ddr_byte', SINGLE_LEN),
             ('bfc_ddr_st_addr', DDR_ADDR_LEN),
-            ('bfc_bb_st_addr', ADDR_LEN_BB)
+            ('bfc_bb_st_addr', ADDR_LEN_BB),
+            ('inst_dep_bf',4)
     		]),
         OrderedDict([ # load data
             ('inst_type',4),
@@ -222,7 +245,8 @@ class Inst(object):
             ('dfc_data_ddr_byte', SINGLE_LEN),
             ('dfc_ddr_st_addr',DDR_ADDR_LEN),
             ('dfc_data_st_addr', SINGLE_LEN),
-            ('dfc_st_mac', 2)
+            ('dfc_st_mac', 2),
+            ('inst_dep_df',4)
             ]),
         OrderedDict([ # write data
             ('inst_type',4),
@@ -230,7 +254,8 @@ class Inst(object):
             ('dwc_data_ddr_byte', SINGLE_LEN),
             ('dwc_ddr_st_addr',DDR_ADDR_LEN),
             ('dwc_data_st_addr', SINGLE_LEN),
-            ('dwc_st_mac', 2)
+            ('dwc_st_mac', 2),
+            ('inst_dep_dw',4)
         ])]
 
     #def __new__(self, *args, **kwargs):
@@ -252,6 +277,7 @@ class Inst(object):
                     p = p - v[i]
                 except:
                     print 'in the '+str(i) + 'th argument'
+                    set_trace()
         else:
             print 'wrong number of args'
             set_trace()
@@ -289,3 +315,5 @@ class Inst(object):
     def hex(self):
         return self.inst.hex
     
+if __name__ == '__main__':
+    inst = Inst(0)

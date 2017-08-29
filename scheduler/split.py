@@ -57,7 +57,10 @@ def check_hardware(net, data, start_index, end_index, hardware_config):
         interlayer_data += ceil_to(net[i].outshape()[1], DATA_BRAM_WIDTH) * 4 * \
             ceil_to(net[i].output_channel, OUTPUT_PARALL)
 			
-    bram_buf = max(data[start_index], data[end_index]) + interlayer_data
+    if end_index - start_index > 1:
+        bram_buf = max(data[start_index], data[end_index]) + interlayer_data
+    else:
+        bram_buf = data[start_index] + data[end_index]
     if bram_buf > hardware_config.bram_buf:
         # print 'data failed'
         return False
@@ -99,10 +102,10 @@ def split_net(net, hardware_config):
 
     data = [layer.bram_datasize() for layer in net]
     data.append(net[-1].bram_outsize())
-    data[0] = net[0].datasize()
+    print data
     min_dt = [0] * blob_num
     lastnode = [-1] * blob_num
-
+    
     min_dt[0] = 0
     lastnode[0] = 0
     for i in range(1, blob_num):
@@ -111,6 +114,9 @@ def split_net(net, hardware_config):
         for j in range(0,i):
             if not check_hardware(net, data, j, i, hardware_config):
                 continue
+            if lastnode[j] == -1:
+                continue
+            #print 'continue', j, i
             if min_dt[j] + data[j] <= min_dt[i]:
                 min_dt[i] = min_dt[j] + data[j]
                 lastnode[i] = j
@@ -121,10 +127,14 @@ def split_net(net, hardware_config):
     for layer in net:
         layer.split = 0
     
-    for node in lastnode:
-        if node != -1 and node != 0:
-            net[node-1].split = 1
-
+    if lastnode[-1] != -1:
+        blob_index = len(lastnode) - 1
+        while lastnode[blob_index] != -1 and blob_index != 0:
+            net[blob_index - 1].split = 1
+            blob_index = lastnode[blob_index]
+    #for node in lastnode:
+        #if node != -1 and node != 0:
+            #net[node-1].split = 1
     #set_trace()
 
 
@@ -153,5 +163,7 @@ def vgg19_net():
 if __name__=='__main__':
     # net = vgg19_net()
     net = instr.vggd_net()
+    #@net = instr.yolov2_net()
     hardware_config = HardwareConfig(config.hardware_config)
     split_net(net, hardware_config)
+    
