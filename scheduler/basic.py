@@ -78,7 +78,7 @@ class Layerparam(object):
         return self.shape[0] * self.shape[1] * KERNEL_SIZE * KERNEL_SIZE * \
             self.output_channel * self.input_channel
     	
-
+    @property
     def outshape(self):
         size_change =  - KERNEL_SIZE + 1 + 2 * self.padding
         o_shape = (self.shape[0] + size_change, self.shape[1] + size_change)
@@ -98,10 +98,10 @@ class Layerparam(object):
             ceil_to(self.input_channel, INPUT_PARALL)
 
     def outsize(self):
-        return self.outshape()[0] * self.outshape()[1] * self.output_channel
+        return self.outshape[0] * self.outshape[1] * self.output_channel
     
     def bram_outsize(self):
-        return ceil_to(self.outshape()[0], 4) * ceil_to(self.outshape()[1], DATA_BRAM_WIDTH) * \
+        return ceil_to(self.outshape[0], 4) * ceil_to(self.outshape[1], DATA_BRAM_WIDTH) * \
             ceil_to(self.output_channel, OUTPUT_PARALL)
 
     def wsize(self):
@@ -111,11 +111,16 @@ class Layerparam(object):
         return ceil_to(self.input_channel, INPUT_PARALL) * \
             ceil_to(self.output_channel, OUTPUT_PARALL) * \
             KERNEL_SIZE * KERNEL_SIZE
+    def ddr_wsize(self):
+        return self.bram_wsize()
     def bram_parall_wsize(self):
         return ceil_to(self.input_channel, INPUT_PARALL) * \
             OUTPUT_PARALL * KERNEL_SIZE * KERNEL_SIZE
     def bram_bsize(self):
         return ceil_to(self.output_channel, OUTPUT_PARALL)
+    def ddr_bsize(self):
+        return self.bram_bsize() * ceil_div(DDR_BIAS_WIDTH, OUTPUT_PARALL)
+
 
 class Bram(object):
     def __init__(self, length, width):
@@ -277,10 +282,8 @@ class Inst(object):
                     p = p - v[i]
                 except:
                     print 'in the '+str(i) + 'th argument'
-                    set_trace()
         else:
             print 'wrong number of args'
-            set_trace()
             raise Exception()
             for param in kwargs:
                 self.set_param(param, kwargs[param])

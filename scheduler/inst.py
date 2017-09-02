@@ -5,6 +5,7 @@ import config
 from copy import deepcopy
 from basic import *
 import split
+from models import *
 
 # considering outputchannels are always multiplies of 16
 
@@ -16,13 +17,18 @@ class Scheduler():
         self.config = config
 
         #initializing BRAMs ?
-        self.brams = [Bram(config.bram_length, DATA_BRAM_WIDTH) for i in range(4)]
         self.bram = Bram(config.bram_length, DATA_BRAM_WIDTH)
         self.last_inst = [None] * len(net) # The last executed inst of each layer
         self.blob_addr = [None] * (len(net) + 1) # The start addr of each layer's data
         self.blob_addr[0] = 0
         self.bias_addr = [None] * len(net)
         self.bias_addr[0] = 0
+
+        self.data_source = None
+        
+        self._ddr_bias_offset = self.config.ddr_offset
+        self._ddr_weight_offset = None
+        self._ddr_out_offset = None
 
         for i in range(len(self.net) - 1):
             if net[i].split == 0:
@@ -38,25 +44,58 @@ class Scheduler():
 
         self.next_row = [0] * (len(net) + 1)
 
+    @property
     def ddr_bias_offset(self):
-        return self.config.ddr_offset
+        return self._ddr_bias_offset
 
+    @ddr_bias_offset.setter
+    def ddr_bias_offset(self, val):
+        self._ddr_bias_offset = val + self.config.ddr_offset
+        return
+    
+    @property
     def ddr_weight_offset(self):
-        ret = self.ddr_bias_offset()
-        for i in range(len(self.net)):
-            ret += ceil_to(self.net[i].output_channel, OUTPUT_PARALL) * DDR_BIAS_WIDTH / OUTPUT_PARALL
-        return ret
+        if self._ddr_weight_offset == None:
+            ret = self.ddr_bias_offset
+            for i in range(len(self.net)):
+                ret += ceil_to(self.net[i].output_channel, OUTPUT_PARALL) * DDR_BIAS_WIDTH / OUTPUT_PARALL
+            return ret
+        else:
+            return self._ddr_weight_offset
+
+    @ddr_weight_offset.setter
+    def ddr_weight_offset(self, val):
+        self._ddr_weight_offset = val + self.config.ddr_offset
+        return
     
+    @property
     def ddr_data_offset(self):
-        ret = self.ddr_weight_offset()
-        for i in range(len(self.net)):
-            ret += ceil_to(self.net[i].output_channel, OUTPUT_PARALL) * ceil_to(self.net[i].input_channel, INPUT_PARALL) * \
-                KERNEL_SIZE * KERNEL_SIZE 
-        return ret
+        if self.data_source != None:
+            return self.data_source
+        else:
+            ret = self.ddr_weight_offset
+            for i in range(len(self.net)):
+                ret += ceil_to(self.net[i].output_channel, OUTPUT_PARALL) * ceil_to(self.net[i].input_channel, INPUT_PARALL) * \
+                    KERNEL_SIZE * KERNEL_SIZE 
+            return ret
     
-    def ddr_data_tail(self):
-        ret = self.ddr_data_offset()
-        ret += ceil_to(self.net[0].shape[0], 2) * ceil_to(self.net[0].shape[1], DATA_BRAM_WIDTH) * ceil_to(self.net[0].input_channel, INPUT_PARALL)
+    @property
+    def ddr_out_offset(self):
+        if self._ddr_out_offset == None:
+            ret = self.ddr_data_offset
+            ret += ceil_to(self.net[0].shape[0], 2) * ceil_to(self.net[0].shape[1], DATA_BRAM_WIDTH) * ceil_to(self.net[0].input_channel, INPUT_PARALL)
+            return ret
+        else:
+            return self._ddr_out_offset
+
+    @ddr_out_offset.setter
+    def ddr_out_offset(self, val):
+        self._ddr_out_offset = val + self.config.ddr_offset
+        return
+
+    def ddr_out_tail(self):
+        ret = self.ddr_out_offset
+        ret += ceil_to(self.net[-1].outshape[0], 2) * ceil_to(self.net[-1].outshape[1], DATA_BRAM_WIDTH) * ceil_to(self.net[-1].output_channel, OUTPUT_PARALL)
         return ret
 
     def addr4in1(self, addrs):
@@ -74,31 +113,45 @@ class Scheduler():
 
             if blob_index == 0 or self.net[blob_index - 1].split == True: # whole blob
                 if blob_index == len(self.net):
-                    # addr += row_index // 4 * ceil_div(self.net[blob_index - 1].output_channel , OUTPUT_PARALL) * \
-                        # ceil_div(self.net[blob_index - 1].outshape()[1], DATA_BRAM_WIDTH)
-                    addr += row_index // 4 * ceil_div(self.net[blob_index - 1].outshape()[1], DATA_BRAM_WIDTH)
+                    addr += row_index // 4 * ceil_div(self.net[blob_index - 1].output_channel , OUTPUT_PARALL) * \
+                        ceil_div(self.net[blob_index - 1].outshape[1], DATA_BRAM_WIDTH)
+                    # addr += row_index // 4 * ceil_div(self.net[blob_index - 1].outshape[1], DATA_BRAM_WIDTH)
                 else:
-                    # addr += row_index // 4 * ceil_div(self.net[blob_index].input_channel , INPUT_PARALL) * \
-                        #ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
-                    addr += row_index // 4 * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
+                    addr += row_index // 4 * ceil_div(self.net[blob_index].input_channel , INPUT_PARALL) * \
+                        ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
+                    # addr += row_index // 4 * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
 
                 # offset of channel
                 if blob_index == len(self.net):
-                    addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index - 1].outshape()[1], DATA_BRAM_WIDTH) * \
-                        ceil_div(self.net[blob_index - 1].outshape()[0], 4)
+                    addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index - 1].outshape[1], DATA_BRAM_WIDTH)
+                    # addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index - 1].outshape[1], DATA_BRAM_WIDTH) * \
+                    #    ceil_div(self.net[blob_index - 1].outshape[0], 4)
                 else:
-                    addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH) * \
-                        ceil_div(self.net[blob_index].shape[0], 4)
-            else:
-                # offset of channel
-                if blob_index == len(self.net):
-                    addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index - 1].outshape()[1], DATA_BRAM_WIDTH) * 2
-                    addr += (row_index % 8) // 4 * ceil_div(self.net[blob_index - 1].outshape()[1], DATA_BRAM_WIDTH)
-                else:
-                    addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH) * 2
-                    addr += (row_index % 8) // 4 * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
+                    addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
+                    # addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH) * \
+                    #    ceil_div(self.net[blob_index].shape[0], 4)
+            else: #interlayer blob
                 
-            #assert(addr <= self.config.bram_length)
+                if blob_index == len(self.net):
+                    # channel offset
+                    # addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index - 1].outshape[1], DATA_BRAM_WIDTH) * 2
+                    addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index - 1].outshape[1], DATA_BRAM_WIDTH)
+                    
+                    # row offset
+                    #addr += (row_index % 8) // 4 * ceil_div(self.net[blob_index - 1].outshape[1], DATA_BRAM_WIDTH)
+                    addr += (row_index % 8) // 4 * ceil_div(self.net[blob_index - 1].output_channel , OUTPUT_PARALL) * \
+                        ceil_div(self.net[blob_index - 1].outshape[1], DATA_BRAM_WIDTH)
+                else:
+                    # channel offset
+                    # addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH) * 2
+                    addr += channel_index // INPUT_PARALL * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
+                    
+                    # row offset
+                    # addr += (row_index % 8) // 4 * ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
+                    addr += (row_index % 8) // 4 * ceil_div(self.net[blob_index].input_channel , INPUT_PARALL) * \
+                        ceil_div(self.net[blob_index].shape[1], DATA_BRAM_WIDTH)
+                    
+            # assert(addr <= self.config.bram_length)
             addr = self.bram.addr(addr)
             return addr #
 
@@ -121,8 +174,8 @@ class Scheduler():
     def inst_load_init_data(self):
         # load data
         insts = []
-        dfc_ddr_st_addr = self.ddr_data_offset()
-        dfc_data_st_addr = 0
+        dfc_ddr_st_addr = self.ddr_data_offset
+        #dfc_data_st_addr = 0
         inst_dep = 0b1111
         for channel_head in range(0, self.net[0].input_channel, INPUT_PARALL):
             for row_head in range(0, self.net[0].shape[0], 2):
@@ -130,42 +183,48 @@ class Scheduler():
                     dfc_data_width = ceil_div(self.net[0].shape[1], DATA_BRAM_WIDTH)
                     dfc_data_ddr_byte = dfc_data_width * DATA_BRAM_WIDTH * INPUT_PARALL * 2
                     dfc_st_mac = row_head % 4 
-
+                    dfc_data_st_addr = self.get_data_addr(0,row_head,channel_head)
+                    
                     inst.set_inst(INST_TYPE_LOAD_DATA, dfc_data_width, dfc_data_ddr_byte, dfc_ddr_st_addr,
                         dfc_data_st_addr, dfc_st_mac, inst_dep)
                     insts.append(inst)
 
-                    dfc_ddr_st_addr += dfc_data_ddr_byte
-                    if dfc_st_mac % 4 == 2:
-                        dfc_data_st_addr += dfc_data_width
+                    #dfc_ddr_st_addr += dfc_data_ddr_byte
+                    #if dfc_st_mac % 4 == 2:
+                    #    dfc_data_st_addr += dfc_data_width
+        
         return insts
     
 
     def inst_write_final_data(self, layer_index, inst_type = INST_TYPE_WRITE_DATA):
         # write data
         insts = []
-        dwc_ddr_st_addr = self.ddr_data_tail()
-        dwc_data_st_addr = self.blob_addr[layer_index + 1]
-        dwc_data_width = ceil_div(self.net[layer_index].outshape()[1], DATA_BRAM_WIDTH)
+        dwc_ddr_st_addr = self.ddr_out_offset
+        #dwc_data_st_addr = self.blob_addr[layer_index + 1]
+        dwc_data_width = ceil_div(self.net[layer_index].outshape[1], DATA_BRAM_WIDTH)
         dwc_st_mac = 2
 
         inst_dep = 0b1111
         for channel_head in range(0, self.net[layer_index].output_channel, OUTPUT_PARALL):
-            if channel_head != 0 and dwc_st_mac == 0:
-                dwc_data_st_addr += dwc_data_width
+            #if channel_head != 0 and dwc_st_mac == 0:
+            #    dwc_data_st_addr += dwc_data_width
 
-            for row_head in range(0, self.net[layer_index].outshape()[0], 2):
-                    inst = Inst(inst_type)
-                    dwc_data_ddr_byte = dwc_data_width * DATA_BRAM_WIDTH * OUTPUT_PARALL * 2
-                    dwc_st_mac = row_head % 4 
-
-                    inst.set_inst(inst_type, dwc_data_width, dwc_data_ddr_byte, dwc_ddr_st_addr,
-                        dwc_data_st_addr, dwc_st_mac, inst_dep)
-                    insts.append(inst)
-                        
-                    dwc_ddr_st_addr += dwc_data_ddr_byte
-                    if dwc_st_mac % 4 == 2:
-                        dwc_data_st_addr += dwc_data_width
+            for row_head in range(0, self.net[layer_index].outshape[0], 2):
+                
+                inst = Inst(inst_type)
+                dwc_data_ddr_byte = dwc_data_width * DATA_BRAM_WIDTH * OUTPUT_PARALL * 2
+                dwc_st_mac = row_head % 4 
+                dwc_data_st_addr = self.get_data_addr(layer_index+1, row_head, channel_head)
+                inst.set_inst(inst_type, dwc_data_width, dwc_data_ddr_byte, dwc_ddr_st_addr,
+                    dwc_data_st_addr, dwc_st_mac, inst_dep)
+                insts.append(inst)
+                
+                
+                
+                dwc_ddr_st_addr += dwc_data_ddr_byte
+                #if dwc_st_mac % 4 == 2:
+                #    dwc_data_st_addr += dwc_data_width
+        
         return insts
 
     def calc_net(self):
@@ -175,8 +234,6 @@ class Scheduler():
         ceil_div = lambda x, y:x/y + (x%y != 0)
         data_length = ceil_div(self.net[0].shape[1], DATA_BRAM_WIDTH) * ceil_div(self.net[0].shape[0],4) * \
             ceil_div(self.net[0].input_channel, INPUT_PARALL)
-        for bram in self.brams:
-            bram.init_data([0] * data_length * DATA_BRAM_WIDTH) 
         self.bram.init_data([0] * data_length * DATA_BRAM_WIDTH)
 
         blob_nodes = [0]
@@ -191,11 +248,12 @@ class Scheduler():
             else:
                 insts = insts + self.calc_singlelayer(blob_nodes[i])
             #TEST
-            #break   
+            if i==1:
+                break
 
         #TEST
-        #insts = insts + self.inst_write_final_data(4)
-        insts = insts + self.inst_write_final_data(len(self.net) - 1)
+        insts = insts + self.inst_write_final_data(5)
+        #insts = insts + self.inst_write_final_data(len(self.net) - 1)
         return insts #
 
     def interlayer_finished(self, start_index, end_index):
@@ -219,7 +277,7 @@ class Scheduler():
         return result 
 
     def get_ddr_w_addr(self, start_index):
-        return self.ddr_weight_offset() + self.get_ddr_w_block_n(0, start_index) * INPUT_PARALL * \
+        return self.ddr_weight_offset + self.get_ddr_w_block_n(0, start_index) * INPUT_PARALL * \
             OUTPUT_PARALL * KERNEL_SIZE * KERNEL_SIZE * DDR_ADDR_BYTE
  
     def get_ddr_layer_b_block_n(self, i):
@@ -232,7 +290,7 @@ class Scheduler():
         return result 
 
     def get_ddr_b_addr(self, start_index):
-        return self.ddr_bias_offset() + self.get_ddr_b_block_n(0, start_index) * DDR_BIAS_WIDTH
+        return self.ddr_bias_offset + self.get_ddr_b_block_n(0, start_index) * DDR_BIAS_WIDTH
 
     def inst_load_interlayer_weights(self, start_index, end_index):
         insts = []
@@ -309,7 +367,7 @@ class Scheduler():
         print str(layer_index) + ' to ' +  str(layer_index + 1) + ' single'
 
         self.blob_addr[layer_index + 1] = self.bram.get_write_addr() #start address for inter blob data
-
+        
         insts = []
         
         # load bias
@@ -357,7 +415,7 @@ class Scheduler():
             self.blob_addr[i + 1] = self.bram.get_write_addr() + inter_length
 
         self.bram.malloc_inter(self.blob_addr[end_index] - self.blob_addr[start_index + 1])
-
+        
         insts = []
         # load weights
         insts = insts + self.inst_load_interlayer_weights(start_index, end_index)
@@ -366,18 +424,22 @@ class Scheduler():
 
         # start compute
         row_index = 0
+        comp_inst = []
+
         #TEST
         ii = 0
         while not self.interlayer_finished(start_index, end_index):
-            insts = insts + self.interlayer_next2row(start_index, end_index, row_index)
+            comp_inst = comp_inst + self.interlayer_next2row(start_index, end_index, row_index)
             row_index += 2
-            
+
             #TEST
             ii += 1
-            if ii >= 15:
+            if ii >= 6:
                 #break
                 pass
 
+        comp_inst[0].set_param('inst_dep',0b0111)
+        insts = insts + comp_inst
         # make sure the io pointers are set correctly before returning
         self.bram.next_layer()
         return insts #
@@ -413,9 +475,9 @@ class Scheduler():
                 if i == end_index - 1:
                     # but it is the first 4 rows , so just do it
                     #self.bram.write_addr(ceil_div(self.net[i].output_channel , OUTPUT_PARALL) * \
-                    #    ceil_div(self.net[i].outshape()[1], DATA_BRAM_WIDTH))
+                    #    ceil_div(self.net[i].outshape[1], DATA_BRAM_WIDTH))
                     self.bram.write_addr(ceil_div(o_channel , OUTPUT_PARALL) * \
-                        ceil_div(self.net[i].outshape()[1], DATA_BRAM_WIDTH))
+                        ceil_div(self.net[i].outshape[1], DATA_BRAM_WIDTH))
 
                 self.next_row[i] += 2
                 break
@@ -437,7 +499,7 @@ class Scheduler():
                     if (self.net[i].pooling ==0 and (row_tail % 4 <= 1)) or \
                         ((self.net[i].pooling) and (row_tail % 4 == 0)):
                         self.bram.write_addr(ceil_div(o_channel , OUTPUT_PARALL) * \
-                            ceil_div(self.net[i].outshape()[1], DATA_BRAM_WIDTH))                        
+                            ceil_div(self.net[i].outshape[1], DATA_BRAM_WIDTH))                        
                 if i == start_index and partial_channel == None:
                     if (row_index - self.net[i].padding + 2) % 4 <= 1:
                         self.bram.read_addr(ceil_div(self.net[i].input_channel , INPUT_PARALL) * \
@@ -617,305 +679,6 @@ class Scheduler():
         return insts 
         
 
-
-    '''
-    def calc_layer(layer, addr_offset = [0] * 4):
-        #
-        #OUTPUT channel
-        # addr_offset
-        write_addr = [256] * 4
-
-        row, col = layer.shape # row includes zero lines if padding
-        
-        if layer.padding:
-            row += 2
-            col += 2
-
-        inst_type = 0
-
-        # calc zero rows
-        zero_rows = set()
-        if layer.padding:
-            zero_rows.add(0)
-            zero_rows.add(row - 1)
-        if row % 2:
-            zero_rows.add(row)
-
-        ilc_ispad = layer.padding
-
-        ilc_linelen = col
-        w2c_linelen = col - 2
-
-        if layer.pooling:
-            w2c_linelen = (w2c_linelen + 1) / 2
-
-        w2c_pooled = layer.pooling
-        pooled_type = layer.maxpooling
-
-        w2c_shift_len = 0 #
-
-        insts = []
-
-        for channel_head in range(0, layer.input_channel, INPUT_PARALL):
-
-            #FIFO params
-            PEC_tofifo = 1
-            PEC_fromfifo = 1
-
-            if channel_head == 0:
-                PEC_fromfifo = 0
-            
-            if layer.input_channel - channel_head <= INPUT_PARALL:
-                PEC_tofifo = 0
-            
-        
-            is_w2c_back = 1 - PEC_tofifo
-            kernel_mux = [0] * 4
-
-            # for test (bias)
-            is_bb_ = is_w2c_back
-            bias_addr = 0
-            bias_shift = 0
-
-            # Row Iteration
-            for row_head in range(0, row - 2, 2):
-                kernel_shift = row_head % 4
-
-                for i in range(4):
-                    kernel_mux[i] = (row_head + i - layer.padding) % 4
-                kernel_mux.reverse()
-
-                bsr_buffermux = int(''.join([bin(x).replace('0b','').zfill(2) for x in kernel_mux]), 2)
-
-                if kernel_shift != 0:
-                    kernel_shift = 4 - kernel_shift
-
-                row_iszero = map(lambda x:str(int(x in zero_rows)), range(row_head, row_head+4))
-                kernel_iszero = [row_iszero[(x + kernel_shift) % 4] for x in range(4)]
-                kernel_iszero.reverse() #Q
-                bsr_iszero = int(''.join(kernel_iszero), 2)
-
-                addrs = [0] * 4
-                for i in range(4):
-                    data_line = row_head + i - layer.padding
-                    bram_offset = data_line / 4 * ((col -  2 * layer.padding) / DATA_BRAM_WIDTH)
-                    addrs[data_line%4] = bram_offset
-                addrs.reverse()
-                ilc_st_addr = addr4in1(addrs)
-
-                w2c_valid_mac = row_head % 4
-                #print write_addr
-                w2c_st_addr = addr4in1(write_addr)
-                write_addr[row_head % 4] = write_addr[row_head%4] + (w2c_linelen / 4) + ((w2c_linelen % 4) != 0)
-                write_addr[(row_head + 1) % 4] = write_addr[(row_head+1)%4] + (w2c_linelen / 4) + ((w2c_linelen % 4) != 0)
-
-                wb_st_rd_addr = 0 #Q
-
-                inst = Inst(inst_type)
-                inst.set_inst(inst_type, ilc_st_addr, ilc_ispad, ilc_linelen, bsr_iszero, \
-                    bsr_buffermux, PEC_fromfifo, PEC_tofifo, is_w2c_back, w2c_st_addr, \
-                    w2c_linelen, w2c_pooled, pooled_type,wb_st_rd_addr, w2c_shift_len, \
-                    w2c_valid_mac, is_bb_, bias_addr, bias_shift)
-
-                insts.append(inst)
-                #insts.append(inst.hex())
-        #with open('inst.txt','w') as fout:
-        #    fout.writelines([x + '\n' for x in insts])
-        return insts
-    '''
-
-def test_net():
-    net = [Layerparam() for i in range(5)] # comments below are the number of insts needed 
-    net[0].set_param(3, (64,64), 0, 0, 0, 16, 1) # 1 * 1 * 31
-    net[1].set_param(16, (62, 62), 0,0, 1, 32, 1) # 1 * 2 * 31
-    net[2].set_param(32, (62, 62), 0, 0, 0, 64, 0) # 2 * 4 * 30
-    net[3].set_param(64, (60, 60), 0, 0, 1, 128, 0) # 4 * 8 * 30
-    net[4].set_param(128, (60, 60), 1, 0, 0, 16, 1) # 8 * 1 * 29
-    return net
-
-
-def vgg19_net():
-    net = [Layerparam() for i in range(16)]
-    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
-    net[0].set_param(3, (224, 224), 0, 0, 1, 64, 1)
-    net[1].set_param(64, (224, 224), 1, 1, 1, 64, 1)
-    net[2].set_param(64, (112, 112), 0, 0, 1, 128, 1)
-    net[3].set_param(128, (112, 112), 1, 1, 1, 128, 1)
-    net[4].set_param(128, (56, 56), 0, 0, 1, 256, 1)
-    net[5].set_param(256, (56, 56), 0, 0, 1, 256, 1)
-    net[6].set_param(256, (56, 56), 0, 0, 1, 256, 1)
-    net[7].set_param(256, (56, 56), 1, 1, 1, 256, 1)
-    net[8].set_param(256, (28, 28), 0, 0, 1, 512, 1)
-    net[9].set_param(512, (28, 28), 0, 0, 1, 512, 1)
-    net[10].set_param(512, (28, 28), 0, 0, 1, 512, 1)
-    net[11].set_param(512, (28, 28), 1, 1, 1, 512, 1)
-    net[12].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[13].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[14].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[15].set_param(512, (14, 14), 1, 1, 1, 512, 1)
-    return net
-
-def vggc_net():
-    net = [Layerparam() for i in range(16)]
-    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
-    net[0].set_param(3, (224, 224), 0, 0, 1, 64, 1)
-    net[1].set_param(64, (224, 224), 1, 1, 1, 64, 1)
-    net[2].set_param(64, (112, 112), 0, 0, 1, 128, 1)
-    net[3].set_param(128, (112, 112), 1, 1, 1, 128, 1)
-    net[4].set_param(128, (56, 56), 0, 0, 1, 256, 1)
-    net[5].set_param(256, (56, 56), 0, 0, 1, 256, 1)
-    net[7].set_param(256, (56, 56), 1, 1, 1, 256, 1)
-    net[8].set_param(256, (28, 28), 0, 0, 1, 512, 1)
-    net[9].set_param(512, (28, 28), 0, 0, 1, 512, 1)
-    net[11].set_param(512, (28, 28), 1, 1, 1, 512, 1)
-    net[12].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[13].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[15].set_param(512, (14, 14), 1, 1, 1, 512, 1)
-    return net
-
-def yolov2_net():
-    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
-    net = [Layerparam() for i in range(22)]
-    net[0].set_param(3, (416,416), 1, 1, 1, 32, 1)
-    net[1].set_param(32, (208,208), 1, 1, 1, 64, 1)
-    net[2].set_param(64, (104,104), 0, 0, 1, 128, 1)
-    net[3].set_param(128, (104,104), 0, 0, 1, 64, 1) #1
-    net[4].set_param(64, (104,104), 1, 1, 1, 128, 1)
-    net[5].set_param(128, (52, 52), 0, 0, 1, 256, 1)
-    net[6].set_param(256, (52,52), 0, 0, 1, 128,1) #1
-    net[7].set_param(128, (52,52), 1, 1, 1, 256, 1)
-    net[8].set_param(256, (26, 26), 0, 0, 1, 512,1)
-    net[9].set_param(512, (26,26), 0, 0, 1, 256,1) #1
-    net[10].set_param(256, (26,26), 0, 0, 1, 512,1)
-    net[11].set_param(512, (26,26), 0, 0, 1, 256,1) # 1
-    net[12].set_param(256, (26,26), 1, 1, 1, 512,1)
-    net[13].set_param(512, (13,13), 0, 0, 1, 1024,1)
-    net[14].set_param(1024, (13, 13), 0, 0, 1, 512,1) #1
-    net[15].set_param(512, (13, 13), 0, 0, 1, 1024,1)
-    net[16].set_param(1024, (13, 13), 0, 0, 1, 512,1)
-    net[17].set_param(512, (13,13), 0, 0, 1, 1024,1)
-    net[18].set_param(1024, (13,13), 0, 0, 1, 1024,1)
-    net[19].set_param(1024,(13,13), 0,0, 1, 1024,1)
-    net[20].set_param(1024, (13,13), 0, 0, 1, 1024,1)
-    net[21].set_param(1024, (13,13), 0, 0, 1, 125,1)
-
-    net[0].set_shift(7,2,3,3)
-    net[1].set_shift(2,1,7,4)
-    net[2].set_shift(1,2,8,3)
-    net[3].set_shift(2,2,5,4)
-    net[4].set_shift(2,2,8,4)
-    net[5].set_shift(2,2,8,4)
-    net[6].set_shift(2,2,6,4)
-    net[7].set_shift(2,3,8,4)
-    net[8].set_shift(3,2,8,4)
-    net[9].set_shift(2,2,6,5)
-    net[10].set_shift(2,3,8,4)
-    net[11].set_shift(3,3,6,4)
-    net[12].set_shift(3,3,8,5)
-    net[13].set_shift(3,3,7,5)
-    net[14].set_shift(3,3,6,4)
-    net[15].set_shift(3,3,8,4)
-    net[16].set_shift(3,2,6,4)
-    net[17].set_shift(2,1,6,3)
-    net[18].set_shift(1,3,12,7)
-    net[19].set_shift(3,4,10,5)
-    net[20].set_shift(4,4,11,5)
-    net[21].set_shift(4,2,8,8)
-
-    net[21].with_relu = 0
-    return net
-
-def vggd_net(): # not supported 
-    net = [Layerparam() for i in range(13)]
-    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
-    net[0].set_param(3, (224, 224), 0, 0, 1, 64, 1)
-    net[1].set_param(64, (224, 224), 1, 1, 1, 64, 1)
-    net[2].set_param(64, (112, 112), 0, 0, 1, 128, 1)
-    net[3].set_param(128, (112, 112), 1, 1, 1, 128, 1)
-    net[4].set_param(128, (56, 56), 0, 0, 1, 256, 1)
-    net[5].set_param(256, (56, 56), 0, 0, 1, 256, 1)
-    net[6].set_param(256, (56, 56), 1, 1, 1, 256, 1)
-    net[7].set_param(256, (28, 28), 0, 0, 1, 512, 1)
-    net[8].set_param(512, (28, 28), 0, 0, 1, 512, 1)
-    net[9].set_param(512, (28, 28), 1, 1, 1, 512, 1)
-    net[10].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[11].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[12].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    '''
-    net[0].set_shift(-1, 1, 11, 5)
-    net[1].set_shift(1, 2, 8, 5)
-    net[2].set_shift(2, 3, 8, 6)
-    net[3].set_shift(3, 3, 9, 5)
-    net[4].set_shift(3, 3, 8, 6)
-    net[5].set_shift(3, 3, 9, 5)
-    net[6].set_shift(3, 3, 8, 5)
-    net[7].set_shift(3, 3, 9, 5)
-    net[8].set_shift(3, 3, 9, 4)
-    net[9].set_shift(3, 3, 8, 5)
-    net[10].set_shift(3, 3, 9, 5)
-    net[11].set_shift(3, 3, 9, 6)
-    net[12].set_shift(3, 1, 6, 6)
-    
-    
-    net[0].set_shift(-1, -3, 7, 5)
-    net[1].set_shift(-3, -3, 8, 6)
-    net[2].set_shift(-3, -3, 8, 8)
-    net[3].set_shift(-3, -3, 8, 7)
-    net[4].set_shift(-3, -3, 8, 9)
-    net[5].set_shift(-3, -3, 8, 9)
-    net[6].set_shift(-3, -3, 8, 8)
-    net[7].set_shift(-3, -3, 8, 9)
-    net[8].set_shift(-3, -3, 8, 10)
-    net[9].set_shift(-3, -3, 9, 9)
-    net[10].set_shift(-3, -2, 9, 8)
-    net[11].set_shift(-2, -1, 9, 7)
-    net[12].set_shift(-1, 0, 9, 4)
-    '''
-    net[0].set_shift(-1, -3, 7, 5)
-    net[1].set_shift(-3, -3, 8, 5)
-    net[2].set_shift(-3, -3, 8, 5)
-    net[3].set_shift(-3, -3, 8, 5)
-    net[4].set_shift(-3, -3, 8, 5)
-    net[5].set_shift(-3, -3, 8, 5)
-    net[6].set_shift(-3, -3, 8, 5)
-    net[7].set_shift(-3, -3, 8, 5)
-    net[8].set_shift(-3, -3, 8, 5)
-    net[9].set_shift(-3, -3, 9, 6)
-    net[10].set_shift(-3, -2, 9, 6)
-    net[11].set_shift(-2, -1, 9, 7)
-    net[12].set_shift(-1, 0, 9, 4)
-        
-    return net
-
-
-def vggb_net():
-    net = [Layerparam() for i in range(10)]
-    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
-    net[0].set_param(3, (224, 224), 0, 0, 1, 64, 1)
-    net[1].set_param(64, (224, 224), 1, 1, 1, 64, 1)
-    net[2].set_param(64, (112, 112), 0, 0, 1, 128, 1)
-    net[3].set_param(128, (112, 112), 1, 1, 1, 128, 1)
-    net[4].set_param(128, (56, 56), 0, 0, 1, 256, 1)
-    net[5].set_param(256, (56, 56), 1, 1, 1, 256, 1)
-    net[6].set_param(256, (28, 28), 0, 0, 1, 512, 1)
-    net[7].set_param(512, (28, 28), 1, 1, 1, 512, 1)
-    net[8].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[9].set_param(512, (14, 14), 1, 1, 1, 512, 1)
-    return net
-
-def vgga_net():
-    net = [Layerparam() for i in range(8)]
-    # i_channe, shape, pooling, is_maxpool, padding, o_channel, split
-    net[0].set_param(3, (224, 224), 1, 1, 1, 64, 1)
-    net[1].set_param(128, (112, 112), 1, 1, 1, 128, 1)
-    net[2].set_param(128, (56, 56), 0, 0, 1, 256, 1)
-    net[3].set_param(256, (56, 56), 1, 1, 1, 256, 1)
-    net[4].set_param(256, (28, 28), 0, 0, 1, 512, 1)
-    net[5].set_param(512, (28, 28), 1, 1, 1, 512, 1)
-    net[6].set_param(512, (14, 14), 0, 0, 1, 512, 1)
-    net[7].set_param(512, (14, 14), 1, 1, 1, 512, 1)
-    return net
-
 def fusenet(net):
     for layer in net:
         layer.split = 0
@@ -972,13 +735,75 @@ def print_net(net, flayer = []):
         ops += layer.ops()
     print 'ops: ', str(ops)
 
+def ddr_arrange(nets):
+    ddr_bias = [0]
+    for net in nets:
+        ddr_bias.append(ddr_bias[-1] + sum([layer.ddr_bsize() for layer in net]))
+    ddr_weights = [ddr_bias[-1]]
+    ddr_bias = ddr_bias[0:-1]
+    for net in nets:
+        ddr_weights.append(ddr_weights[-1] + sum([layer.ddr_wsize() for layer in net]))
+    ddr_input = ddr_weights[-1]
+    ddr_weights = ddr_weights[0:-1]
+
+    ddr_output = [ddr_input + ceil_to(nets[0][0].input_channel, INPUT_PARALL) * ceil_to(nets[0][0].shape[0],2) * \
+            ceil_to(nets[0][0].shape[1], DATA_BRAM_WIDTH)]
+    cur_output = ddr_output[0]
+
+    for net in nets:
+        cur_output += ceil_to(net[-1].output_channel, OUTPUT_PARALL) * ceil_to(net[-1].outshape[0],2) * \
+            ceil_to(net[-1].outshape[1], DATA_BRAM_WIDTH)
+        ddr_output.append(cur_output)
+    ddr_output = ddr_output[0:-1]
+    
+    return ddr_bias, ddr_weights, ddr_input, ddr_output
+    
+
+def test_ssd():
+    net, depend = ssd_net()
+    hardware_config = split.HardwareConfig(config.hardware_config)
+    
+    for i in depend:
+        assert(depend[i]<=i)
+    ddr_bias, ddr_weights, ddr_input, ddr_output = ddr_arrange(net)
+
+    ddr_net_output = [0] * len(net)
+    insts = []
+    for i in range(len(net)):
+        split.split_net(net[i], hardware_config)
+        scheduler = Scheduler(net[i], hardware_config)
+        
+        #TODO custom ddr address here
+        scheduler.ddr_bias_offset = ddr_bias[i]
+        scheduler.ddr_weight_offset = ddr_weights[i]
+        scheduler.ddr_out_offset = ddr_output[i]
+        
+        if i == 0:
+            scheduler.data_source = scheduler.config.ddr_offset + ddr_input
+        if depend[i] != i:
+            scheduler.data_source = ddr_net_output[depend[i]]
+        ddr_net_output[i] = scheduler.ddr_out_offset
+
+        print scheduler.ddr_data_offset
+        print scheduler.ddr_out_offset
+        insts += scheduler.calc_net()
+        #print scheduler.blob_addr
+        print 'SSD-' + str(i) + ' succeed'
+        break
+    set_trace()
+    with open('insts/SSD/' + 'SSD_newaddr_n1l6.txt','w') as fout:
+        for inst in insts:
+            inst.write_file(fout)
+            
+
 if __name__ == '__main__':
     '''
     inst = Inst()
     t = BitArray('uint:9=511,uint:9=511,uint:9=511,uint:9=511')
     inst.set_inst(0, 0, 64, 0, 0b11100100, 0, 1, 1, t.uint, 62, 0, 0, 0, 8, 0)
     '''
-
+    test_ssd()
+    exit(0)
 
     net = {}
     
@@ -995,13 +820,7 @@ if __name__ == '__main__':
     #net['test_single'][0].pooling = 1
     #net['test_single'][0].maxpooling = 1
 
-    for i in net:
-        print 'Net VGG_' + i + ' : '
-        #print_net(net[i], fblob[i])
-        print ''
-
     hardware_config = split.HardwareConfig(config.hardware_config)
-    #split.split_net(net['1layer'], hardware_config)
 
     for i in net:
         split.split_net(net[i], hardware_config)
@@ -1013,9 +832,4 @@ if __name__ == '__main__':
                 inst.write_file(fout)
         print 'VGG-' + i + ' successfully written'
 
-    '''
-    with open('insts/vgg_19_net_fused.txt','w') as fout:
-        for inst in insts:
-            inst.write_file(fout)
-    '''
     print 'insts successfully written'

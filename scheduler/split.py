@@ -54,7 +54,7 @@ def check_hardware(net, data, start_index, end_index, hardware_config):
     # print 'Checking ' + str(start_index) + ' to ' + str(end_index) + ': ',
     interlayer_data = 0
     for i in range(start_index, end_index - 1):
-        interlayer_data += ceil_to(net[i].outshape()[1], DATA_BRAM_WIDTH) * 4 * \
+        interlayer_data += ceil_to(net[i].outshape[1], DATA_BRAM_WIDTH) * 4 * \
             ceil_to(net[i].output_channel, OUTPUT_PARALL)
 			
     if end_index - start_index > 1:
@@ -68,7 +68,7 @@ def check_hardware(net, data, start_index, end_index, hardware_config):
     # check inter buffer
     inter_buf = 0
     for i in range(start_index, end_index):
-        cur_inter_buf = OUTPUT_PARALL * 2 * net[i].outshape()[1] * INTER_WIDTH 
+        cur_inter_buf = OUTPUT_PARALL * 2 * net[i].outshape[1] * INTER_WIDTH 
         if inter_buf < cur_inter_buf:
             inter_buf = cur_inter_buf
     if inter_buf > hardware_config.inter_buf:
