@@ -6,7 +6,7 @@ module instfifo_file#(
 	parameter ADDR_LEN_W = 9,
 	parameter ADDR_LEN_D = 9,
 	parameter INST_LEN = 256,
-	parameter FILE_NAME = "D:/tsinghua/boshi1/nics/runable/ku115/sim_8x8/sim_8x8.sim/sim_1/test.txt",
+	parameter FILE_NAME = "../test.txt",
 	parameter INST_DEEPTH = 2,
 	parameter RAM_DEPTH = 500000,
 	parameter COM_DATALEN = 24
@@ -42,7 +42,7 @@ reg [INST_LEN-1:0] inst_reg[RAM_DEPTH - 1:0];
 
 task set_data;
 begin
-    $readmemh("D:/tsinghua/boshi1/nics/runable/ku115/sim_8x8/sim_8x8.sim/sim_1/test.txt", inst_reg, 0, INST_DEEPTH-1);
+    $readmemh(FILE_NAME, inst_reg, 0, INST_DEEPTH-1);
     $display("inst set data finish\n");
 end
 endtask

@@ -79,7 +79,7 @@ inout in1;
 endmodule
 `endif
 
-module sim_tb_top;
+module sim_tb_top_8x8;
 
   localparam ADDR_WIDTH                = 16;
   localparam DQ_WIDTH                  = 64;
@@ -402,7 +402,7 @@ task mem_dump;
     integer id;
     begin
         fp_w = $fopen("..//data_out_more.txt", "w");
-        for(addr_run = 32'h13aaf380; addr_run< 32'h13b03c80 ; addr_run = addr_run + 64) begin
+        for(addr_run = 32'h2ff7680; addr_run< 32'h2ff9680 ; addr_run = addr_run + 64) begin
             addr = addr_run/8;
             bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
             row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];

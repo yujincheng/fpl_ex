@@ -25,7 +25,7 @@ module hwcnn_top #(
 	parameter X_PE = 8,
 	parameter X_MAC = 4,
 	parameter X_MESH = 8,
-	parameter ADDR_LEN_WB = 12,
+	parameter ADDR_LEN_WB = 14,
 	parameter ADDR_LEN_BB = 7,
 	parameter ADDR_LEN_BP = 14,
 	parameter MAX_LINE_LEN = 9,
@@ -732,7 +732,7 @@ inlinecontrol#(
 .ADDR_LEN(ADDR_LEN_BP)
 ) ilc(
 	.st_addr(ilc_st_addr),
-	.linelen(ilc_linelen), //after_pad 至少�???????4
+	.linelen(ilc_linelen), //after_pad 至少�???????4
 	.ispad(ilc_ispad),
 	.idle_data(idle_data),
 	.idle_soon(id_soon_ilc),
