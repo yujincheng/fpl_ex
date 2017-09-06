@@ -1,5 +1,5 @@
 bram_length = 16*1024
-w_length = 16*1024
+w_length = 8*1024
 hardware_config = {
 	'bram_buf' : bram_length * 4 * 8 * 4, # bram_buf = bram_length * DATA_BRAM_WIDTH * INPUT_PARALL * 4
 	'w_buf' : w_length * 8 * 8,

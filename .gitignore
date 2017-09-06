@@ -1,6 +1,7 @@
 scheduler/data*
 scheduler/models*
 scheduler/insts*
+scheduler/config.py
 *.pyc
 *.html
 .vscode*

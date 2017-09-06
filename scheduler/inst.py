@@ -189,7 +189,7 @@ class Scheduler():
                         dfc_data_st_addr, dfc_st_mac, inst_dep)
                     insts.append(inst)
 
-                    #dfc_ddr_st_addr += dfc_data_ddr_byte
+                    dfc_ddr_st_addr += dfc_data_ddr_byte
                     #if dfc_st_mac % 4 == 2:
                     #    dfc_data_st_addr += dfc_data_width
         
@@ -247,13 +247,8 @@ class Scheduler():
                 insts = insts + self.calc_interlayer(blob_nodes[i], blob_nodes[i + 1])
             else:
                 insts = insts + self.calc_singlelayer(blob_nodes[i])
-            #TEST
-            if i==1:
-                break
-
-        #TEST
-        insts = insts + self.inst_write_final_data(5)
-        #insts = insts + self.inst_write_final_data(len(self.net) - 1)
+            
+        insts = insts + self.inst_write_final_data(len(self.net) - 1)
         return insts #
 
     def interlayer_finished(self, start_index, end_index):
@@ -426,17 +421,9 @@ class Scheduler():
         row_index = 0
         comp_inst = []
 
-        #TEST
-        ii = 0
         while not self.interlayer_finished(start_index, end_index):
             comp_inst = comp_inst + self.interlayer_next2row(start_index, end_index, row_index)
             row_index += 2
-
-            #TEST
-            ii += 1
-            if ii >= 6:
-                #break
-                pass
 
         comp_inst[0].set_param('inst_dep',0b0111)
         insts = insts + comp_inst
@@ -735,6 +722,11 @@ def print_net(net, flayer = []):
         ops += layer.ops()
     print 'ops: ', str(ops)
 
+def write_insts(fname, insts, dir_prefix = 'insts/SSD_128/'):
+    with open(dir_prefix + fname,'w') as fout:
+        for inst in insts:
+            inst.write_file(fout)
+
 def ddr_arrange(nets):
     ddr_bias = [0]
     for net in nets:
@@ -760,7 +752,7 @@ def ddr_arrange(nets):
     
 
 def test_ssd():
-    net, depend = ssd_net()
+    net, depend = ssd_128_net()
     hardware_config = split.HardwareConfig(config.hardware_config)
     
     for i in depend:
@@ -773,7 +765,7 @@ def test_ssd():
         split.split_net(net[i], hardware_config)
         scheduler = Scheduler(net[i], hardware_config)
         
-        #TODO custom ddr address here
+        # custom ddr address here
         scheduler.ddr_bias_offset = ddr_bias[i]
         scheduler.ddr_weight_offset = ddr_weights[i]
         scheduler.ddr_out_offset = ddr_output[i]
@@ -787,49 +779,27 @@ def test_ssd():
         print scheduler.ddr_data_offset
         print scheduler.ddr_out_offset
         insts += scheduler.calc_net()
-        #print scheduler.blob_addr
-        print 'SSD-' + str(i) + ' succeed'
-        break
-    set_trace()
-    with open('insts/SSD/' + 'SSD_newaddr_n1l6.txt','w') as fout:
-        for inst in insts:
-            inst.write_file(fout)
-            
+        print 'Subnet-' + str(i) + ' succeed'
 
-if __name__ == '__main__':
-    '''
-    inst = Inst()
-    t = BitArray('uint:9=511,uint:9=511,uint:9=511,uint:9=511')
-    inst.set_inst(0, 0, 64, 0, 0b11100100, 0, 1, 1, t.uint, 62, 0, 0, 0, 8, 0)
-    '''
-    test_ssd()
-    exit(0)
+    write_insts('SSD_128_test.txt', insts)
 
+def test_yolo():
     net = {}
     
-    #net['E_ddr'] = vgg19_net()
     net['yolov2'] = yolov2_net()
-    #net['D_bshift6'] = vggd_net()
-    #net['C_ddr'] = vggc_net()
-    #net['B_ddr'] = vggb_net()
-    #net['A_ddr'] = vgga_net()
-    
-    #net['test_single'] = [Layerparam()]
-    #net['test_single'][0].set_shift(0,0,12,12)
-    #net['test_single'][0].padding = 1
-    #net['test_single'][0].pooling = 1
-    #net['test_single'][0].maxpooling = 1
-
     hardware_config = split.HardwareConfig(config.hardware_config)
 
     for i in net:
         split.split_net(net[i], hardware_config)
         scheduler = Scheduler(net[i], hardware_config)
         insts = scheduler.calc_net()
-        print scheduler.blob_addr
         with open('insts/FPL/' + i + '.txt','w') as fout:
             for inst in insts:
                 inst.write_file(fout)
-        print 'VGG-' + i + ' successfully written'
+        print 'Net-' + i + ' successfully written'
 
     print 'insts successfully written'
+
+
+if __name__ == '__main__':
+    test_ssd()
